@@ -56,6 +56,107 @@ class SupabaseContractTest {
     }
 
     @Test
+    void publicCatalogNeverSendsAUserToken() {
+        SupabaseConfig config = SupabaseConfig.parse("https://example.supabase.co", "sb_publishable_test");
+        RecordingTransport transport = new RecordingTransport();
+        transport.body = "[]";
+        SupabasePublicCatalogRepository catalog = new SupabasePublicCatalogRepository(new SupabaseClient(config, transport));
+
+        catalog.published(az.miyav.domain.pet.PetQuery.firstPage());
+        assertEquals("Bearer sb_publishable_test", transport.headers.get("Authorization"));
+        assertTrue(transport.path.contains("status=eq.active"));
+
+        UUID first = UUID.randomUUID();
+        UUID second = UUID.randomUUID();
+        catalog.publishedListings(java.util.List.of(first, second));
+        assertEquals("Bearer sb_publishable_test", transport.headers.get("Authorization"));
+        assertTrue(transport.path.contains("status=eq.active&id=in.(" + first + "," + second + ")"));
+
+        transport.body = "[]";
+        catalog.publicProfile(first);
+        assertTrue(transport.path.endsWith("/rest/v1/rpc/public_profile"));
+        assertEquals("Bearer sb_publishable_test", transport.headers.get("Authorization"));
+    }
+
+    @Test
+    void googlePkceSendsTheChallengeAndExchangesTheCode() {
+        SupabaseConfig config = SupabaseConfig.parse("https://example.supabase.co", "sb_publishable_test");
+        RecordingTransport transport = new RecordingTransport();
+        SupabaseAuthRepository auth = new SupabaseAuthRepository(config, new SupabaseClient(config, transport));
+
+        String url = auth.googleAuthorizeUri("az.miyav.native://auth", "challenge-1").toString();
+        assertTrue(url.contains("code_challenge=challenge-1&code_challenge_method=s256"));
+
+        UUID userId = UUID.randomUUID();
+        transport.body = "{\"access_token\":\"t\",\"refresh_token\":\"r\",\"expires_in\":3600,\"user\":{\"id\":\"" + userId + "\",\"email\":\"g@example.com\"}}";
+        assertEquals(userId, auth.exchangeCode("code-1", "verifier-1").userId());
+        assertTrue(transport.path.endsWith("/auth/v1/token?grant_type=pkce"));
+        assertTrue(transport.requestBody.contains("\"auth_code\":\"code-1\"") && transport.requestBody.contains("\"code_verifier\":\"verifier-1\""));
+
+        transport.status = 400;
+        transport.body = "{\"error_code\":\"flow_state_not_found\"}";
+        PersistenceException rejected = assertThrows(PersistenceException.class, () -> auth.exchangeCode("forged", "verifier-1"));
+        assertEquals("auth.link_invalid", rejected.code());
+    }
+
+    @Test
+    void favouriteMergeUsesTheServerFunctionWithTheUserToken() {
+        SupabaseConfig config = SupabaseConfig.parse("https://example.supabase.co", "sb_publishable_test");
+        RecordingTransport transport = new RecordingTransport();
+        transport.body = "[{\"added\":2,\"already_saved\":1,\"unavailable\":1}]";
+        SupabaseFavoriteRepository favorites = new SupabaseFavoriteRepository(new SupabaseClient(config, transport));
+        AuthSession session = new AuthSession(UUID.randomUUID(), "a@example.com", "user-token", "r",
+                java.time.Instant.parse("2030-01-01T00:00:00Z"), null);
+
+        var result = favorites.merge(session, java.util.List.of(UUID.randomUUID()));
+
+        assertEquals(2, result.added());
+        assertEquals(1, result.alreadySaved());
+        assertEquals(1, result.unavailable());
+        assertTrue(transport.path.endsWith("/rest/v1/rpc/merge_adoption_favorites"));
+        assertEquals("Bearer user-token", transport.headers.get("Authorization"));
+        assertThrows(az.miyav.common.error.AccessDeniedException.class, () -> favorites.list(null));
+    }
+
+    @Test
+    void adminOverviewAndMapPointsMapIntoTheDomain() {
+        SupabaseConfig config = SupabaseConfig.parse("https://example.supabase.co", "sb_publishable_test");
+        RecordingTransport transport = new RecordingTransport();
+        SupabaseAdminInsightsRepository insights = new SupabaseAdminInsightsRepository(new SupabaseClient(config, transport));
+        AuthSession admin = new AuthSession(UUID.randomUUID(), "a@example.com", "admin-token", "r",
+                java.time.Instant.parse("2030-01-01T00:00:00Z"), az.miyav.domain.user.UserRole.ADMIN);
+        transport.body = "{\"users_total\":3,\"walks_total\":5,\"walks_live\":0,\"pets_total\":0,"
+                + "\"requests_by_status\":{},\"listings_by_status\":{\"active\":1,\"adopted\":2},"
+                + "\"walks_14d\":[{\"day\":\"2026-11-08\",\"count\":5}],\"registrations_14d\":[{\"day\":\"2026-11-08\",\"count\":0}],"
+                + "\"cities\":[{\"city\":\"Bakı\",\"users\":3,\"listings\":1,\"helpers\":0}],"
+                + "\"recent_walks\":[{\"id\":\"" + UUID.randomUUID() + "\",\"full_name\":\"Elmir\",\"pet_name\":\"Boncuk\","
+                + "\"pet_species\":\"dog\",\"status\":\"ended\",\"started_at\":\"2026-11-08T00:18:29.146454+00:00\"}]}";
+
+        var overview = insights.overview(admin);
+
+        assertTrue(transport.path.endsWith("/rest/v1/rpc/admin_overview"));
+        assertEquals("Bearer admin-token", transport.headers.get("Authorization"));
+        assertEquals(3, overview.counts().users());
+        assertEquals(5, overview.walks().get(0).count());
+        assertEquals(2, overview.completedAdoptions());
+        assertEquals(1, overview.activeListings());
+        assertEquals("Bakı", overview.cities().get(0).city());
+        assertEquals("Elmir", overview.recentWalks().get(0).title());
+
+        transport.body = "[{\"kind\":\"helper\",\"id\":\"" + UUID.randomUUID() + "\",\"title\":\"Leyla\",\"subtitle\":\"Yasamal\","
+                + "\"latitude\":40.41,\"longitude\":49.87,\"verified\":true},"
+                + "{\"kind\":\"walk\",\"id\":\"" + UUID.randomUUID() + "\",\"title\":\"Elmir\",\"subtitle\":\"Boncuk\","
+                + "\"latitude\":null,\"longitude\":null,\"verified\":false}]";
+        var points = insights.mapPoints(admin);
+        assertEquals(1, points.size(), "points without a shared position are dropped");
+        assertEquals(az.miyav.domain.map.MapPointKind.WALK_HELPER, points.get(0).kind());
+
+        transport.status = 403;
+        transport.body = "{\"code\":\"P0001\",\"message\":\"FORBIDDEN\"}";
+        assertThrows(az.miyav.common.error.AppException.class, () -> insights.users(admin));
+    }
+
+    @Test
     void failedPasswordGrantDoesNotBecomeASession() {
         SupabaseConfig config = SupabaseConfig.parse("https://example.supabase.co", "sb_publishable_test");
         RecordingTransport transport = new RecordingTransport();

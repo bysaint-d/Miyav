@@ -4,8 +4,11 @@ import az.miyav.data.http.HttpExchange;
 import az.miyav.domain.auth.AuthSession;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.repository.WalkRepository;
+import az.miyav.domain.walk.WalkPet;
 import az.miyav.domain.walk.WalkSession;
 import az.miyav.domain.walk.Walker;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -20,6 +23,8 @@ public final class SupabaseWalkRepository implements WalkRepository {
     private static final Type SESSION_ROWS = new TypeToken<List<SessionRow>>() {
     }.getType();
     private static final Type WALKER_ROWS = new TypeToken<List<WalkerRow>>() {
+    }.getType();
+    private static final Type PET_ROWS = new TypeToken<List<PetRow>>() {
     }.getType();
     private final SupabaseClient client;
 
@@ -36,6 +41,36 @@ public final class SupabaseWalkRepository implements WalkRepository {
         body.addProperty("p_lat", latitude);
         body.addProperty("p_lng", longitude);
         return one(rpc(session, "start_walk", body));
+    }
+
+    @Override
+    public WalkSession startWith(AuthSession session, List<UUID> petIds, UUID walkListingId, String message,
+                                 double latitude, double longitude) {
+        JsonObject body = new JsonObject();
+        JsonArray pets = new JsonArray();
+        petIds.forEach(id -> pets.add(id.toString()));
+        body.add("p_pets", pets);
+        if (walkListingId == null) {
+            body.add("p_listing", JsonNull.INSTANCE);
+        } else {
+            body.addProperty("p_listing", walkListingId.toString());
+        }
+        body.addProperty("p_message", message == null ? "" : message);
+        body.addProperty("p_lat", latitude);
+        body.addProperty("p_lng", longitude);
+        return one(rpc(session, "start_walk_with", body));
+    }
+
+    @Override
+    public List<WalkPet> pets(AuthSession session, UUID sessionId) {
+        JsonObject body = new JsonObject();
+        body.addProperty("p_session", sessionId.toString());
+        List<PetRow> rows = client.gson().fromJson(rpc(session, "walk_pets", body).body(), PET_ROWS);
+        List<WalkPet> pets = new ArrayList<>();
+        for (PetRow row : rows == null ? List.<PetRow>of() : rows) {
+            pets.add(new WalkPet(row.name, PetSpecies.fromDatabase(row.species), row.breed, row.age, row.photo_path, row.from_job));
+        }
+        return pets;
     }
 
     @Override
@@ -150,6 +185,15 @@ public final class SupabaseWalkRepository implements WalkRepository {
         String status_message;
         String started_at;
         String expires_at;
+    }
+
+    private static final class PetRow {
+        String name;
+        String species;
+        String breed;
+        java.math.BigDecimal age;
+        String photo_path;
+        boolean from_job;
     }
 
     private static final class WalkerRow {

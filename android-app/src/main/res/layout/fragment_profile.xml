@@ -274,14 +274,44 @@
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/myPetsButton"
+            style="@style/Widget.Miyav.Button.Tonal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:minHeight="56dp"
+            android:text="@string/my_pets_title"
+            app:icon="@drawable/ic_paw" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/messagesButton"
+            style="@style/Widget.Miyav.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/action_messages"
+            app:icon="@drawable/ic_chat"
+            app:iconTint="@color/brand_coral" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/notificationsButton"
             style="@style/Widget.Miyav.Button.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xl"
+            android:layout_marginTop="@dimen/space_sm"
             android:text="@string/profile_notifications"
             app:icon="@drawable/ic_bell"
             app:iconTint="@color/brand_sun" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/favoritesButton"
+            style="@style/Widget.Miyav.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/favorites_title"
+            app:icon="@drawable/ic_heart_filled"
+            app:iconTint="@color/brand_coral" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/passwordButton"
@@ -298,6 +328,40 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_sm"
             android:text="@string/auth_logout" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/legal_section"
+            android:textAppearance="@style/TextAppearance.Miyav.Section" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/helpButton"
+            style="@style/Widget.Miyav.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:text="@string/legal_help"
+            app:icon="@drawable/ic_info" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/termsButton"
+            style="@style/Widget.Miyav.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:text="@string/legal_terms"
+            app:icon="@drawable/ic_document" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/privacyButton"
+            style="@style/Widget.Miyav.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:text="@string/legal_privacy"
+            app:icon="@drawable/ic_shield" />
 
         <TextView
             android:id="@+id/versionView"

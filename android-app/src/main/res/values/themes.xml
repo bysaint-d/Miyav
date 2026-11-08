@@ -4,7 +4,7 @@
     <style name="Theme.MIYAV" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/brand_coral</item>
         <item name="colorOnPrimary">@color/text_on_brand</item>
-        <item name="colorPrimaryContainer">@color/pastel_peach</item>
+        <item name="colorPrimaryContainer">@color/pastel_mint</item>
         <item name="colorOnPrimaryContainer">@color/brand_coral_dark</item>
         <item name="colorSecondary">@color/brand_lavender</item>
         <item name="colorOnSecondary">@color/text_on_brand</item>
@@ -187,7 +187,7 @@
     </style>
 
     <style name="Widget.Miyav.NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">@color/pastel_peach</item>
+        <item name="android:color">@color/pastel_mint</item>
     </style>
 
     <style name="Widget.Miyav.Toolbar" parent="Widget.Material3.Toolbar">

@@ -54,6 +54,64 @@ classDiagram
     AdoptionRepository <|.. SupabaseAdoptionRepository
 ```
 
+## Pet walking, NearMe and the admin console
+
+MIYAV is first a pet-walking community. These classes model it:
+
+| Concept | Class | OOP point |
+| --- | --- | --- |
+| A walking request (owner asks a walker, table `bookings`) | `WalkRequest`, `WalkRequest.Participant` | Encapsulation: immutable, validated in the constructor (a walk cannot end before it starts, unknown statuses are rejected). |
+| Its lifecycle | `WalkRequestStatus` | Enum with behaviour: `resolve(...)` derives *In progress* from the stored status and the time window; `cancellableByModerator()` holds the moderation rule. |
+| The kind of help | `CareService` | Enum mapped to the database values. |
+| A walk shared through NearMe | `WalkActivity` | Encapsulation: an ended walk can never carry a position. |
+| A member's own pet | `PetProfile` | Separate from the adoption `Pet` hierarchy on purpose: different table, different rules. |
+| A member as moderators see them | `UserSummary` | Behaviour on the object: `activity(now)`, `initials()`, `matches(query)`. |
+| The community snapshot | `PlatformOverview` (+ `DailyCount`, `CityActivity`, `ActivityItem`) | Collections are copied and read-only, so a snapshot cannot change after it is built. |
+
+### Inheritance and polymorphism: map points
+
+`MapPoint` is abstract. `LiveWalkPoint`, `WalkHelperPoint` and `AdoptionPoint` extend it and override `kind()` and `privacyRadiusMeters()`. The NearMe map draws every point through the `MapPoint` reference and asks the object how precise its position may be: about 1 km for people, about 100 m for adoption pins. `MapPoint.of(...)` is the factory that picks the subclass from the server's kind.
+
+```mermaid
+classDiagram
+    class MapPoint {
+        <<abstract>>
+        +kind() MapPointKind
+        +privacyRadiusMeters() int
+    }
+    MapPoint <|-- LiveWalkPoint
+    MapPoint <|-- WalkHelperPoint
+    MapPoint <|-- AdoptionPoint
+    class AdminSection {
+        <<abstract>>
+        +view() Node
+        #build() Node
+        +refresh()
+    }
+    AdminSection <|-- OverviewSection
+    AdminSection <|-- WalkingSection
+    AdminSection <|-- NearMeSection
+    AdminSection <|-- AdoptionSection
+    AdminSection <|-- UsersSection
+    class AdminInsightsService
+    class AdminInsightsRepository {
+        <<interface>>
+    }
+    AdminInsightsService --> AdminInsightsRepository
+    AdminInsightsRepository <|.. SupabaseAdminInsightsRepository
+```
+
+### Abstraction and the layers of the console
+
+- Domain port: `AdminInsightsRepository` (read-only admin views). Implementation: `SupabaseAdminInsightsRepository`, which calls the `admin_*` database functions. Tests use Mockito doubles.
+- Services: `AdminInsightsService` reads (overview, requests filtered by the status people see, map layers, members, pets); `AdminService` acts (suspend, hide listing, resolve report, cancel a walking request). Both check the administrator role with `RoleGuard`, and the database checks it again.
+- UI: the console shell (`HomeController`) only knows the abstract `AdminSection`. Each page (`OverviewSection`, `WalkingSection`, `NearMeSection`, `AdoptionSection`, `PetsSection`, `UsersSection`, `MessagesSection`, `ReportsSection`, `NotificationsSection`, `SettingsSection`) overrides `build()` and `refresh()`; `view()` is a template method that builds once. `ConsoleContext` gives sections services, translations and background loading.
+- Composition root: `DesktopGraph.create(backend, sessions, home)` wires everything from one `MiyavBackend`, which is how the console preview test runs the real UI on in-memory repositories.
+
+### Exceptions
+
+Domain constructors throw `IllegalArgumentException` for impossible objects. Services throw `AccessDeniedException` (`access.admin`, `auth.required`) and `ValidationException` (`walk.request_closed`). `ConsoleContext.load` turns them into translated messages, and an expired session sends the console back to the public screen.
+
 ## What the UI is allowed to know
 
-`LoginFragment`, `HomeFragment`, `LoginController`, and `HomeController` translate error codes through the catalog or Android string resources. They do not decide whether an application can be accepted. The desktop admin button calls `RoleGuard` even though it is hidden for a non-admin.
+`LoginFragment`, `HomeFragment`, `AuthDialog`, `DiscoverController` and the console sections translate error codes through the catalog or Android string resources. They do not decide whether an application can be accepted or a request cancelled. The desktop admin console is opened through `AccessPolicy`, and every console service call goes through `RoleGuard` before the database checks `is_admin()` again.

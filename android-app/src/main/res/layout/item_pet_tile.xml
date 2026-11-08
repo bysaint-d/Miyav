@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="96dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/space_sm"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_xs"
+    android:paddingBottom="@dimen/space_xs">
+
+    <FrameLayout
+        android:layout_width="76dp"
+        android:layout_height="76dp">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/photoView"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_gravity="center"
+            android:background="@color/pastel_mint"
+            android:contentDescription="@null"
+            android:padding="2dp"
+            android:scaleType="center"
+            app:shapeAppearanceOverlay="@style/Shape.Miyav.Circle"
+            app:strokeColor="@color/brand_coral"
+            app:strokeWidth="0dp" />
+
+        <TextView
+            android:id="@+id/emojiView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            android:textSize="30sp"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/checkView"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="top|end"
+            android:background="@drawable/bg_check_badge"
+            android:contentDescription="@null"
+            android:padding="4dp"
+            android:src="@drawable/ic_check"
+            android:visibility="gone"
+            app:tint="@color/text_on_brand" />
+
+        <TextView
+            android:id="@+id/jobBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="@drawable/bg_map_card"
+            android:backgroundTint="@color/brand_sun"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="@string/walk_job_badge"
+            android:textAppearance="@style/TextAppearance.Miyav.Badge"
+            android:textColor="@color/text_on_brand"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/nameView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.Miyav.Body"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/metaView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.Miyav.Badge"
+        android:textColor="@color/text_secondary" />
+</LinearLayout>

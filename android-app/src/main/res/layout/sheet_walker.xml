@@ -57,6 +57,24 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/petsTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_lg"
+        android:text="@string/walker_pets_title"
+        android:textAppearance="@style/TextAppearance.Miyav.Section"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/petList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:visibility="gone" />
+
+    <TextView
         android:id="@+id/messageView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

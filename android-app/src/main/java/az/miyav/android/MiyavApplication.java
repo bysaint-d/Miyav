@@ -2,6 +2,8 @@ package az.miyav.android;
 
 import android.app.Application;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.room.Room;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -9,17 +11,29 @@ import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import az.miyav.android.data.AndroidFavoriteStore;
+import az.miyav.android.data.AndroidPendingActionStore;
 import az.miyav.android.data.AndroidSessionStore;
 import az.miyav.android.data.MiyavDatabase;
 import az.miyav.android.data.PendingAuthEmail;
+import az.miyav.android.data.PendingGoogleSignIn;
+import az.miyav.android.sync.NotificationPollWorker;
 import az.miyav.android.sync.OutboxSyncWorker;
 import az.miyav.android.ui.MapSupport;
 import az.miyav.android.ui.PhotoLoader;
 import az.miyav.android.walk.WalkTracker;
 import az.miyav.application.WalkingService;
+import az.miyav.application.WalkListingService;
 import az.miyav.application.AdoptionService;
 import az.miyav.application.AuthService;
+import az.miyav.application.AuthStateManager;
+import az.miyav.application.DiscoveryService;
+import az.miyav.application.FavoritesService;
 import az.miyav.application.LocationService;
+import az.miyav.application.MessagingService;
+import az.miyav.application.MyPetsService;
+import az.miyav.application.TelegramVerification;
+import az.miyav.application.UnavailableTelegramVerification;
 import az.miyav.application.NotificationService;
 import az.miyav.application.PetService;
 import az.miyav.application.UserService;
@@ -29,6 +43,8 @@ import az.miyav.domain.validation.EmailValidator;
 import az.miyav.domain.validation.PasswordValidator;
 import az.miyav.domain.validation.PetValidator;
 import az.miyav.domain.validation.ProfileValidator;
+import az.miyav.domain.auth.AuthState;
+import az.miyav.security.AccessPolicy;
 import az.miyav.security.RoleGuard;
 import az.miyav.security.SessionStore;
 
@@ -38,6 +54,13 @@ import java.util.concurrent.TimeUnit;
 
 public class MiyavApplication extends Application {
     private AuthService authService;
+    private AuthStateManager auth;
+    private final MutableLiveData<AuthState> authState = new MutableLiveData<>(AuthState.GUEST);
+    private DiscoveryService discovery;
+    private FavoritesService favorites;
+    private final TelegramVerification telegram = new UnavailableTelegramVerification();
+    private PendingGoogleSignIn pendingGoogle;
+    private volatile boolean favoritesOffered;
     private PetService petService;
     private UserService userService;
     private AdoptionService adoptionService;
@@ -48,6 +71,9 @@ public class MiyavApplication extends Application {
     private PendingAuthEmail pendingAuthEmail;
     private PhotoLoader photos;
     private WalkingService walkingService;
+    private WalkListingService walkListings;
+    private MessagingService messaging;
+    private MyPetsService myPets;
     private WalkTracker walkTracker;
     private final ExecutorService io = Executors.newFixedThreadPool(4);
 
@@ -64,16 +90,26 @@ public class MiyavApplication extends Application {
         PetValidator petValidator = new PetValidator();
         SystemTimeSource time = new SystemTimeSource();
         authService = new AuthService(backend.auth(), backend.users(), sessions, new EmailValidator(), new PasswordValidator(), time);
+        auth = new AuthStateManager(authService, new AndroidPendingActionStore(this), new AccessPolicy());
+        auth.addListener(authState::postValue);
+        auth.prime();
+        discovery = new DiscoveryService(backend.catalog(), backend.pets(), backend.users(), backend.media(), petValidator);
+        favorites = new FavoritesService(new AndroidFavoriteStore(this), backend.favorites());
+        pendingGoogle = new PendingGoogleSignIn(this);
         petService = new PetService(backend.pets(), backend.media(), petValidator, access);
         userService = new UserService(backend.users(), new ProfileValidator(), backend.media());
         adoptionService = new AdoptionService(backend.adoptions(), petValidator, access, time);
         notificationService = new NotificationService(backend.notifications());
         locationService = new LocationService();
         walkingService = new WalkingService(backend.walks());
+        walkListings = new WalkListingService(backend.walkListings(), time);
+        messaging = new MessagingService(backend.messages());
+        myPets = new MyPetsService(backend.ownPets());
         walkTracker = new WalkTracker(this);
         pendingAuthEmail = new PendingAuthEmail(this);
         photos = new PhotoLoader(this);
         MapSupport.init(this);
+        NotificationPollWorker.schedule(this);
         Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
                 "miyav-outbox",
@@ -86,6 +122,41 @@ public class MiyavApplication extends Application {
 
     public AuthService authService() {
         return authService;
+    }
+
+    /** Central authentication state; screens ask it instead of inspecting sessions. */
+    public AuthStateManager auth() {
+        return auth;
+    }
+
+    /** Auth state for observers on the main thread. */
+    public LiveData<AuthState> authState() {
+        return authState;
+    }
+
+    public DiscoveryService discovery() {
+        return discovery;
+    }
+
+    public FavoritesService favorites() {
+        return favorites;
+    }
+
+    public TelegramVerification telegram() {
+        return telegram;
+    }
+
+    public PendingGoogleSignIn pendingGoogle() {
+        return pendingGoogle;
+    }
+
+    /** True once per sign-in, so the favourites sync offer is not repeated on every screen. */
+    public synchronized boolean claimFavoritesOffer() {
+        if (favoritesOffered) {
+            return false;
+        }
+        favoritesOffered = true;
+        return true;
     }
 
     public PetService petService() {
@@ -135,6 +206,19 @@ public class MiyavApplication extends Application {
         this.pendingListing = listingId;
     }
 
+    private String pendingTap;
+
+    /** A tapped phone notification: a conversation id, or "" for the notification list. */
+    public void setPendingTap(String target) {
+        this.pendingTap = target;
+    }
+
+    public String takePendingTap() {
+        String value = pendingTap;
+        pendingTap = null;
+        return value;
+    }
+
     public java.util.UUID takePendingListing() {
         java.util.UUID value = pendingListing;
         pendingListing = null;
@@ -145,6 +229,21 @@ public class MiyavApplication extends Application {
         return walkingService;
     }
 
+    /** Paid walk requests posted by owners, separate from adoption listings. */
+    public WalkListingService walkListings() {
+        return walkListings;
+    }
+
+    /** Private chats between signed-in users (walk price negotiation). */
+    public MessagingService messaging() {
+        return messaging;
+    }
+
+    /** "Mənim heyvanlarım": the member's own pets. */
+    public MyPetsService myPets() {
+        return myPets;
+    }
+
     public WalkTracker walkTracker() {
         return walkTracker;
     }
@@ -152,5 +251,6 @@ public class MiyavApplication extends Application {
     public void onSignedOut() {
         walkTracker.signOut();
         photos.clear();
+        favoritesOffered = false;
     }
 }

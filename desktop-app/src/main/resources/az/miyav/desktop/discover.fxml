@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="az.miyav.desktop.DiscoverController" styleClass="screen">
+    <top>
+        <VBox spacing="14">
+            <padding>
+                <Insets top="20" right="24" bottom="12" left="24"/>
+            </padding>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <VBox spacing="0">
+                    <Label text="MIYAV." styleClass="wordmark"/>
+                    <Label fx:id="tagline" styleClass="caption"/>
+                </VBox>
+                <Label fx:id="modeBadge" styleClass="badge"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="az" onAction="#useAz" styleClass="ghost" mnemonicParsing="false"/>
+                <Button fx:id="en" onAction="#useEn" styleClass="ghost" mnemonicParsing="false"/>
+                <Button fx:id="ru" onAction="#useRu" styleClass="ghost" mnemonicParsing="false"/>
+                <Button fx:id="adminButton" onAction="#onAdmin" styleClass="ghost" mnemonicParsing="false"/>
+                <Button fx:id="accountButton" onAction="#onAccount" styleClass="primary" mnemonicParsing="false"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <TextField fx:id="search" onAction="#onSearch" HBox.hgrow="ALWAYS"/>
+                <ComboBox fx:id="species" prefWidth="150"/>
+                <ComboBox fx:id="city" prefWidth="150"/>
+                <ToggleButton fx:id="savedOnly" onAction="#onSearch" styleClass="ghost" mnemonicParsing="false"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.4" styleClass="split">
+            <BorderPane.margin>
+                <Insets right="24" left="24"/>
+            </BorderPane.margin>
+            <ListView fx:id="listings"/>
+            <ScrollPane fitToWidth="true" styleClass="detail-scroll">
+                <VBox fx:id="detail" spacing="12" styleClass="detail">
+                    <padding>
+                        <Insets top="20" right="24" bottom="24" left="24"/>
+                    </padding>
+                    <Label fx:id="placeholder" wrapText="true" styleClass="muted"/>
+                    <ImageView fx:id="photo" fitWidth="520" fitHeight="320" preserveRatio="true"/>
+                    <Label fx:id="name" styleClass="detail-title"/>
+                    <Label fx:id="facts" wrapText="true" styleClass="muted"/>
+                    <Label fx:id="description" wrapText="true"/>
+                    <Label fx:id="place" wrapText="true" styleClass="muted"/>
+                    <Label fx:id="publisher" wrapText="true"/>
+                    <Label fx:id="contact" wrapText="true" styleClass="muted"/>
+                    <HBox fx:id="actions" spacing="8">
+                        <Button fx:id="favoriteButton" onAction="#onFavorite" styleClass="ghost" mnemonicParsing="false"/>
+                        <Button fx:id="applyButton" onAction="#onApply" styleClass="primary" mnemonicParsing="false"/>
+                        <Button fx:id="contactButton" onAction="#onContact" styleClass="ghost" mnemonicParsing="false"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+        </SplitPane>
+    </center>
+    <bottom>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" right="24" bottom="16" left="24"/>
+            </padding>
+            <Label fx:id="status" wrapText="true" styleClass="muted" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+            <Hyperlink fx:id="helpLink" onAction="#onHelp" styleClass="link"/>
+            <Hyperlink fx:id="termsLink" onAction="#onTerms" styleClass="link"/>
+            <Hyperlink fx:id="privacyLink" onAction="#onPrivacy" styleClass="link"/>
+        </HBox>
+    </bottom>
+</BorderPane>

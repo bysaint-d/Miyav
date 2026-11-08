@@ -32,6 +32,8 @@ public final class AndroidSessionStore implements SessionStore {
     private static final int IV_LENGTH = 12;
     private final SharedPreferences preferences;
     private final Path legacyDirectory;
+    /** Decrypted copy kept in memory; Keystore is only used when the session is written or first read. */
+    private Optional<AuthSession> cached;
 
     public AndroidSessionStore(Context context) {
         Context app = context.getApplicationContext();
@@ -50,6 +52,7 @@ public final class AndroidSessionStore implements SessionStore {
             System.arraycopy(iv, 0, payload, 0, iv.length);
             System.arraycopy(encrypted, 0, payload, iv.length, encrypted.length);
             preferences.edit().putString(ENTRY, Base64.encodeToString(payload, Base64.NO_WRAP)).commit();
+            cached = Optional.of(session);
         } catch (Exception exception) {
             throw new IllegalStateException("Unable to protect the session", exception);
         }
@@ -57,6 +60,13 @@ public final class AndroidSessionStore implements SessionStore {
 
     @Override
     public synchronized Optional<AuthSession> load() {
+        if (cached == null) {
+            cached = decrypt();
+        }
+        return cached;
+    }
+
+    private Optional<AuthSession> decrypt() {
         String stored = preferences.getString(ENTRY, null);
         if (stored == null) {
             return migrateLegacy();
@@ -79,6 +89,7 @@ public final class AndroidSessionStore implements SessionStore {
 
     @Override
     public synchronized void clear() {
+        cached = Optional.empty();
         preferences.edit().remove(ENTRY).commit();
         new EncryptedFileSessionStore(legacyDirectory).clear();
     }

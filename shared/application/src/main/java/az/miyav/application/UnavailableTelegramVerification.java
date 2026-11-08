@@ -13,4 +13,9 @@ public final class UnavailableTelegramVerification implements TelegramVerificati
     public void confirmCode(AuthSession session, String code) {
         throw new ConfigurationException("telegram.not_deployed");
     }
+
+    @Override
+    public boolean available() {
+        return false;
+    }
 }

@@ -23,6 +23,15 @@ public class AuthLinkTest {
     }
 
     @Test
+    public void googleRedirectCarriesOnlyAOneTimeCode() {
+        AuthLink link = AuthLink.parse(null, "code=7f1c-42");
+        assertEquals(AuthLink.Kind.CODE, link.kind());
+        assertEquals("7f1c-42", link.code());
+        assertEquals("", link.accessToken());
+        assertEquals(AuthLink.Kind.ERROR, AuthLink.parse(null, "error=access_denied&code=x").kind());
+    }
+
+    @Test
     public void errorsAndEmptyLinksAreRejected() {
         assertEquals(AuthLink.Kind.ERROR, AuthLink.parse("error=access_denied&error_code=otp_expired", null).kind());
         assertEquals("otp_expired", AuthLink.parse(null, "error_code=otp_expired").errorCode());

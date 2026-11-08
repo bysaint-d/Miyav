@@ -1,22 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Paw print kept inside the 66 dp safe zone so every launcher mask shows it whole. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <group
-        android:pivotX="54"
-        android:pivotY="54"
-        android:scaleX="0.78"
-        android:scaleY="0.78">
+        android:pivotX="50"
+        android:pivotY="53"
+        android:scaleX="0.72"
+        android:scaleY="0.72"
+        android:translateX="4"
+        android:translateY="1">
         <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M54,18a36,36 0,1 0,0 72a36,36 0,1 0,0 -72z" />
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M50,50C41,50 31,60 27.5,68.5C24.8,75.2 29,82 36.5,82C42,82 45,79.5 50,79.5C55,79.5 58,82 63.5,82C71,82 75.2,75.2 72.5,68.5C69,60 59,50 50,50Z" />
         <path
-            android:fillColor="#FF6B4A"
-            android:pathData="M38,62c2,-16 10,-24 16,-24s14,8 16,24v4H38z" />
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M20.8,45a7.2,7.2 0,1 0,14.4 0a7.2,7.2 0,1 0,-14.4 0Z" />
         <path
-            android:fillColor="#FFB938"
-            android:pathData="M66,34a5,5 0,1 0,0.1 0z" />
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M32.5,32a8,8 0,1 0,16 0a8,8 0,1 0,-16 0Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M51.5,32a8,8 0,1 0,16 0a8,8 0,1 0,-16 0Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M64.8,45a7.2,7.2 0,1 0,14.4 0a7.2,7.2 0,1 0,-14.4 0Z" />
     </group>
+    <path
+        android:fillColor="#FFF2C46D"
+        android:pathData="M73,26L74.4,30.6L79,32L74.4,33.4L73,38L71.6,33.4L67,32L71.6,30.6Z" />
 </vector>

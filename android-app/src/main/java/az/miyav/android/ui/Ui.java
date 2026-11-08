@@ -3,7 +3,6 @@ package az.miyav.android.ui;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -30,7 +29,8 @@ final class Ui {
 
     /**
      * Runs work off the main thread and delivers the result only while the fragment still has a view.
-     * An expired session sends the user back to sign-in instead of showing an error.
+     * An expired or missing session never blocks browsing: the user stays in the app as a guest and is
+     * offered sign-in.
      */
     static <T> void run(Fragment fragment, Supplier<T> work, Consumer<T> ok, Consumer<String> error) {
         MiyavApplication app = app(fragment);
@@ -54,6 +54,8 @@ final class Ui {
                     ok.accept(value);
                 } else if ("auth.session_expired".equals(failure)) {
                     signedOut(fragment, true);
+                } else if ("auth.required".equals(failure)) {
+                    AuthSheet.show(fragment, null);
                 } else {
                     error.accept(failure);
                 }
@@ -61,14 +63,34 @@ final class Ui {
         });
     }
 
+    /**
+     * The account is gone (sign-out or expiry). Account-only screens close; public screens stay, and the
+     * home tabs re-render for guest mode through the auth state observer.
+     */
     static void signedOut(Fragment fragment, boolean expired) {
         MiyavApplication app = app(fragment);
-        app.onSignedOut();
         if (expired) {
-            Toast.makeText(fragment.requireContext(), R.string.auth_session_expired, Toast.LENGTH_LONG).show();
+            app.auth().expire();
         }
+        app.onSignedOut();
         NavController nav = NavHostFragment.findNavController(fragment);
-        nav.navigate(R.id.action_global_login);
+        if (nav.getCurrentDestination() != null && ACCOUNT_SCREENS.contains(nav.getCurrentDestination().getId())) {
+            nav.navigate(R.id.action_global_home);
+        }
+    }
+
+    private static final java.util.Set<Integer> ACCOUNT_SCREENS = java.util.Set.of(
+            R.id.petEditorFragment, R.id.notificationsFragment, R.id.passwordFragment, R.id.walkEditorFragment,
+            R.id.inboxFragment, R.id.chatFragment, R.id.myPetsListFragment);
+
+    /** Opens a chat; any of the ids may be empty (the chat screen resolves the rest). */
+    static void openChat(Fragment fragment, String conversationId, String listingId, String withUserId, String title) {
+        android.os.Bundle args = new android.os.Bundle();
+        args.putString("conversationId", conversationId == null ? "" : conversationId);
+        args.putString("listingId", listingId == null ? "" : listingId);
+        args.putString("withUserId", withUserId == null ? "" : withUserId);
+        args.putString("title", title == null ? "" : title);
+        nav(fragment).navigate(R.id.action_global_chat, args);
     }
 
     static NavController nav(Fragment fragment) {
@@ -83,6 +105,12 @@ final class Ui {
 
     static void snack(View view, String code) {
         snack(view, Codes.text(code));
+    }
+
+    static void snackText(View view, CharSequence text) {
+        if (view != null) {
+            Snackbar.make(view, text, Snackbar.LENGTH_LONG).show();
+        }
     }
 
     static String text(android.widget.EditText input) {

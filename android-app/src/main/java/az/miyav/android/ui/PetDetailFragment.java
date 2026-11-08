@@ -27,7 +27,10 @@ import az.miyav.android.databinding.FragmentPetDetailBinding;
 import az.miyav.android.databinding.ViewPublisherCardBinding;
 import az.miyav.android.sync.OutboxPolicy;
 import az.miyav.android.sync.OutboxSyncWorker;
+import az.miyav.common.error.AppException;
 import az.miyav.common.error.PersistenceException;
+import az.miyav.domain.auth.PendingAction;
+import az.miyav.domain.auth.ProtectedAction;
 import az.miyav.domain.adoption.AdoptionApplication;
 import az.miyav.domain.adoption.ApplicationStatus;
 import az.miyav.domain.auth.AuthSession;
@@ -53,6 +56,7 @@ public class PetDetailFragment extends Fragment {
     private UUID petId;
     private Pet pet;
     private UUID viewer;
+    private boolean lastSignedIn;
 
     @Nullable
     @Override
@@ -89,6 +93,7 @@ public class PetDetailFragment extends Fragment {
             Ui.nav(this).navigate(R.id.action_detail_to_editor, args);
         });
         binding.shareButton.setOnClickListener(view -> share());
+        binding.favoriteButton.setOnClickListener(view -> toggleFavorite());
         View.OnClickListener openMap = view -> {
             if (pet != null && pet.location() != null) {
                 Contact.map(requireContext(), pet.location().latitude(), pet.location().longitude(), pet.name());
@@ -97,6 +102,18 @@ public class PetDetailFragment extends Fragment {
         binding.openMapButton.setOnClickListener(openMap);
         binding.mapPreview.setOnClickListener(openMap);
         return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        lastSignedIn = Ui.app(this).auth().signedIn();
+        Ui.app(this).authState().observe(getViewLifecycleOwner(), state -> {
+            boolean signedIn = Ui.app(this).auth().signedIn();
+            if (signedIn != lastSignedIn) {
+                lastSignedIn = signedIn;
+                load();
+            }
+        });
     }
 
     @Override
@@ -125,18 +142,31 @@ public class PetDetailFragment extends Fragment {
         }
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            AuthSession session = app.authService().requireSession();
-            Pet found = app.petService().find(petId, session).orElse(null);
+            AuthSession viewer = app.auth().viewer();
+            Pet found = app.discovery().listing(viewer, petId).orElse(null);
             AdoptionApplication mine = null;
-            if (found != null && !found.ownerId().equals(session.userId())) {
-                for (AdoptionApplication application : app.adoptionService().mine(session)) {
+            if (viewer != null && found != null && !found.ownerId().equals(viewer.userId())) {
+                for (AdoptionApplication application : app.adoptionService().mine(viewer)) {
                     if (application.petId().equals(petId) && application.status() != ApplicationStatus.CANCELLED) {
                         mine = application;
                         break;
                     }
                 }
             }
-            return new Loaded(found, mine, session.userId());
+            boolean favorite = false;
+            try {
+                favorite = app.favorites().isFavorite(viewer, petId);
+            } catch (AppException ignored) {
+                // The heart starts empty when favourites cannot be read; the listing still shows.
+            }
+            PendingAction resume = null;
+            if (viewer != null) {
+                resume = app.auth().takePending(ProtectedAction.APPLY_ADOPTION, "petId", petId.toString()).orElse(null);
+                if (resume == null) {
+                    resume = app.auth().takePending(ProtectedAction.CONTACT_OWNER, "petId", petId.toString()).orElse(null);
+                }
+            }
+            return new Loaded(found, mine, viewer == null ? null : viewer.userId(), favorite, resume);
         }, this::show, code -> {
             binding.skeleton.setVisibility(View.GONE);
             if (pet == null) {
@@ -184,6 +214,8 @@ public class PetDetailFragment extends Fragment {
         showLocation(pet.location());
         boolean owner = pet.ownerId().equals(loaded.viewer);
         binding.shareButton.setVisibility(pet.status() == PetStatus.PUBLISHED ? View.VISIBLE : View.GONE);
+        binding.favoriteButton.setVisibility(pet.status() == PetStatus.PUBLISHED && !owner ? View.VISIBLE : View.GONE);
+        showFavorite(loaded.favorite);
         binding.ownerBadge.setVisibility(owner ? View.VISIBLE : View.GONE);
         binding.editButton.setVisibility(owner && pet.status() != PetStatus.ARCHIVED ? View.VISIBLE : View.GONE);
         boolean canApply = !owner && pet.status() == PetStatus.PUBLISHED && loaded.mine == null;
@@ -197,6 +229,54 @@ public class PetDetailFragment extends Fragment {
             binding.messageView.setText("");
         }
         loadPublisher(pet.ownerId(), owner);
+        if (loaded.resume != null) {
+            resume(loaded.resume, canApply);
+        }
+    }
+
+    /** Returns the user to what they started as a guest: the application form with their text, or the contacts. */
+    private void resume(PendingAction action, boolean canApply) {
+        if (action.action() == ProtectedAction.APPLY_ADOPTION && canApply) {
+            String draft = action.argument("draft");
+            if (Ui.text(binding.messageInput).isEmpty() && !draft.isEmpty()) {
+                binding.messageInput.setText(draft);
+            }
+            binding.content.post(() -> {
+                if (binding != null) {
+                    binding.content.smoothScrollTo(0, binding.applySection.getTop() + binding.sheet.getTop());
+                    binding.messageInput.requestFocus();
+                }
+            });
+            Ui.snack(binding.getRoot(), R.string.guest_continue_application);
+        } else if (action.action() == ProtectedAction.CONTACT_OWNER) {
+            binding.content.post(() -> {
+                if (binding != null) {
+                    binding.content.smoothScrollTo(0, binding.publisher.getRoot().getTop() + binding.sheet.getTop());
+                }
+            });
+        }
+    }
+
+    private void showFavorite(boolean favorite) {
+        binding.favoriteButton.setTag(favorite);
+        binding.favoriteButton.setImageResource(favorite ? R.drawable.ic_heart_filled : R.drawable.ic_heart);
+        binding.favoriteButton.setContentDescription(getString(favorite ? R.string.favorites_remove : R.string.favorites_add));
+    }
+
+    /** Guests save on the device, signed-in users on their account. No sign-in is needed to save. */
+    private void toggleFavorite() {
+        boolean next = !Boolean.TRUE.equals(binding.favoriteButton.getTag());
+        showFavorite(next);
+        binding.favoriteButton.animate().scaleX(1.2f).scaleY(1.2f).setDuration(120)
+                .withEndAction(() -> binding.favoriteButton.animate().scaleX(1f).scaleY(1f).setDuration(120).start()).start();
+        Ui.run(this, () -> {
+            MiyavApplication app = Ui.app(this);
+            return app.favorites().set(app.auth().viewer(), petId, next);
+        }, saved -> {
+        }, code -> {
+            showFavorite(!next);
+            Ui.snack(binding.getRoot(), code);
+        });
     }
 
     private void showLocation(ListingLocation location) {
@@ -223,10 +303,10 @@ public class PetDetailFragment extends Fragment {
         binding.publisher.getRoot().setVisibility(View.GONE);
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            AuthSession session = app.authService().requireSession();
-            Optional<PublicProfile> profile = app.userService().publicProfile(session, ownerId);
+            AuthSession viewer = app.auth().viewer();
+            Optional<PublicProfile> profile = app.discovery().publisher(viewer, ownerId);
             List<Pet> more = new ArrayList<>();
-            for (Pet other : app.petService().byPublisher(session, ownerId)) {
+            for (Pet other : app.discovery().byPublisher(viewer, ownerId)) {
                 if (!other.id().equals(petId)) {
                     more.add(other);
                 }
@@ -254,7 +334,10 @@ public class PetDetailFragment extends Fragment {
             card.publisherHeader.setOnClickListener(null);
             return;
         }
-        PublisherCards.bind(this, card, profile, owner, getString(R.string.contact_whatsapp_message, pet.name()), true);
+        PendingAction guestContact = viewer == null
+                ? PendingAction.of(ProtectedAction.CONTACT_OWNER, "petId", petId.toString())
+                : null;
+        PublisherCards.bind(this, card, profile, owner, getString(R.string.contact_whatsapp_message, pet.name()), true, guestContact);
     }
 
     private void addFact(String text, int background) {
@@ -287,6 +370,10 @@ public class PetDetailFragment extends Fragment {
         }
         String message = Ui.text(binding.messageInput).trim();
         binding.messageLayout.setError(null);
+        PendingAction intent = PendingAction.of(ProtectedAction.APPLY_ADOPTION, "petId", petId.toString());
+        if (!Gate.require(this, message.isEmpty() ? intent : intent.with("draft", message))) {
+            return;
+        }
         if (message.length() < 10 || message.length() > 2000) {
             binding.messageLayout.setError(getString(R.string.validation_message));
             return;
@@ -296,7 +383,7 @@ public class PetDetailFragment extends Fragment {
         Pet target = pet;
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            AuthSession session = app.authService().requireSession();
+            AuthSession session = app.auth().requireSession();
             User applicant = app.userService().current(session);
             try {
                 app.adoptionService().submit(session, applicant, target, message);
@@ -336,11 +423,15 @@ public class PetDetailFragment extends Fragment {
         final Pet pet;
         final AdoptionApplication mine;
         final UUID viewer;
+        final boolean favorite;
+        final PendingAction resume;
 
-        Loaded(Pet pet, AdoptionApplication mine, UUID viewer) {
+        Loaded(Pet pet, AdoptionApplication mine, UUID viewer, boolean favorite, PendingAction resume) {
             this.pet = pet;
             this.mine = mine;
             this.viewer = viewer;
+            this.favorite = favorite;
+            this.resume = resume;
         }
     }
 

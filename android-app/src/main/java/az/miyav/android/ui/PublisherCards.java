@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 
 import az.miyav.android.R;
 import az.miyav.android.databinding.ViewPublisherCardBinding;
+import az.miyav.domain.auth.PendingAction;
 import az.miyav.domain.user.PublicProfile;
 
 import java.util.Optional;
@@ -18,8 +19,12 @@ final class PublisherCards {
     private PublisherCards() {
     }
 
+    /**
+     * @param guestContact for guests, the action to resume after sign-in; guests never receive a phone
+     *                     number from the server, so they get a sign-in button instead of contact buttons.
+     */
     static void bind(Fragment fragment, ViewPublisherCardBinding card, PublicProfile profile, boolean self,
-                     String whatsAppMessage, boolean linkToProfile) {
+                     String whatsAppMessage, boolean linkToProfile, PendingAction guestContact) {
         Context context = fragment.requireContext();
         card.getRoot().setVisibility(View.VISIBLE);
         card.nameView.setText(profile.fullName());
@@ -38,9 +43,12 @@ final class PublisherCards {
         card.bioView.setText(profile.bio());
         Ui.app(fragment).photos().avatar(card.avatarView, profile.avatarPath());
         Optional<String> digits = profile.contactDigits();
-        boolean contactable = !self && digits.isPresent();
+        boolean guest = guestContact != null;
+        boolean contactable = !self && !guest && digits.isPresent();
         card.contactRow.setVisibility(contactable ? View.VISIBLE : View.GONE);
-        card.contactUnavailable.setVisibility(!self && digits.isEmpty() ? View.VISIBLE : View.GONE);
+        card.contactUnavailable.setVisibility(!self && !guest && digits.isEmpty() ? View.VISIBLE : View.GONE);
+        card.signInContactButton.setVisibility(!self && guest ? View.VISIBLE : View.GONE);
+        card.signInContactButton.setOnClickListener(guest ? view -> Gate.require(fragment, guestContact) : null);
         digits.ifPresent(number -> {
             card.whatsappButton.setOnClickListener(view -> Contact.whatsApp(context, number, whatsAppMessage));
             card.callButton.setOnClickListener(view -> Contact.call(context, number));

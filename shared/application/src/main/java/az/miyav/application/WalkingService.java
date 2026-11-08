@@ -7,17 +7,21 @@ import az.miyav.domain.location.ListingLocation;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.repository.WalkRepository;
 import az.miyav.domain.text.TextRules;
+import az.miyav.domain.walk.WalkPet;
 import az.miyav.domain.walk.WalkSession;
 import az.miyav.domain.walk.Walker;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Gəzinti: live walking sessions. The device's position is published only while a session is active;
  * pausing or ending removes it on the server, and other walkers only ever receive a rounded position.
  */
 public final class WalkingService {
+    public static final int MAX_PETS = 5;
     private final WalkRepository walks;
 
     public WalkingService(WalkRepository walks) {
@@ -34,6 +38,31 @@ public final class WalkingService {
         String note = TextRules.optional(message, 120, "walk.text");
         requireArea(latitude, longitude);
         return walks.start(session, species, name, note, round(latitude), round(longitude));
+    }
+
+    /**
+     * Starts a walk with the chosen pets: any of the walker's own pets (up to five) and/or the pet of a walk
+     * job they were chosen for. At least one pet is needed so others see who is out walking.
+     */
+    public WalkSession startWith(AuthSession session, List<UUID> petIds, UUID walkListingId, String message,
+                                 double latitude, double longitude) {
+        requireSession(session);
+        List<UUID> pets = petIds == null ? List.of() : List.copyOf(new LinkedHashSet<>(petIds));
+        if (pets.isEmpty() && walkListingId == null) {
+            throw new ValidationException("walk.pet_required");
+        }
+        if (pets.size() > MAX_PETS) {
+            throw new ValidationException("walk.pet_limit");
+        }
+        String note = TextRules.optional(message, 120, "walk.text");
+        requireArea(latitude, longitude);
+        return walks.startWith(session, pets, walkListingId, note, round(latitude), round(longitude));
+    }
+
+    /** The pets on a walk, for the map card. */
+    public List<WalkPet> pets(AuthSession session, UUID sessionId) {
+        requireSession(session);
+        return walks.pets(session, sessionId);
     }
 
     public WalkSession updateLocation(AuthSession session, double latitude, double longitude) {

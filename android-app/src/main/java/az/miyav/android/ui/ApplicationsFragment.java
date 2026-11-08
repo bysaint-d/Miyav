@@ -75,7 +75,7 @@ public class ApplicationsFragment extends Fragment implements ApplicationAdapter
         }
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            AuthSession session = app.authService().requireSession();
+            AuthSession session = app.auth().requireSession();
             Map<UUID, String> titles = new HashMap<>();
             List<AdoptionApplication> incoming = new ArrayList<>();
             for (Pet pet : app.petService().mine(session)) {
@@ -159,7 +159,7 @@ public class ApplicationsFragment extends Fragment implements ApplicationAdapter
         new MaterialAlertDialogBuilder(requireContext())
                 .setMessage(message)
                 .setPositiveButton(action, (dialog, which) -> Ui.run(this,
-                        () -> work.apply(Ui.app(this).authService().requireSession()),
+                        () -> work.apply(Ui.app(this).auth().requireSession()),
                         updated -> {
                             Ui.snack(binding.getRoot(), R.string.adoption_updated);
                             load();

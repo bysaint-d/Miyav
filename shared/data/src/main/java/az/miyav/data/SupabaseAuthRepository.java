@@ -137,6 +137,44 @@ public final class SupabaseAuthRepository implements AuthRepository {
         return config.endpoint("/auth/v1/authorize?provider=google&redirect_to=" + encoded);
     }
 
+    @Override
+    public URI googleAuthorizeUri(String redirectTo, String codeChallenge) {
+        config.requireConfigured();
+        String encoded = URLEncoder.encode(redirectTo, StandardCharsets.UTF_8);
+        return config.endpoint("/auth/v1/authorize?provider=google&redirect_to=" + encoded
+                + "&code_challenge=" + URLEncoder.encode(codeChallenge, StandardCharsets.UTF_8)
+                + "&code_challenge_method=s256");
+    }
+
+    @Override
+    public boolean providerEnabled(String provider) {
+        HttpExchange response = client.send("GET", "/auth/v1/settings", null, null);
+        if (response.status() / 100 != 2) {
+            throw new PersistenceException("auth.unavailable");
+        }
+        try {
+            JsonObject external = JsonParser.parseString(response.body()).getAsJsonObject().getAsJsonObject("external");
+            return external != null && external.has(provider) && external.get(provider).getAsBoolean();
+        } catch (RuntimeException exception) {
+            return false;
+        }
+    }
+
+    @Override
+    public AuthSession exchangeCode(String authCode, String codeVerifier) {
+        if (authCode == null || authCode.isBlank() || codeVerifier == null || codeVerifier.isBlank()) {
+            throw new PersistenceException("auth.link_invalid");
+        }
+        JsonObject body = new JsonObject();
+        body.addProperty("auth_code", authCode);
+        body.addProperty("code_verifier", codeVerifier);
+        HttpExchange response = client.send("POST", "/auth/v1/token?grant_type=pkce", null, body.toString());
+        if (response.status() == 400 || response.status() == 401 || response.status() == 404) {
+            throw new PersistenceException("auth.link_invalid");
+        }
+        return sessionFrom(response);
+    }
+
     private AuthSession sessionFrom(HttpExchange response) {
         if (response.status() / 100 != 2) {
             throw failure(response);

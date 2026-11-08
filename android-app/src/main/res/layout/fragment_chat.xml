@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_app"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationContentDescription="@string/action_back"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/action_messages" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/listingBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_lg"
+        android:layout_marginEnd="@dimen/space_lg"
+        android:layout_marginBottom="@dimen/space_xs"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/pastel_mint">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/space_md">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/bannerTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.Miyav.Body"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/bannerSubtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:text="@string/chat_open_listing"
+                android:textAppearance="@style/TextAppearance.Miyav.Badge"
+                android:textColor="@color/brand_coral" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/messageList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/space_md"
+            android:paddingTop="@dimen/space_sm"
+            android:paddingEnd="@dimen/space_md"
+            android:paddingBottom="@dimen/space_sm" />
+
+        <include
+            android:id="@+id/state"
+            layout="@layout/view_state" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_sm"
+        android:paddingTop="@dimen/space_xs"
+        android:paddingEnd="@dimen/space_sm"
+        android:paddingBottom="@dimen/space_xs">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/priceButton"
+            style="@style/Widget.Miyav.Button.Tonal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/space_xs"
+            android:contentDescription="@string/chat_price_button"
+            android:minWidth="48dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="₼"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/inputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/chat_hint"
+            app:hintEnabled="false">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/messageInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/chat_hint"
+                android:inputType="textMultiLine|textCapSentences"
+                android:maxLength="2000"
+                android:maxLines="4"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/sendButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="@dimen/space_xs"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/chat_send"
+            android:src="@drawable/ic_send"
+            app:tint="@color/brand_coral" />
+    </LinearLayout>
+</LinearLayout>

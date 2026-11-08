@@ -12,6 +12,9 @@ import az.miyav.domain.repository.AdoptionRepository;
 import az.miyav.domain.repository.PetRepository;
 import az.miyav.domain.repository.UserRepository;
 import az.miyav.domain.user.User;
+import az.miyav.domain.walk.WalkRequest;
+import az.miyav.domain.walk.WalkRequestStatus;
+import az.miyav.common.error.ValidationException;
 import az.miyav.security.RoleGuard;
 
 import java.util.List;
@@ -82,6 +85,15 @@ public final class AdminService {
     public void restoreListing(AuthSession session, UUID listingId, String note) {
         requireAdmin(session);
         admin.execute(session, "listing", listingId, "active", note == null ? "" : note);
+    }
+
+    /** Cancels a walking request that has not finished; both people are notified by the server. */
+    public void cancelWalkRequest(AuthSession session, WalkRequest request, java.time.Instant now, String note) {
+        requireAdmin(session);
+        if (!request.status(now).cancellableByModerator()) {
+            throw new ValidationException("walk.request_closed");
+        }
+        admin.execute(session, "booking", request.id(), WalkRequestStatus.CANCELLED.databaseValue(), note == null ? "" : note);
     }
 
     public void resolveReport(AuthSession session, UUID reportId, String note) {

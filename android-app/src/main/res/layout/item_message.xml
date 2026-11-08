@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/row"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp">
+
+    <LinearLayout
+        android:id="@+id/bubble"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_map_card"
+        android:minWidth="80dp"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/space_md"
+        android:paddingTop="@dimen/space_sm"
+        android:paddingEnd="@dimen/space_md"
+        android:paddingBottom="6dp">
+
+        <TextView
+            android:id="@+id/priceLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/chat_price_offer"
+            android:textAppearance="@style/TextAppearance.Miyav.Badge"
+            android:textColor="@color/text_secondary"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/priceView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Miyav.Headline"
+            android:textColor="@color/brand_coral"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/priceTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Miyav.Caption"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/bodyView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoLink="web|phone"
+            android:maxWidth="280dp"
+            android:textAppearance="@style/TextAppearance.Miyav.Body"
+            android:textIsSelectable="true" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/acceptButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/chat_accept"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/timeView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="2dp"
+            android:textAppearance="@style/TextAppearance.Miyav.Badge"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp" />
+    </LinearLayout>
+</LinearLayout>

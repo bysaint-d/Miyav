@@ -57,7 +57,7 @@ public class MyPetsFragment extends Fragment {
         }
         Ui.run(this, () -> {
             var app = Ui.app(this);
-            return app.petService().mine(app.authService().requireSession());
+            return app.petService().mine(app.auth().requireSession());
         }, pets -> {
             binding.refresh.setRefreshing(false);
             adapter.replace(pets);

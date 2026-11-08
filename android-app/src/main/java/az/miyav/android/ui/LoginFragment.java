@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -31,9 +32,20 @@ public class LoginFragment extends Fragment {
             @NonNull
             @Override
             public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-                return modelClass.cast(new LoginViewModel(app.authService(), app.pendingAuthEmail(), app.io(), BuildConfig.AUTH_REDIRECT));
+                return modelClass.cast(new LoginViewModel(app.auth(), app.authService(), app.pendingAuthEmail(), app.io(), BuildConfig.AUTH_REDIRECT));
             }
         }).get(LoginViewModel.class);
+        app.auth().beginAuthentication();
+        if (savedInstanceState == null && getArguments() != null && "register".equals(getArguments().getString("mode"))) {
+            binding.modeGroup.check(R.id.modeRegister);
+        }
+        binding.closeButton.setOnClickListener(view -> close());
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                close();
+            }
+        });
         binding.modeGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
                 applyMode(checkedId == R.id.modeRegister);
@@ -127,11 +139,27 @@ public class LoginFragment extends Fragment {
         binding.messageView.setTextColor(requireContext().getColor(
                 state.kind == LoginViewModel.LoginState.Kind.ERROR ? R.color.error : R.color.text_secondary));
         switch (state.kind) {
-            case SUCCESS -> Ui.nav(this).navigate(R.id.action_global_home);
+            case SUCCESS -> {
+                model.acknowledge();
+                returnToOrigin();
+            }
             case INFO -> binding.messageView.setText(Codes.text(state.code));
             case ERROR -> showError(state.code);
             default -> {
             }
+        }
+    }
+
+    /** "Later": nothing is resumed and browsing continues where the user was. */
+    private void close() {
+        Ui.app(this).auth().cancelAuthentication();
+        returnToOrigin();
+    }
+
+    /** Back to the screen that asked for sign-in; that screen resumes its own pending action. */
+    private void returnToOrigin() {
+        if (!Ui.nav(this).popBackStack()) {
+            Ui.nav(this).navigate(R.id.action_global_home);
         }
     }
 

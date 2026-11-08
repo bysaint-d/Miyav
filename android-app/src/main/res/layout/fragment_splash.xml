@@ -9,18 +9,31 @@
     android:padding="32dp">
 
     <ImageView
-        android:layout_width="88dp"
-        android:layout_height="88dp"
+        android:layout_width="112dp"
+        android:layout_height="112dp"
         android:contentDescription="@string/app_name"
+        android:elevation="8dp"
+        android:outlineProvider="background"
         android:src="@drawable/ic_mark" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:letterSpacing="0.2"
+        android:layout_marginTop="24dp"
+        android:fontFamily="sans-serif-black"
+        android:letterSpacing="0.3"
         android:text="@string/app_name"
-        android:textAppearance="@style/TextAppearance.Miyav.Title" />
+        android:textColor="@color/brand_coral"
+        android:textSize="34sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:text="@string/brand_tagline"
+        android:textAppearance="@style/TextAppearance.Miyav.Caption"
+        android:textColor="@color/brand_mint" />
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:layout_width="wrap_content"
@@ -29,5 +42,5 @@
         android:indeterminate="true"
         app:indicatorColor="@color/brand_coral"
         app:indicatorSize="28dp"
-        app:trackColor="@color/pastel_peach" />
+        app:trackColor="@color/pastel_mint" />
 </LinearLayout>

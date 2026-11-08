@@ -89,6 +89,25 @@ public final class SupabasePetRepository implements PetRepository {
         ));
     }
 
+    List<Pet> findPublishedByIds(java.util.Collection<UUID> ids, AuthSession session) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        StringBuilder list = new StringBuilder();
+        for (UUID id : ids) {
+            if (list.length() > 0) {
+                list.append(',');
+            }
+            list.append(id);
+        }
+        return mapAll(client.send(
+                "GET",
+                "/rest/v1/adoption_listings?select=" + SELECT + "&status=eq.active&id=in.(" + list + ")&order=created_at.desc",
+                session,
+                null
+        ));
+    }
+
     @Override
     public Optional<Pet> findById(UUID id, AuthSession session) {
         List<Pet> pets = mapAll(client.send(

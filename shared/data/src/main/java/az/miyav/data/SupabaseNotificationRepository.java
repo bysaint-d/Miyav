@@ -29,7 +29,7 @@ public final class SupabaseNotificationRepository implements NotificationReposit
     public List<Notification> list(AuthSession session) {
         HttpExchange response = client.send(
                 "GET",
-                "/rest/v1/notifications?select=id,user_id,title,body,created_at,read_at&order=created_at.desc",
+                "/rest/v1/notifications?select=id,user_id,title,body,conversation_id,created_at,read_at&order=created_at.desc&limit=100",
                 session,
                 null
         );
@@ -49,7 +49,8 @@ public final class SupabaseNotificationRepository implements NotificationReposit
                     row.title,
                     row.body,
                     Timestamps.parse(row.created_at),
-                    row.read_at == null ? null : Timestamps.parse(row.read_at)
+                    row.read_at == null ? null : Timestamps.parse(row.read_at),
+                    row.conversation_id == null ? null : UUID.fromString(row.conversation_id)
             ));
         }
         return notifications;
@@ -76,6 +77,7 @@ public final class SupabaseNotificationRepository implements NotificationReposit
         String user_id;
         String title;
         String body;
+        String conversation_id;
         String created_at;
         String read_at;
     }

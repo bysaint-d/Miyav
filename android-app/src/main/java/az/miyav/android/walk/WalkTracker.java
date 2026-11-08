@@ -14,7 +14,9 @@ import az.miyav.domain.auth.AuthSession;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.walk.WalkSession;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
@@ -64,7 +66,7 @@ public final class WalkTracker {
     public void sync(Consumer<String> onError) {
         app.io().execute(() -> {
             try {
-                AuthSession session = app.authService().requireSession();
+                AuthSession session = app.auth().requireSession();
                 Optional<WalkSession> open = app.walkingService().current(session);
                 State previous = snapshot();
                 state.postValue(new State(open.orElse(null), previous.latitude, previous.longitude, null));
@@ -82,8 +84,23 @@ public final class WalkTracker {
     public void start(PetSpecies species, String petName, String message, Location location, Consumer<String> onError) {
         app.io().execute(() -> {
             try {
-                AuthSession session = app.authService().requireSession();
+                AuthSession session = app.auth().requireSession();
                 WalkSession started = app.walkingService().start(session, species, petName, message,
+                        location.getLatitude(), location.getLongitude());
+                state.postValue(new State(started, location.getLatitude(), location.getLongitude(), "walk.started"));
+                startService();
+            } catch (AppException exception) {
+                onError.accept(exception.code());
+            }
+        });
+    }
+
+    /** Starts a walk with chosen own pets and/or an assigned walk job. */
+    public void startWith(List<UUID> petIds, UUID walkListingId, String message, Location location, Consumer<String> onError) {
+        app.io().execute(() -> {
+            try {
+                AuthSession session = app.auth().requireSession();
+                WalkSession started = app.walkingService().startWith(session, petIds, walkListingId, message,
                         location.getLatitude(), location.getLongitude());
                 state.postValue(new State(started, location.getLatitude(), location.getLongitude(), "walk.started"));
                 startService();
@@ -96,7 +113,7 @@ public final class WalkTracker {
     public void pause(Consumer<String> onError) {
         app.io().execute(() -> {
             try {
-                WalkSession paused = app.walkingService().pause(app.authService().requireSession());
+                WalkSession paused = app.walkingService().pause(app.auth().requireSession());
                 State previous = snapshot();
                 state.postValue(new State(paused, previous.latitude, previous.longitude, null));
                 stopService();
@@ -109,7 +126,7 @@ public final class WalkTracker {
     public void resume(Location location, Consumer<String> onError) {
         app.io().execute(() -> {
             try {
-                AuthSession session = app.authService().requireSession();
+                AuthSession session = app.auth().requireSession();
                 app.walkingService().resume(session);
                 WalkSession active = app.walkingService().updateLocation(session, location.getLatitude(), location.getLongitude());
                 state.postValue(new State(active, location.getLatitude(), location.getLongitude(), null));
@@ -124,7 +141,7 @@ public final class WalkTracker {
         stopService();
         app.io().execute(() -> {
             try {
-                app.walkingService().end(app.authService().requireSession());
+                app.walkingService().end(app.auth().requireSession());
                 State previous = snapshot();
                 state.postValue(new State(null, previous.latitude, previous.longitude, "walk.ended"));
             } catch (AppException exception) {
@@ -144,7 +161,7 @@ public final class WalkTracker {
             return;
         }
         try {
-            WalkSession updated = app.walkingService().updateLocation(app.authService().requireSession(), latitude, longitude);
+            WalkSession updated = app.walkingService().updateLocation(app.auth().requireSession(), latitude, longitude);
             state.postValue(new State(updated, latitude, longitude, null));
         } catch (AppException exception) {
             if ("walk.no_session".equals(exception.code()) || "auth.session_expired".equals(exception.code())) {
@@ -162,7 +179,7 @@ public final class WalkTracker {
         if (snapshot().session != null) {
             app.io().execute(() -> {
                 try {
-                    app.walkingService().end(app.authService().requireSession());
+                    app.walkingService().end(app.auth().requireSession());
                 } catch (AppException ignored) {
                     // Without a heartbeat the server ends the session after 10 minutes.
                 }

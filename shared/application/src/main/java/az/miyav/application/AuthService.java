@@ -96,6 +96,24 @@ public final class AuthService {
         return auth.googleAuthorizeUri(redirectTo);
     }
 
+    /** Starts Google sign-in with PKCE. The caller keeps the verifier until the redirect comes back. */
+    public GoogleSignIn beginGoogle(String redirectTo) {
+        if (!auth.providerEnabled("google")) {
+            throw new az.miyav.common.error.ConfigurationException("auth.google_unavailable");
+        }
+        String verifier = Pkce.verifier();
+        return new GoogleSignIn(auth.googleAuthorizeUri(redirectTo, Pkce.challenge(verifier)), verifier);
+    }
+
+    public synchronized AuthSession completeGoogle(String authCode, String codeVerifier) {
+        return establish(auth.exchangeCode(authCode, codeVerifier));
+    }
+
+    /** Forgets the local session without a network call, used when the server already rejected it. */
+    public synchronized void discardSession() {
+        sessions.clear();
+    }
+
     /**
      * Restores the stored session at start-up. Auth failures clear it; network failures keep it so the
      * app can open offline and retry later.

@@ -108,7 +108,7 @@ public class PetEditorFragment extends Fragment {
         busy(true);
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            return app.petService().find(petId, app.authService().requireSession()).orElse(null);
+            return app.petService().find(petId, app.auth().requireSession()).orElse(null);
         }, pet -> {
             busy(false);
             loaded = true;
@@ -271,7 +271,7 @@ public class PetEditorFragment extends Fragment {
         busy(true);
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            AuthSession session = app.authService().requireSession();
+            AuthSession session = app.auth().requireSession();
             Pet saved = persist(session, app, form, place);
             return publish ? app.petService().publish(session, saved) : saved;
         }, pet -> {
@@ -300,7 +300,7 @@ public class PetEditorFragment extends Fragment {
         busy(true);
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            AuthSession session = app.authService().requireSession();
+            AuthSession session = app.auth().requireSession();
             Pet pet = current == null ? persist(session, app, form, place) : current;
             byte[] jpeg = JpegEncoder.fromUri(context, uri, 1600);
             return app.petService().addPhoto(session, pet, jpeg);
@@ -322,7 +322,7 @@ public class PetEditorFragment extends Fragment {
         busy(true);
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            return app.petService().removePhoto(app.authService().requireSession(), target, path);
+            return app.petService().removePhoto(app.auth().requireSession(), target, path);
         }, pet -> {
             busy(false);
             current = pet;
@@ -341,7 +341,7 @@ public class PetEditorFragment extends Fragment {
         busy(true);
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            return app.petService().archive(app.authService().requireSession(), target);
+            return app.petService().archive(app.auth().requireSession(), target);
         }, pet -> {
             busy(false);
             Ui.snack(binding.getRoot(), R.string.pet_archived);

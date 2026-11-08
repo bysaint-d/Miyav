@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<style>
+  html, body, #map { height: 100%; width: 100%; margin: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; background: #EEF2EA; }
+  #status { position: absolute; z-index: 1000; left: 16px; bottom: 16px; background: #fff; color: #263C35;
+            border-radius: 14px; padding: 10px 14px; box-shadow: 0 6px 20px rgba(38,60,53,.12); display: none; }
+  .pin { width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fff;
+         box-shadow: 0 3px 10px rgba(38,60,53,.35); }
+  .pin.walk { background: #315B49; }
+  .pin.helper { background: #7FB8A4; }
+  .pin.adoption { background: #E89A6B; }
+  .pin.selected { transform: scale(1.35); }
+  .leaflet-marker-icon, .leaflet-marker-icon:focus { outline: none; background: transparent; border: 0; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="status"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"
+        onerror="document.getElementById('status').style.display='block';document.getElementById('status').textContent='Map unavailable';"></script>
+<script>
+  var map = null, layer = null, markers = {}, colors = { walk: '#315B49', helper: '#7FB8A4', adoption: '#E89A6B' };
+  function init() {
+    if (!window.L) { return false; }
+    map = L.map('map', { zoomControl: true }).setView([40.41, 49.87], 11);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    layer = L.layerGroup().addTo(map);
+    return true;
+  }
+  // points: [{id, kind, title, subtitle, lat, lng, radius}]; radius is the privacy radius in metres.
+  function setPoints(points, emptyText) {
+    if (!map && !init()) { return; }
+    layer.clearLayers();
+    markers = {};
+    var bounds = [];
+    points.forEach(function (p) {
+      L.circle([p.lat, p.lng], { radius: p.radius, color: colors[p.kind], weight: 1, fillOpacity: 0.12 }).addTo(layer);
+      var icon = L.divIcon({ className: '', html: '<div class="pin ' + p.kind + '"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
+      var marker = L.marker([p.lat, p.lng], { icon: icon, title: p.title }).addTo(layer);
+      marker.on('click', function () {
+        select(p.id);
+        if (window.miyav) { window.miyav.select(p.id); }
+      });
+      markers[p.id] = marker;
+      bounds.push([p.lat, p.lng]);
+    });
+    var status = document.getElementById('status');
+    if (points.length === 0) {
+      status.style.display = 'block';
+      status.textContent = emptyText;
+    } else {
+      status.style.display = 'none';
+      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 13 });
+    }
+  }
+  function select(id) {
+    Object.keys(markers).forEach(function (key) {
+      var el = markers[key].getElement();
+      if (el && el.firstChild) { el.firstChild.classList.toggle('selected', key === id); }
+    });
+  }
+</script>
+</body>
+</html>

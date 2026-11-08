@@ -46,6 +46,45 @@ public final class PostgrestErrors {
         if ("NO_SESSION".equals(message)) {
             return new ValidationException("walk.no_session");
         }
+        if ("WALK_TIME".equals(message)) {
+            return new ValidationException("validation.walk_time");
+        }
+        if ("WALK_LISTING_CLOSED".equals(message)) {
+            return new ValidationException("walk.listing_closed");
+        }
+        if ("WALK_OFFER_CLOSED".equals(message)) {
+            return new ValidationException("walk.offer_closed");
+        }
+        if ("BROADCAST_TEXT".equals(message)) {
+            return new ValidationException("broadcast.text");
+        }
+        if ("BROADCAST_RATE".equals(message)) {
+            return new ValidationException("broadcast.rate");
+        }
+        if ("BROADCAST_AUDIENCE".equals(message)) {
+            return new ValidationException("validation.city");
+        }
+        if ("WALK_PET_REQUIRED".equals(message)) {
+            return new ValidationException("walk.pet_required");
+        }
+        if ("WALK_PET_LIMIT".equals(message)) {
+            return new ValidationException("walk.pet_limit");
+        }
+        if ("WALK_OWN_LISTING".equals(message)) {
+            return new ValidationException("walk.own_listing");
+        }
+        if ("WALK_PRICE".equals(message)) {
+            return new ValidationException("validation.walk_price");
+        }
+        if ("WALK_NOTES".equals(message)) {
+            return new ValidationException("validation.walk_notes");
+        }
+        if ("ACCOUNT_SUSPENDED".equals(message)) {
+            return new AccessDeniedException("chat.unavailable");
+        }
+        if ("too many messages".equals(message)) {
+            return new ValidationException("chat.rate_limited");
+        }
         if ("23514".equals(code) || "22001".equals(code)) {
             return new ValidationException("validation.pet");
         }

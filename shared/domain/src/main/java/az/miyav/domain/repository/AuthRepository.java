@@ -32,4 +32,19 @@ public interface AuthRepository {
     }
 
     URI googleAuthorizeUri(String redirectTo);
+
+    /** Google authorize URL for the PKCE flow; the redirect then carries a one-time {@code code}. */
+    default URI googleAuthorizeUri(String redirectTo, String codeChallenge) {
+        return googleAuthorizeUri(redirectTo);
+    }
+
+    /** Whether an external sign-in provider such as {@code google} is enabled for this project. */
+    default boolean providerEnabled(String provider) {
+        return true;
+    }
+
+    /** Exchanges a PKCE authorization code. Only the device holding the verifier can complete it. */
+    default AuthSession exchangeCode(String authCode, String codeVerifier) {
+        throw new UnsupportedOperationException("exchangeCode");
+    }
 }

@@ -24,6 +24,9 @@ public final class Codes {
             case "auth.rate_limited" -> R.string.auth_rate_limited;
             case "auth.reset_sent" -> R.string.auth_reset_sent;
             case "auth.check_email" -> R.string.auth_check_email;
+            case "auth.required" -> R.string.auth_required;
+            case "auth.google_unavailable" -> R.string.auth_google_unavailable;
+            case "telegram.not_deployed" -> R.string.guest_telegram_unavailable;
             case "config.missing" -> R.string.config_missing;
             case "config.rejected" -> R.string.config_rejected;
             case "network.unavailable" -> R.string.network_unavailable;
@@ -56,6 +59,25 @@ public final class Codes {
             case "walk.no_session" -> R.string.walk_no_session;
             case "walk.species_required" -> R.string.walk_species_required;
             case "walk.text" -> R.string.walk_text;
+            case "validation.walk_pet" -> R.string.validation_walk_pet;
+            case "validation.walk_duration" -> R.string.validation_walk_duration;
+            case "validation.walk_price" -> R.string.validation_walk_price;
+            case "validation.walk_notes" -> R.string.validation_walk_notes;
+            case "validation.walk_time" -> R.string.validation_walk_time;
+            case "walk.listing_closed" -> R.string.walk_listing_closed;
+            case "walk.offer_closed" -> R.string.walk_offer_closed;
+            case "walk.own_listing" -> R.string.walk_own_listing;
+            case "walk.offer_exists" -> R.string.walk_offer_exists;
+            case "chat.text" -> R.string.chat_text;
+            case "walk.pet_required" -> R.string.walk_pet_required;
+            case "walk.pet_limit" -> R.string.walk_pet_limit;
+            case "petprofile.name" -> R.string.petprofile_name;
+            case "petprofile.breed" -> R.string.petprofile_breed;
+            case "petprofile.age" -> R.string.petprofile_age;
+            case "petprofile.weight" -> R.string.petprofile_weight;
+            case "petprofile.notes" -> R.string.petprofile_notes;
+            case "chat.rate_limited" -> R.string.chat_rate_limited;
+            case "chat.unavailable" -> R.string.chat_unavailable;
             default -> R.string.error_generic;
         };
     }

@@ -1,14 +1,20 @@
 package az.miyav.data;
 
 import az.miyav.data.http.OkHttpTransport;
+import az.miyav.domain.repository.AdminInsightsRepository;
 import az.miyav.domain.repository.AdminRepository;
 import az.miyav.domain.repository.AdoptionRepository;
 import az.miyav.domain.repository.AuthRepository;
+import az.miyav.domain.repository.FavoriteRepository;
 import az.miyav.domain.repository.MediaRepository;
 import az.miyav.domain.repository.MessageRepository;
 import az.miyav.domain.repository.NotificationRepository;
 import az.miyav.domain.repository.PetRepository;
+import az.miyav.domain.repository.PublicCatalogRepository;
+import az.miyav.domain.repository.BroadcastRepository;
+import az.miyav.domain.repository.OwnPetRepository;
 import az.miyav.domain.repository.UserRepository;
+import az.miyav.domain.repository.WalkListingRepository;
 import az.miyav.domain.repository.WalkRepository;
 
 public final class MiyavBackend {
@@ -21,6 +27,12 @@ public final class MiyavBackend {
     private final MediaRepository media;
     private final AdminRepository admin;
     private WalkRepository walks;
+    private PublicCatalogRepository catalog;
+    private FavoriteRepository favorites;
+    private AdminInsightsRepository insights;
+    private WalkListingRepository walkListings;
+    private OwnPetRepository ownPets;
+    private BroadcastRepository broadcasts;
 
     public MiyavBackend(
             AuthRepository auth,
@@ -55,12 +67,57 @@ public final class MiyavBackend {
                 new SupabaseMediaRepository(client),
                 new SupabaseAdminRepository(client)
         );
-        backend.walks = new SupabaseWalkRepository(client);
-        return backend;
+        backend.walkListings = new SupabaseWalkListingRepository(client);
+        backend.ownPets = new SupabaseOwnPetRepository(client);
+        backend.broadcasts = new SupabaseBroadcastRepository(client);
+        return backend.withFeatures(
+                new SupabaseWalkRepository(client),
+                new SupabasePublicCatalogRepository(client),
+                new SupabaseFavoriteRepository(client),
+                new SupabaseAdminInsightsRepository(client));
+    }
+
+    /** Attaches the repositories added after the first release: walks, public catalog, favourites, admin views. */
+    public MiyavBackend withFeatures(WalkRepository walks, PublicCatalogRepository catalog, FavoriteRepository favorites,
+                                     AdminInsightsRepository insights) {
+        this.walks = walks;
+        this.catalog = catalog;
+        this.favorites = favorites;
+        this.insights = insights;
+        return this;
+    }
+
+    /** Owners' walking listings and walkers' offers. */
+    public WalkListingRepository walkListings() {
+        return walkListings;
+    }
+
+    /** Admin push broadcasts. */
+    public BroadcastRepository broadcasts() {
+        return broadcasts;
+    }
+
+    /** The member's own pets ("Mənim heyvanlarım"). */
+    public OwnPetRepository ownPets() {
+        return ownPets;
+    }
+
+    /** Administrator-only monitoring views. */
+    public AdminInsightsRepository insights() {
+        return insights;
     }
 
     public WalkRepository walks() {
         return walks;
+    }
+
+    /** Anonymous, read-only access to published content for guests. */
+    public PublicCatalogRepository catalog() {
+        return catalog;
+    }
+
+    public FavoriteRepository favorites() {
+        return favorites;
     }
 
     public AuthRepository auth() {

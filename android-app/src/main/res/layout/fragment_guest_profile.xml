@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_app">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/space_xl"
+        android:paddingTop="@dimen/space_lg"
+        android:paddingEnd="@dimen/space_xl"
+        android:paddingBottom="96dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_profile"
+            android:textAppearance="@style/TextAppearance.Miyav.Title" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_profile_header"
+                android:orientation="vertical"
+                android:padding="@dimen/space_xl">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:layout_width="@dimen/avatar_md"
+                        android:layout_height="@dimen/avatar_md"
+                        android:background="@color/surface"
+                        android:contentDescription="@null"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_person"
+                        app:shapeAppearanceOverlay="@style/Shape.Miyav.Circle"
+                        app:tint="@color/brand_coral" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_md"
+                        android:clickable="false"
+                        android:text="@string/guest_mode"
+                        app:chipBackgroundColor="@color/surface" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:text="@string/guest_profile_title"
+                    android:textAppearance="@style/TextAppearance.Miyav.Headline" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/guest_profile_body"
+                    android:textAppearance="@style/TextAppearance.Miyav.Body"
+                    android:textColor="@color/text_secondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/signInButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:text="@string/guest_sign_in" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/registerButton"
+                    style="@style/Widget.Miyav.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/guest_register" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/favoritesButton"
+            style="@style/Widget.Miyav.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:gravity="start|center_vertical"
+            android:text="@string/favorites_title"
+            app:icon="@drawable/ic_heart_filled"
+            app:iconTint="@color/brand_coral" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/profile_language"
+            android:textAppearance="@style/TextAppearance.Miyav.Section" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/languageGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/languageAz"
+                style="@style/Widget.Miyav.Button.Segment"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/language_az" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/languageEn"
+                style="@style/Widget.Miyav.Button.Segment"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/language_en" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/languageRu"
+                style="@style/Widget.Miyav.Button.Segment"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/language_ru" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/legal_section"
+            android:textAppearance="@style/TextAppearance.Miyav.Section" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/helpButton"
+            style="@style/Widget.Miyav.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:gravity="start|center_vertical"
+            android:text="@string/legal_help"
+            app:icon="@drawable/ic_info"
+            app:iconTint="@color/brand_sky" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/termsButton"
+            style="@style/Widget.Miyav.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:gravity="start|center_vertical"
+            android:text="@string/legal_terms"
+            app:icon="@drawable/ic_document"
+            app:iconTint="@color/brand_lavender" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/privacyButton"
+            style="@style/Widget.Miyav.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:gravity="start|center_vertical"
+            android:text="@string/legal_privacy"
+            app:icon="@drawable/ic_shield"
+            app:iconTint="@color/brand_mint" />
+
+        <TextView
+            android:id="@+id/versionView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

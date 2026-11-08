@@ -6,9 +6,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Parses the fragment Supabase Auth appends to an email confirmation or recovery redirect. */
+/**
+ * Parses what Supabase Auth appends to a redirect: tokens for email confirmation and recovery, or a
+ * one-time PKCE {@code code} after Google sign-in.
+ */
 public final class AuthLink {
-    public enum Kind { SIGNUP, RECOVERY, ERROR, UNKNOWN }
+    public enum Kind { SIGNUP, RECOVERY, CODE, ERROR, UNKNOWN }
 
     private final Map<String, String> values;
 
@@ -28,9 +31,13 @@ public final class AuthLink {
             return Kind.ERROR;
         }
         if (accessToken().isEmpty()) {
-            return Kind.UNKNOWN;
+            return code().isEmpty() ? Kind.UNKNOWN : Kind.CODE;
         }
         return "recovery".equals(values.get("type")) ? Kind.RECOVERY : Kind.SIGNUP;
+    }
+
+    public String code() {
+        return values.getOrDefault("code", "");
     }
 
     public String accessToken() {

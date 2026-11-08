@@ -12,11 +12,24 @@
         android:layout_gravity="center_horizontal"
         android:orientation="vertical"
         android:paddingStart="24dp"
-        android:paddingTop="48dp"
+        android:paddingTop="16dp"
         android:paddingEnd="24dp"
         android:paddingBottom="24dp">
 
+        <ImageButton
+            android:id="@+id/closeButton"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="start"
+            android:layout_marginStart="-8dp"
+            android:background="@drawable/bg_round_surface"
+            android:contentDescription="@string/guest_later"
+            android:elevation="2dp"
+            android:src="@drawable/ic_close"
+            app:tint="@color/text_primary" />
+
         <ImageView
+            android:layout_marginTop="16dp"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:contentDescription="@string/app_name"

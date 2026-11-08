@@ -50,22 +50,6 @@
                 android:padding="17dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_walk" />
-
-            <TextView
-                android:id="@+id/walkBeta"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top|end"
-                android:layout_marginTop="2dp"
-                android:background="@drawable/bg_badge_beta"
-                android:elevation="18dp"
-                android:paddingStart="6dp"
-                android:paddingTop="1dp"
-                android:paddingEnd="6dp"
-                android:paddingBottom="1dp"
-                android:text="@string/badge_beta"
-                android:textAppearance="@style/TextAppearance.Miyav.Badge"
-                android:textSize="10sp" />
         </FrameLayout>
     </FrameLayout>
 </LinearLayout>

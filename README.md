@@ -39,6 +39,15 @@ gradlew.bat :desktop-app:run
 
 Android: open the repository root in Android Studio or install the debug APK from `android-app/build/outputs/apk/debug/`. The application id is `az.miyav.native`, so it does not replace the Expo package `az.miyav.app`. Configuration, signing, test accounts, and Google Play publishing are described in Azerbaijani in [`ANDROID_PRODUCTION_GUIDE.md`](ANDROID_PRODUCTION_GUIDE.md). Templates: `local.properties.example`, `keystore.properties.example`, `.env.example`.
 
+## Guest mode
+
+Both clients open on Discover without an account. Guests browse, search, filter, open listing details and photos, view publisher cards (never with a phone number), keep favourites on the device, switch language and read the help, terms and privacy pages. Account-only actions (posting, applying, contacting owners, messages, reports, notifications, walks, admin) go through `AuthStateManager.request(...)`, which opens the MIYAV sign-in sheet and returns the user to the same action afterwards. States are `GUEST`, `AUTHENTICATING`, `AUTHENTICATED` and `SESSION_EXPIRED`; an expired session falls back to guest browsing.
+
+- Public reads: `DiscoveryService` + `PublicCatalogRepository` (publishable key only, `anon` role).
+- Authenticated operations: the existing services, which require a session.
+- Policy: `AccessPolicy` decides what the UI offers; RLS enforces it (migration `20261108094852_guest_mode_public_access`).
+- Favourites: `FavoritesService`; device favourites move to the account only after the user agrees, through `merge_adoption_favorites` (deduplicated, inactive listings skipped).
+
 ## What works
 
 - Register, login, logout, password-reset request, session restore, and access-token refresh.

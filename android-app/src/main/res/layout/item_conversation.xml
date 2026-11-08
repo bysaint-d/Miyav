@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/space_sm"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/space_md">
+
+        <TextView
+            android:id="@+id/initialView"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_map_card"
+            android:backgroundTint="@color/pastel_mint"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            android:textAppearance="@style/TextAppearance.Miyav.Headline"
+            android:textColor="@color/brand_coral" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_md"
+            android:layout_marginEnd="@dimen/space_sm"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/nameView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.Miyav.Body" />
+
+            <TextView
+                android:id="@+id/previewView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/timeView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Miyav.Badge"
+                android:textColor="@color/text_secondary" />
+
+            <View
+                android:id="@+id/unreadDot"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_unread_dot"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

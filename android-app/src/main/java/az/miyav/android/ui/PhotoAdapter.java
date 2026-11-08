@@ -54,7 +54,7 @@ final class PhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             thumb.binding.removeButton.setOnClickListener(view -> onRemove.accept(path));
             return;
         }
-        app.photos().listing((android.widget.ImageView) holder.itemView, path, R.drawable.ic_paw);
+        app.photos().listingLarge((android.widget.ImageView) holder.itemView, path, R.drawable.ic_paw);
     }
 
     @Override

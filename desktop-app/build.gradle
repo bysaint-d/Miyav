@@ -5,14 +5,81 @@ plugins {
 
 javafx {
     version = libs.versions.javafx.get()
-    modules = ["javafx.controls", "javafx.fxml"]
+    modules = ["javafx.controls", "javafx.fxml", "javafx.web"]
 }
 
 application {
     mainClass = "az.miyav.desktop.MiyavDesktopApp"
 }
 
+// Renders every admin console page from in-memory repositories and saves PNGs to build/console-preview.
+tasks.register("consolePreview", JavaExec) {
+    group = "verification"
+    description = "Renders the admin console without a network and saves a screenshot of each page."
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "az.miyav.desktop.ConsolePreview"
+    args = [layout.buildDirectory.dir("console-preview").get().asFile.absolutePath]
+}
+
+// The installed app has no config folder next to it, so the public project URL and publishable key
+// (the same values the APK carries) are bundled from local.properties or the environment.
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.isFile()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+def setting = { String key, String env -> (localProperties.getProperty(key) ?: System.getenv(env) ?: "").trim() }
+def clientConfigDir = layout.buildDirectory.dir("generated/client-config")
+
+def generateClientConfig = tasks.register("generateClientConfig") {
+    def url = setting("supabase.url", "MIYAV_SUPABASE_URL")
+    def key = setting("supabase.publishableKey", "MIYAV_SUPABASE_PUBLISHABLE_KEY")
+    inputs.property("url", url)
+    inputs.property("key", key)
+    outputs.dir(clientConfigDir)
+    doLast {
+        def file = clientConfigDir.get().file("miyav-client.properties").asFile
+        file.parentFile.mkdirs()
+        if (url && key) {
+            file.text = "MIYAV_SUPABASE_URL=${url}\nMIYAV_SUPABASE_PUBLISHABLE_KEY=${key}\n"
+        } else {
+            file.delete()
+        }
+    }
+}
+
+sourceSets.main.resources.srcDir(clientConfigDir)
+tasks.named("processResources") { dependsOn generateClientConfig }
+
+def appVersion = "1.1.0"
+
+// Self-contained Windows app (own Java runtime) in build/jpackage/MIYAV; packaging/miyav.iss turns it into Setup.exe.
+tasks.register("packageAppImage", Exec) {
+    group = "distribution"
+    description = "Builds the MIYAV desktop app image with jpackage."
+    dependsOn "installDist"
+    def lib = layout.buildDirectory.dir("install/desktop-app/lib").get().asFile
+    def dest = layout.buildDirectory.dir("jpackage").get().asFile
+    def jpackage = new File(System.getProperty("java.home"), "bin/jpackage" + (System.getProperty("os.name").toLowerCase().contains("win") ? ".exe" : ""))
+    doFirst {
+        project.delete(new File(dest, "MIYAV"))
+    }
+    commandLine jpackage.absolutePath,
+            "--type", "app-image",
+            "--name", "MIYAV",
+            "--app-version", appVersion,
+            "--vendor", "MIYAV",
+            "--description", "MIYAV: pet walking, NearMe and adoption",
+            "--input", lib.absolutePath,
+            "--main-jar", "desktop-app.jar",
+            "--main-class", "az.miyav.desktop.Launcher",
+            "--icon", file("packaging/miyav.ico").absolutePath,
+            "--java-options", "-Dfile.encoding=UTF-8",
+            "--dest", dest.absolutePath
+}
+
 dependencies {
+    testImplementation libs.mockito.core
     implementation project(":shared:application")
     implementation project(":shared:data")
     implementation project(":shared:security")

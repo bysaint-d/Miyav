@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/space_md"
+    android:background="@drawable/bg_map_card"
+    android:backgroundTint="@color/surface_muted"
+    android:orientation="vertical"
+    android:padding="@dimen/space_md">
+
+    <LinearLayout
+        android:id="@+id/walkerRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/avatarView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@color/pastel_mint"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_person"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+            app:tint="@color/brand_coral" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_md"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/nameView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawablePadding="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.Miyav.Body"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/dateView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/priceView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Miyav.Body"
+                android:textColor="@color/brand_coral"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/counterBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_map_card"
+                android:backgroundTint="@color/pastel_butter"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:text="@string/wl_counter_badge"
+                android:textAppearance="@style/TextAppearance.Miyav.Badge"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/messageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_sm"
+        android:textAppearance="@style/TextAppearance.Miyav.Body" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_sm"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/messageButton"
+            style="@style/Widget.Miyav.Button.Tonal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:contentDescription="@string/wl_message"
+            android:minWidth="48dp"
+            app:icon="@drawable/ic_chat"
+            app:iconPadding="0dp" />
+
+        <LinearLayout
+            android:id="@+id/actions"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/declineButton"
+            style="@style/Widget.Miyav.Button.Outlined"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:text="@string/wl_decline" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/acceptButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/wl_accept" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -9,8 +9,12 @@ import az.miyav.domain.pet.PetGender;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.pet.PetStatus;
 import az.miyav.domain.pet.Vaccination;
+import az.miyav.domain.location.ListingLocation;
 import az.miyav.domain.user.UserRole;
+import az.miyav.domain.walk.WalkListingDetails;
+import az.miyav.domain.walk.WalkListingStatus;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.time.Instant;
 import java.util.Arrays;
@@ -150,6 +154,50 @@ final class Labels {
 
     static String date(Instant instant) {
         return DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date.from(instant));
+    }
+
+    static String status(Context context, WalkListingStatus status) {
+        return context.getString(switch (status) {
+            case OPEN -> R.string.wl_status_open;
+            case ASSIGNED -> R.string.wl_status_assigned;
+            case COMPLETED -> R.string.wl_status_completed;
+            case CANCELLED -> R.string.wl_status_cancelled;
+        });
+    }
+
+    static String duration(Context context, int minutes) {
+        int hours = minutes / 60;
+        int rest = minutes % 60;
+        if (hours == 0) {
+            return context.getString(R.string.wl_duration_min, rest);
+        }
+        return rest == 0
+                ? context.getString(R.string.wl_duration_h, hours)
+                : context.getString(R.string.wl_duration_hm, hours, rest);
+    }
+
+    /** Manat amount without trailing zeros: 10, 12.5, 7.25. */
+    static String money(BigDecimal amount) {
+        BigDecimal plain = amount.stripTrailingZeros();
+        return (plain.scale() < 0 ? plain.setScale(0) : plain).toPlainString();
+    }
+
+    static String walkPlace(WalkListingDetails details) {
+        ListingLocation area = details.area();
+        if (area != null && !area.name().isEmpty()) {
+            return area.name().contains(details.city()) ? area.name() : area.name() + ", " + details.city();
+        }
+        return details.city();
+    }
+
+    /** "Labrador · 3 yaş" (or the species when the breed is empty). */
+    static String petMeta(Context context, PetSpecies species, String breed, BigDecimal ageYears) {
+        String kind = breed == null || breed.isBlank() ? species(context, species) : breed;
+        return ageYears == null ? kind : kind + "  ·  " + context.getString(R.string.pet_years, money(ageYears));
+    }
+
+    static List<Integer> walkDurations() {
+        return List.of(15, 30, 45, 60, 90, 120, 180, 240);
     }
 
     static List<PetSpecies> speciesWithAll() {

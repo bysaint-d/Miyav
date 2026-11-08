@@ -10,11 +10,17 @@
 6. Outbox retries adoption apply only. Creating or photographing a listing while offline is not queued.
 7. Desktop admin was not re-verified against live data in the Android pass; no `jpackage` installer.
 
+## Guest mode
+
+- Google sign-in in the Java clients uses PKCE. Supabase Auth must list `az.miyav.native://auth` (Android) and `http://127.0.0.1:47821/callback` (desktop) under Redirect URLs, and the Google provider must be enabled; otherwise the sheet reports that Google is unavailable.
+- "Telegram ilə təsdiqlə" is shown in the sign-in sheet but explains that Telegram is coming soon until the server-side verification function exists.
+- The Expo app translates the guest-mode surfaces (sign-in sheet, guest panel, legal pages, favourites sync, expiry notice) into az/en/ru; the rest of the Expo UI is still Azerbaijani only.
+- The legal texts are product summaries written for the app; have them reviewed before publishing a store listing.
+
 ## Deferred by product scope
 
 - Telegram linking and OTP (`UnavailableTelegramVerification` still throws `telegram.not_deployed`)
 - Push notifications
-- Google OAuth PKCE completion in Java (URL builder only)
 - In-app messaging send (`schema.not_ready`)
 - Care marketplace (sitters, bookings) — Expo already owns that surface
 - Google Maps (nearby uses on-device city snapping; no Maps key needed)

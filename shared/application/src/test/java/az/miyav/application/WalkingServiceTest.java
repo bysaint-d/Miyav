@@ -9,6 +9,7 @@ import az.miyav.domain.walk.WalkSession;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,6 +51,31 @@ class WalkingServiceTest {
         assertEquals(started, service.start(session, PetSpecies.DOG, " Boncuk ", "Parkdayıq", 40.4093123, 49.8671512));
         assertThrows(ValidationException.class, () -> service.start(session, PetSpecies.DOG, "x".repeat(61), "", 40.4, 49.8));
         assertThrows(ValidationException.class, () -> service.start(session, null, "", "", 40.4, 49.8));
+    }
+
+    @Test
+    void aWalkNeedsAtLeastOnePetAndAtMostFive() {
+        WalkRepository walks = mock(WalkRepository.class);
+        WalkingService service = new WalkingService(walks);
+        assertEquals("walk.pet_required", assertThrows(ValidationException.class,
+                () -> service.startWith(session, List.of(), null, "", 40.4, 49.8)).code());
+        List<UUID> six = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID(), UUID.randomUUID());
+        assertEquals("walk.pet_limit", assertThrows(ValidationException.class,
+                () -> service.startWith(session, six, null, "", 40.4, 49.8)).code());
+        verify(walks, never()).startWith(any(), any(), any(), anyString(), anyDouble(), anyDouble());
+    }
+
+    @Test
+    void ownPetsAndAWalkJobCanBeWalkedTogether() {
+        WalkRepository walks = mock(WalkRepository.class);
+        WalkingService service = new WalkingService(walks);
+        UUID boncuk = UUID.randomUUID();
+        UUID job = UUID.randomUUID();
+        service.startWith(session, List.of(boncuk, boncuk), job, " Parkdayıq ", 40.4093123, 49.8671512);
+        verify(walks).startWith(session, List.of(boncuk), job, "Parkdayıq", 40.40931, 49.86715);
+        service.startWith(session, List.of(), job, "", 40.4, 49.8);
+        verify(walks).startWith(session, List.of(), job, "", 40.4, 49.8);
     }
 
     @Test

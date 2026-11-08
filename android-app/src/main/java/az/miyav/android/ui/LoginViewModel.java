@@ -6,18 +6,22 @@ import androidx.lifecycle.ViewModel;
 
 import az.miyav.android.data.PendingAuthEmail;
 import az.miyav.application.AuthService;
+import az.miyav.application.AuthStateManager;
 import az.miyav.common.error.AppException;
 
 import java.util.concurrent.ExecutorService;
 
 public final class LoginViewModel extends ViewModel {
+    private final AuthStateManager auth;
     private final AuthService authService;
     private final PendingAuthEmail pendingEmail;
     private final ExecutorService executor;
     private final String redirect;
     private final MutableLiveData<LoginState> state = new MutableLiveData<>(LoginState.idle());
 
-    public LoginViewModel(AuthService authService, PendingAuthEmail pendingEmail, ExecutorService executor, String redirect) {
+    public LoginViewModel(AuthStateManager auth, AuthService authService, PendingAuthEmail pendingEmail,
+                          ExecutorService executor, String redirect) {
+        this.auth = auth;
         this.authService = authService;
         this.pendingEmail = pendingEmail;
         this.executor = executor;
@@ -28,9 +32,14 @@ public final class LoginViewModel extends ViewModel {
         return state;
     }
 
+    /** Marks a success as handled so a recreated screen does not navigate twice. */
+    public void acknowledge() {
+        state.setValue(LoginState.idle());
+    }
+
     public void login(String email, String password) {
         submit(() -> {
-            authService.login(email, password);
+            auth.login(email, password);
             return LoginState.success();
         });
     }
@@ -39,7 +48,7 @@ public final class LoginViewModel extends ViewModel {
         submit(() -> {
             pendingEmail.remember(email);
             try {
-                authService.register(email, password, fullName, redirect);
+                auth.register(email, password, fullName, redirect);
                 return LoginState.success();
             } catch (AppException exception) {
                 if ("auth.confirmation_required".equals(exception.code())) {

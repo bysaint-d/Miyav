@@ -1,23 +1,36 @@
 package az.miyav.domain.messaging;
 
-import az.miyav.domain.text.TextRules;
-
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * A chat message. It may name the walk listing it is about, and a walker's offer arrives as a price card
+ * ({@link #pricePerHour()}), with or without text.
+ */
 public final class Message {
+    public static final int MAX_LENGTH = 2000;
+
     private final UUID id;
     private final UUID conversationId;
     private final UUID senderId;
     private final String body;
+    private final UUID walkListingId;
+    private final BigDecimal pricePerHour;
+    private final boolean image;
     private final Instant createdAt;
 
-    public Message(UUID id, UUID conversationId, UUID senderId, String body, Instant createdAt) {
+    public Message(UUID id, UUID conversationId, UUID senderId, String body, UUID walkListingId,
+                   BigDecimal pricePerHour, boolean image, Instant createdAt) {
         this.id = Objects.requireNonNull(id, "id");
         this.conversationId = Objects.requireNonNull(conversationId, "conversationId");
         this.senderId = Objects.requireNonNull(senderId, "senderId");
-        this.body = TextRules.required(body, 1, 4000, "validation.pet");
+        this.body = body == null ? "" : body;
+        this.walkListingId = walkListingId;
+        this.pricePerHour = pricePerHour;
+        this.image = image;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
     }
 
@@ -37,7 +50,28 @@ public final class Message {
         return body;
     }
 
+    public Optional<UUID> walkListingId() {
+        return Optional.ofNullable(walkListingId);
+    }
+
+    public Optional<BigDecimal> pricePerHour() {
+        return Optional.ofNullable(pricePerHour);
+    }
+
+    /** Photo messages from the other MIYAV app; shown as a placeholder here. */
+    public boolean image() {
+        return image;
+    }
+
     public Instant createdAt() {
         return createdAt;
+    }
+
+    public boolean sentBy(UUID userId) {
+        return senderId.equals(userId);
+    }
+
+    public boolean priceOffer() {
+        return pricePerHour != null;
     }
 }

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_app"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationContentDescription="@string/action_back"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/favorites_title" />
+
+    <LinearLayout
+        android:id="@+id/guestNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_lg"
+        android:layout_marginEnd="@dimen/space_lg"
+        android:background="@drawable/bg_pastel_note"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/space_md"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/favorites_local_note"
+            android:textAppearance="@style/TextAppearance.Miyav.Caption"
+            android:textColor="@color/text_primary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/syncButton"
+            style="@style/Widget.Miyav.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/favorites_sync_cta" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/itemList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="16dp"
+            android:paddingTop="@dimen/space_sm"
+            android:paddingEnd="16dp"
+            android:paddingBottom="@dimen/space_xxxl" />
+
+        <include
+            android:id="@+id/state"
+            layout="@layout/view_state" />
+    </FrameLayout>
+</LinearLayout>

@@ -25,7 +25,10 @@ public class NotificationsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
         binding.toolbar.setNavigationOnClickListener(view -> Ui.nav(this).popBackStack());
-        adapter = new NotificationAdapter(this::markRead);
+        adapter = new NotificationAdapter(notification -> {
+            notification.conversationId().ifPresent(room -> Ui.openChat(this, room.toString(), null, null, null));
+            markRead(notification);
+        });
         binding.itemList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.itemList.setAdapter(adapter);
         binding.refresh.setColorSchemeResources(R.color.text_on_brand);
@@ -48,7 +51,7 @@ public class NotificationsFragment extends Fragment {
         }
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            return app.notificationService().list(app.authService().requireSession());
+            return app.notificationService().list(app.auth().requireSession());
         }, items -> {
             loaded = true;
             binding.refresh.setRefreshing(false);
@@ -70,7 +73,7 @@ public class NotificationsFragment extends Fragment {
         }
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            app.notificationService().markRead(app.authService().requireSession(), notification.id());
+            app.notificationService().markRead(app.auth().requireSession(), notification.id());
             return Boolean.TRUE;
         }, done -> load(), code -> Ui.snack(binding.getRoot(), code));
     }

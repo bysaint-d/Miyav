@@ -1,65 +1,476 @@
-.screen {
-    -fx-background-color: #0e0e0e;
-    -fx-font-family: "Segoe UI", "Arial";
+/*
+ * MIYAV design tokens (Pawhome direction). The same palette is used by the Android and Expo apps:
+ * see docs/DESIGN_SYSTEM.md. Components below only reference these tokens.
+ */
+.root {
+    -miyav-background: #F7F5EF;
+    -miyav-surface: #FFFFFF;
+    -miyav-mint: #DCEEE5;
+    -miyav-sage: #B9DCD0;
+    -miyav-peach: #F5C6A5;
+    -miyav-peach-soft: #FBE7D9;
+    -miyav-primary: #315B49;
+    -miyav-primary-hover: #284B3C;
+    -miyav-text: #263C35;
+    /* #858D85 from the brief is kept for decoration; text uses #67706A to reach 4.5:1 on cream. */
+    -miyav-muted: #67706A;
+    -miyav-decor: #858D85;
+    -miyav-line: #ECE8DE;
+    -miyav-danger: #B5533C;
+    -miyav-danger-soft: #F8E1D9;
+    -miyav-warning-soft: #FBEFD3;
+    -miyav-warning: #8A6A1F;
+
+    -fx-font-family: "Segoe UI", "Inter", "Arial";
     -fx-font-size: 14px;
+    -fx-text-fill: -miyav-text;
+    -fx-background-color: -miyav-background;
 }
 
-.wordmark {
-    -fx-text-fill: #f7f7f5;
-    -fx-font-size: 28px;
-    -fx-font-weight: 700;
+.screen {
+    -fx-background-color: -miyav-background;
 }
 
 .label {
-    -fx-text-fill: #f7f7f5;
+    -fx-text-fill: -miyav-text;
 }
 
-.muted {
-    -fx-text-fill: #8a8a8a;
+.muted, .caption {
+    -fx-text-fill: -miyav-muted;
 }
 
-.text-field, .password-field {
-    -fx-background-color: #161616;
-    -fx-text-fill: #f7f7f5;
-    -fx-prompt-text-fill: #8a8a8a;
-    -fx-background-radius: 12;
-    -fx-border-color: #2a2a2a;
-    -fx-border-radius: 12;
-    -fx-padding: 10 12 10 12;
+.caption {
+    -fx-font-size: 12px;
 }
 
-.button {
-    -fx-background-radius: 12;
+.wordmark {
+    -fx-text-fill: -miyav-primary;
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+}
+
+.page-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -miyav-text;
+}
+
+.page-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: -miyav-muted;
+}
+
+.sheet-title, .card-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+}
+
+.detail-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: 700;
+}
+
+.cell-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+}
+
+.stat-value {
+    -fx-font-size: 30px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -miyav-text;
+}
+
+.stat-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -miyav-muted;
+}
+
+/* Surfaces */
+.card, .sheet, .detail {
+    -fx-background-color: -miyav-surface;
+    -fx-background-radius: 22;
+    -fx-effect: dropshadow(gaussian, rgba(38, 60, 53, 0.07), 22, 0.2, 0, 6);
+}
+
+.card {
+    -fx-padding: 20;
+}
+
+.card-mint {
+    -fx-background-color: -miyav-mint;
+    -fx-effect: none;
+}
+
+.card-peach {
+    -fx-background-color: -miyav-peach-soft;
+    -fx-effect: none;
+}
+
+.hero {
+    -fx-background-color: linear-gradient(to right, #DCEEE5, #EAF4EE);
+    -fx-background-radius: 26;
+    -fx-padding: 26 28 26 28;
+}
+
+/* Sidebar */
+.sidebar {
+    -fx-background-color: -miyav-surface;
+    -fx-padding: 26 16 20 16;
+    -fx-border-color: transparent -miyav-line transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.toggle-button.nav-item {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 14;
+    -fx-text-fill: -miyav-text;
+    -fx-font-size: 14px;
+    -fx-padding: 11 14 11 14;
+    -fx-alignment: center-left;
     -fx-cursor: hand;
-    -fx-padding: 10 16 10 16;
+    -fx-graphic-text-gap: 12;
+}
+
+.toggle-button.nav-item:hover {
+    -fx-background-color: -miyav-background;
+}
+
+.toggle-button.nav-item:selected {
+    -fx-background-color: -miyav-mint;
+    -fx-border-color: transparent;
+    -fx-text-fill: -miyav-primary;
+    -fx-font-weight: 700;
+}
+
+.nav-icon {
+    -fx-font-size: 16px;
+    -fx-min-width: 22;
+    -fx-alignment: center;
+}
+
+.nav-section {
+    -fx-font-size: 11px;
+    -fx-text-fill: -miyav-muted;
+    -fx-font-weight: 700;
+    -fx-padding: 14 14 6 14;
+}
+
+/* Buttons */
+.button, .toggle-button {
+    -fx-background-radius: 14;
+    -fx-cursor: hand;
+    -fx-padding: 9 16 9 16;
+    -fx-font-size: 13px;
 }
 
 .primary {
-    -fx-background-color: #f7f7f5;
-    -fx-text-fill: #111111;
+    -fx-background-color: -miyav-primary;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+}
+
+.primary:hover {
+    -fx-background-color: -miyav-primary-hover;
 }
 
 .ghost {
-    -fx-background-color: transparent;
-    -fx-border-color: #2a2a2a;
-    -fx-border-radius: 12;
-    -fx-text-fill: #f7f7f5;
+    -fx-background-color: -miyav-surface;
+    -fx-border-color: -miyav-line;
+    -fx-border-radius: 14;
+    -fx-text-fill: -miyav-text;
 }
 
-.list-view {
-    -fx-background-color: #161616;
-    -fx-border-color: #2a2a2a;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    -fx-padding: 4;
+.ghost:hover {
+    -fx-background-color: -miyav-background;
+}
+
+.danger {
+    -fx-background-color: -miyav-danger-soft;
+    -fx-text-fill: -miyav-danger;
+    -fx-font-weight: 700;
+}
+
+.toggle-button.chip, .chip {
+    -fx-background-color: -miyav-surface;
+    -fx-border-color: -miyav-line;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 7 14 7 14;
+    -fx-text-fill: -miyav-text;
+}
+
+.toggle-button.chip:selected, .chip:selected {
+    -fx-background-color: -miyav-primary;
+    -fx-border-color: -miyav-primary;
+    -fx-text-fill: white;
+}
+
+.link {
+    -fx-text-fill: -miyav-muted;
+    -fx-border-color: transparent;
+}
+
+.link:hover {
+    -fx-text-fill: -miyav-primary;
+}
+
+/* Badges */
+.badge {
+    -fx-background-color: -miyav-mint;
+    -fx-text-fill: -miyav-primary;
+    -fx-background-radius: 999;
+    -fx-padding: 4 10 4 10;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+.badge-sage {
+    -fx-background-color: -miyav-sage;
+}
+
+.badge-peach {
+    -fx-background-color: -miyav-peach-soft;
+    -fx-text-fill: #9A5A33;
+}
+
+.badge-warning {
+    -fx-background-color: -miyav-warning-soft;
+    -fx-text-fill: -miyav-warning;
+}
+
+.badge-danger {
+    -fx-background-color: -miyav-danger-soft;
+    -fx-text-fill: -miyav-danger;
+}
+
+.badge-neutral {
+    -fx-background-color: #EFEDE6;
+    -fx-text-fill: -miyav-muted;
+}
+
+.avatar {
+    -fx-background-color: -miyav-sage;
+    -fx-background-radius: 999;
+    -fx-text-fill: -miyav-primary;
+    -fx-font-weight: 700;
+    -fx-alignment: center;
+}
+
+/* Inputs */
+.text-field, .password-field, .text-area, .combo-box, .choice-box {
+    -fx-background-color: -miyav-surface;
+    -fx-text-fill: -miyav-text;
+    -fx-prompt-text-fill: -miyav-muted;
+    -fx-background-radius: 14;
+    -fx-border-color: -miyav-line;
+    -fx-border-radius: 14;
+    -fx-padding: 8 12 8 12;
+}
+
+.text-field:focused, .password-field:focused, .text-area:focused {
+    -fx-border-color: -miyav-sage;
+}
+
+.text-area .content {
+    -fx-background-color: -miyav-surface;
+    -fx-background-radius: 14;
+}
+
+.toggle-button {
+    -fx-background-color: -miyav-surface;
+    -fx-border-color: -miyav-line;
+    -fx-border-radius: 14;
+    -fx-text-fill: -miyav-text;
+}
+
+.toggle-button:selected {
+    -fx-background-color: -miyav-primary;
+    -fx-border-color: -miyav-primary;
+    -fx-text-fill: white;
+}
+
+/* Lists and tables */
+.list-view, .table-view {
+    -fx-background-color: -miyav-surface;
+    -fx-background-radius: 22;
+    -fx-border-color: transparent;
+    -fx-padding: 6;
+    -fx-effect: dropshadow(gaussian, rgba(38, 60, 53, 0.06), 18, 0.2, 0, 4);
 }
 
 .list-cell {
     -fx-background-color: transparent;
-    -fx-text-fill: #f7f7f5;
+    -fx-text-fill: -miyav-text;
     -fx-padding: 10 12 10 12;
+    -fx-background-radius: 14;
 }
 
-.list-cell:selected {
-    -fx-background-color: #222222;
+.list-cell:filled:hover {
+    -fx-background-color: -miyav-background;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: -miyav-mint;
+}
+
+.combo-box .list-cell, .combo-box .list-cell:filled:selected, .combo-box .list-cell:filled:hover {
+    -fx-background-color: transparent;
+    -fx-padding: 2 4 2 4;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-radius: 14;
+    -fx-effect: dropshadow(gaussian, rgba(38, 60, 53, 0.12), 18, 0.2, 0, 6);
+}
+
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent -miyav-line transparent;
+    -fx-size: 40;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -miyav-muted;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-alignment: center-left;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #F3F0E8 transparent;
+    -fx-cell-size: 52;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: -miyav-background;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: -miyav-mint;
+}
+
+.table-row-cell .table-cell {
+    -fx-text-fill: -miyav-text;
+    -fx-alignment: center-left;
+    -fx-border-color: transparent;
+}
+
+.table-view .placeholder .label {
+    -fx-text-fill: -miyav-muted;
+}
+
+.scroll-pane, .scroll-pane > .viewport, .detail-scroll, .detail-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #DCD7CB;
+    -fx-background-radius: 8;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-padding: 0;
+}
+
+.split, .split > .split-pane-divider {
+    -fx-background-color: transparent;
+    -fx-padding: 0 6 0 6;
+}
+
+/* Charts */
+.chart {
+    -fx-padding: 4;
+}
+
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: transparent;
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: -miyav-line;
+}
+
+.axis {
+    -fx-tick-label-fill: -miyav-muted;
+    -fx-font-size: 11px;
+}
+
+.axis:bottom, .axis:left {
+    -fx-border-color: transparent;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+}
+
+.default-color0.chart-series-line { -fx-stroke: #315B49; -fx-stroke-width: 3px; }
+.default-color1.chart-series-line { -fx-stroke: #E89A6B; -fx-stroke-width: 3px; }
+.default-color0.chart-line-symbol { -fx-background-color: #315B49, white; }
+.default-color1.chart-line-symbol { -fx-background-color: #E89A6B, white; }
+.default-color0.chart-area-symbol, .default-color0.chart-legend-item-symbol { -fx-background-color: #315B49; }
+.default-color1.chart-area-symbol, .default-color1.chart-legend-item-symbol { -fx-background-color: #E89A6B; }
+.default-color2.chart-legend-item-symbol { -fx-background-color: #B9DCD0; }
+.default-color0.chart-bar { -fx-bar-fill: #315B49; -fx-background-radius: 8 8 0 0; }
+.default-color1.chart-bar { -fx-bar-fill: #F5C6A5; -fx-background-radius: 8 8 0 0; }
+.default-color2.chart-bar { -fx-bar-fill: #B9DCD0; -fx-background-radius: 8 8 0 0; }
+.default-color0.chart-pie { -fx-pie-color: #315B49; }
+.default-color1.chart-pie { -fx-pie-color: #B9DCD0; }
+.default-color2.chart-pie { -fx-pie-color: #F5C6A5; }
+.default-color3.chart-pie { -fx-pie-color: #DCEEE5; }
+.default-color4.chart-pie { -fx-pie-color: #858D85; }
+.default-color5.chart-pie { -fx-pie-color: #E89A6B; }
+.chart-pie-label, .chart-pie-label-line {
+    -fx-fill: -miyav-muted;
+    -fx-stroke: -miyav-line;
+}
+
+/* Grid cards (adoption, pets) */
+.photo-card {
+    -fx-background-color: -miyav-surface;
+    -fx-background-radius: 22;
+    -fx-effect: dropshadow(gaussian, rgba(38, 60, 53, 0.08), 20, 0.2, 0, 6);
+    -fx-cursor: hand;
+}
+
+.photo-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(38, 60, 53, 0.16), 26, 0.25, 0, 8);
+}
+
+.photo-placeholder {
+    -fx-background-color: -miyav-mint;
+    -fx-background-radius: 22 22 0 0;
+}
+
+.photo-glyph {
+    -fx-font-size: 44px;
+}
+
+.empty-glyph {
+    -fx-font-size: 40px;
+}
+
+.status-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 6 28 12 28;
+}
+
+.dialog-pane {
+    -fx-background-color: -miyav-surface;
 }

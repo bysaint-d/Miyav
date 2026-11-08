@@ -41,8 +41,14 @@ public class ProfileFragment extends Fragment {
         binding.saveButton.setOnClickListener(view -> save());
         binding.avatarButton.setOnClickListener(view -> pickAvatar());
         binding.avatarView.setOnClickListener(view -> pickAvatar());
+        binding.myPetsButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_global_my_pets));
+        binding.messagesButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_global_inbox));
         binding.notificationsButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_home_to_notifications));
         binding.passwordButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_home_to_password));
+        binding.favoritesButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_global_favorites));
+        binding.helpButton.setOnClickListener(view -> InfoFragment.open(this, InfoFragment.HELP));
+        binding.termsButton.setOnClickListener(view -> InfoFragment.open(this, InfoFragment.TERMS));
+        binding.privacyButton.setOnClickListener(view -> InfoFragment.open(this, InfoFragment.PRIVACY));
         binding.logoutButton.setOnClickListener(view -> new MaterialAlertDialogBuilder(requireContext())
                 .setMessage(R.string.auth_logout_confirm)
                 .setPositiveButton(R.string.auth_logout, (dialog, which) -> logout())
@@ -63,7 +69,7 @@ public class ProfileFragment extends Fragment {
         busy(true);
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            return app.userService().current(app.authService().requireSession());
+            return app.userService().current(app.auth().requireSession());
         }, user -> {
             busy(false);
             fill(user);
@@ -109,7 +115,7 @@ public class ProfileFragment extends Fragment {
         busy(true);
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            return app.userService().updateProfile(app.authService().requireSession(), name, cityValue, district, phone, bio, phonePublic);
+            return app.userService().updateProfile(app.auth().requireSession(), name, cityValue, district, phone, bio, phonePublic);
         }, user -> {
             busy(false);
             fill(user);
@@ -139,7 +145,7 @@ public class ProfileFragment extends Fragment {
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
             byte[] jpeg = JpegEncoder.fromUri(context, uri, 800);
-            return app.userService().updateAvatar(app.authService().requireSession(), jpeg);
+            return app.userService().updateAvatar(app.auth().requireSession(), jpeg);
         }, user -> {
             busy(false);
             fill(user);
@@ -170,7 +176,7 @@ public class ProfileFragment extends Fragment {
             MiyavApplication app = Ui.app(this);
             app.io().execute(() -> {
                 try {
-                    app.userService().updateLocale(app.authService().requireSession(), LocaleCode.fromTag(tag));
+                    app.userService().updateLocale(app.auth().requireSession(), LocaleCode.fromTag(tag));
                 } catch (AppException ignored) {
                     // The device language still changes; the profile syncs on the next successful save.
                 }
@@ -183,8 +189,9 @@ public class ProfileFragment extends Fragment {
         MiyavApplication app = Ui.app(this);
         busy(true);
         Ui.run(this, () -> {
+            app.onSignedOut();
             try {
-                app.authService().logout();
+                app.auth().signOut();
             } catch (AppException ignored) {
                 // The local session is cleared even when the server cannot be reached.
             }

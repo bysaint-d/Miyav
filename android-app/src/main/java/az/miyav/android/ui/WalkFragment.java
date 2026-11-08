@@ -32,18 +32,18 @@ import org.osmdroid.views.overlay.Marker;
 
 import az.miyav.android.MiyavApplication;
 import az.miyav.android.R;
-import az.miyav.android.databinding.DialogWalkStartBinding;
 import az.miyav.android.databinding.FragmentWalkBinding;
 import az.miyav.android.databinding.SheetWalkerBinding;
 import az.miyav.android.location.DeviceLocation;
 import az.miyav.android.walk.WalkTracker;
 import az.miyav.domain.location.ListingLocation;
 import az.miyav.domain.pet.PetSpecies;
+import az.miyav.domain.walk.WalkPet;
 import az.miyav.domain.walk.Walker;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/** Gəzinti (BETA): live map of people walking their pets nearby. */
+/** Gəzinti (NearMe): live map of people walking their pets nearby. */
 public class WalkFragment extends Fragment {
     private static final long POLL_MS = 15_000;
     private FragmentWalkBinding binding;
@@ -63,8 +63,9 @@ public class WalkFragment extends Fragment {
     private boolean nearbyLoaded;
     private boolean centeredOnce;
     private WalkTracker.State lastEvent;
-    private PetSpecies pendingSpecies;
-    private String pendingName = "";
+    private boolean pendingStart;
+    private List<UUID> pendingPets = List.of();
+    private UUID pendingListing;
     private String pendingMessage = "";
     private final Runnable poll = this::pollNearby;
     private final Runnable tick = new Runnable() {
@@ -87,7 +88,20 @@ public class WalkFragment extends Fragment {
         adapter = new WalkerAdapter(Ui.app(this), this::showWalker);
         binding.nearbyList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
         binding.nearbyList.setAdapter(adapter);
-        binding.startButton.setOnClickListener(view -> showStartDialog());
+        binding.startButton.setOnClickListener(view -> WalkStartSheet.open(getChildFragmentManager()));
+        getChildFragmentManager().setFragmentResultListener(WalkStartSheet.RESULT, getViewLifecycleOwner(), (key, result) -> {
+            List<UUID> pets = new ArrayList<>();
+            List<String> ids = result.getStringArrayList(WalkStartSheet.PETS);
+            for (String id : ids == null ? List.<String>of() : ids) {
+                pets.add(UUID.fromString(id));
+            }
+            String listing = result.getString(WalkStartSheet.LISTING, "");
+            pendingPets = pets;
+            pendingListing = listing.isEmpty() ? null : UUID.fromString(listing);
+            pendingMessage = result.getString(WalkStartSheet.MESSAGE, "");
+            pendingStart = true;
+            requestStartPermissions();
+        });
         binding.pauseButton.setOnClickListener(view -> togglePause());
         binding.endButton.setOnClickListener(view -> new MaterialAlertDialogBuilder(requireContext())
                 .setMessage(R.string.walk_end_confirm)
@@ -149,6 +163,9 @@ public class WalkFragment extends Fragment {
             binding.pauseButton.setIconResource(paused ? R.drawable.ic_play : R.drawable.ic_pause);
             binding.pauseButton.setEnabled(true);
             binding.endButton.setEnabled(true);
+            String pets = state.session.petName();
+            binding.petsText.setVisibility(pets == null || pets.isBlank() ? View.GONE : View.VISIBLE);
+            binding.petsText.setText(getString(R.string.walk_with, pets));
         }
         if (!state.walking()) {
             clearWalkers();
@@ -201,7 +218,7 @@ public class WalkFragment extends Fragment {
         }
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            return app.walkingService().nearby(app.authService().requireSession());
+            return app.walkingService().nearby(app.auth().requireSession());
         }, this::showWalkers, code -> {
             binding.nearbySkeleton.setVisibility(View.GONE);
             if (!"network.unavailable".equals(code)) {
@@ -332,23 +349,6 @@ public class WalkFragment extends Fragment {
         });
     }
 
-    private void showStartDialog() {
-        DialogWalkStartBinding form = DialogWalkStartBinding.inflate(getLayoutInflater());
-        Choice<PetSpecies> species = new Choice<>(form.speciesInput, Arrays.asList(PetSpecies.values()),
-                value -> Labels.speciesEmoji(value) + "  " + Labels.species(requireContext(), value), PetSpecies.DOG);
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.walk_consent_title)
-                .setView(form.getRoot())
-                .setPositiveButton(R.string.walk_consent_accept, (dialog, which) -> {
-                    pendingSpecies = species.value();
-                    pendingName = Ui.text(form.petNameInput).trim();
-                    pendingMessage = Ui.text(form.messageInput).trim();
-                    requestStartPermissions();
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
-    }
-
     private void requestStartPermissions() {
         boolean needsNotifications = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED;
@@ -363,7 +363,7 @@ public class WalkFragment extends Fragment {
     }
 
     private void onStartPermission() {
-        if (binding == null || pendingSpecies == null) {
+        if (binding == null || !pendingStart) {
             return;
         }
         if (!DeviceLocation.hasAny(requireContext())) {
@@ -379,8 +379,9 @@ public class WalkFragment extends Fragment {
         }
         binding.startButton.setEnabled(false);
         binding.headerStatus.setText(R.string.walk_waiting_fix);
-        PetSpecies species = pendingSpecies;
-        String name = pendingName;
+        pendingStart = false;
+        List<UUID> pets = pendingPets;
+        UUID listing = pendingListing;
         String message = pendingMessage;
         DeviceLocation.current(requireContext(), new DeviceLocation.Callback() {
             @Override
@@ -394,7 +395,7 @@ public class WalkFragment extends Fragment {
                     Ui.snack(binding.getRoot(), R.string.location_out_of_area);
                     return;
                 }
-                tracker().start(species, name, message, location, WalkFragment.this::onError);
+                tracker().startWith(pets, listing, message, location, WalkFragment.this::onError);
             }
 
             @Override
@@ -454,6 +455,24 @@ public class WalkFragment extends Fragment {
         view.bioView.setVisibility(walker.bio().isEmpty() ? View.GONE : View.VISIBLE);
         view.bioView.setText(walker.bio());
         Ui.app(this).photos().avatar(view.avatarView, walker.avatarPath());
+        PetTileAdapter pets = new PetTileAdapter(Ui.app(this), null, null);
+        view.petList.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
+        view.petList.setAdapter(pets);
+        Ui.run(this, () -> {
+            MiyavApplication app = Ui.app(this);
+            return app.walkingService().pets(app.auth().requireSession(), walker.sessionId());
+        }, found -> {
+            List<PetTileAdapter.Tile> tiles = new ArrayList<>();
+            for (WalkPet pet : found) {
+                tiles.add(new PetTileAdapter.Tile(pet.name(), pet.name(),
+                        Labels.petMeta(requireContext(), pet.species(), pet.breed(), pet.ageYears().orElse(null)),
+                        pet.species(), pet.photoPath().orElse(null), pet.fromJob()));
+            }
+            pets.replace(tiles);
+            view.petsTitle.setVisibility(tiles.isEmpty() ? View.GONE : View.VISIBLE);
+            view.petList.setVisibility(tiles.isEmpty() ? View.GONE : View.VISIBLE);
+        }, code -> {
+        });
         view.profileButton.setOnClickListener(button -> {
             sheet.dismiss();
             Bundle args = new Bundle();

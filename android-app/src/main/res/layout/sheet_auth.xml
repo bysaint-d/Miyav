@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/space_xxl"
+        android:paddingEnd="@dimen/space_xxl"
+        android:paddingBottom="@dimen/space_xxl">
+
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_mark" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:gravity="center"
+            android:text="@string/guest_sheet_title"
+            android:textAppearance="@style/TextAppearance.Miyav.Headline" />
+
+        <TextView
+            android:id="@+id/messageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/googleButton"
+            style="@style/Widget.Miyav.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/guest_google"
+            app:icon="@drawable/ic_google"
+            app:iconGravity="textStart"
+            app:iconTint="@null" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/emailButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/guest_email"
+            app:icon="@drawable/ic_mail"
+            app:iconGravity="textStart"
+            app:iconTint="@color/text_on_brand" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/telegramButton"
+            style="@style/Widget.Miyav.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/guest_telegram"
+            app:icon="@drawable/ic_telegram"
+            app:iconGravity="textStart"
+            app:iconTint="@color/brand_telegram" />
+
+        <TextView
+            android:id="@+id/noteView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:background="@drawable/bg_pastel_note"
+            android:padding="@dimen/space_md"
+            android:textAppearance="@style/TextAppearance.Miyav.Caption"
+            android:textColor="@color/text_primary"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/registerButton"
+            style="@style/Widget.Miyav.Button.Tonal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:text="@string/guest_register" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/laterButton"
+            style="@style/Widget.Miyav.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/guest_later"
+            android:textColor="@color/text_secondary" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="invisible"
+            app:indicatorColor="@color/brand_coral"
+            app:trackColor="@color/pastel_peach" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -19,7 +19,10 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-/** Loads private listing photos with the user's token and public avatars, with an in-memory cache. */
+/**
+ * Loads listing photos (with the user's token when signed in, otherwise as a guest, which storage RLS
+ * limits to photos of active listings) and public avatars, with an in-memory cache.
+ */
 public final class PhotoLoader {
     private final MiyavApplication app;
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -37,13 +40,40 @@ public final class PhotoLoader {
         };
     }
 
+    /** Card and thumbnail size: decoded small so lists scroll smoothly and the cache holds more photos. */
     public void listing(ImageView view, String path, int placeholder) {
+        listing(view, path, placeholder, 720);
+    }
+
+    /** Full-width gallery on the listing screen. */
+    public void listingLarge(ImageView view, String path, int placeholder) {
+        listing(view, path, placeholder, 1440);
+    }
+
+    private void listing(ImageView view, String path, int placeholder, int maxEdge) {
         if (path == null) {
             placeholder(view, placeholder, R.color.brand_coral);
             return;
         }
-        load(view, "listing:" + path, placeholder, R.color.brand_coral,
-                () -> app.petService().photo(app.authService().requireSession(), path));
+        load(view, "listing:" + maxEdge + ":" + path, placeholder, R.color.brand_coral, maxEdge,
+                () -> app.discovery().photo(app.auth().viewer(), path));
+    }
+
+    /** A pet's photo from the private pets bucket (own pets, or pets on a walk the user can see). */
+    public void pet(ImageView view, String path) {
+        if (path == null || !app.auth().signedIn()) {
+            placeholder(view, R.drawable.ic_paw, R.color.brand_coral);
+            return;
+        }
+        load(view, "pet:" + path, R.drawable.ic_paw, R.color.brand_coral, 512,
+                () -> app.myPets().photo(app.auth().requireSession(), path));
+    }
+
+    /** Forgets a pet photo after it was replaced. */
+    public void forgetPet(String path) {
+        if (path != null) {
+            cache.remove("pet:" + path);
+        }
     }
 
     public void avatar(ImageView view, User user) {
@@ -55,7 +85,7 @@ public final class PhotoLoader {
             placeholder(view, R.drawable.ic_person, R.color.brand_lavender);
             return;
         }
-        load(view, "avatar:" + avatarPath, R.drawable.ic_person, R.color.brand_lavender,
+        load(view, "avatar:" + avatarPath, R.drawable.ic_person, R.color.brand_lavender, 256,
                 () -> app.userService().avatar(avatarPath));
     }
 
@@ -87,7 +117,7 @@ public final class PhotoLoader {
         cache.evictAll();
     }
 
-    private void load(ImageView view, String key, int placeholder, int tint, Supplier<byte[]> source) {
+    private void load(ImageView view, String key, int placeholder, int tint, int maxEdge, Supplier<byte[]> source) {
         view.setTag(R.id.photo_tag, key);
         Bitmap cached = cache.get(key);
         if (cached != null) {
@@ -97,7 +127,7 @@ public final class PhotoLoader {
         placeholder(view, placeholder, tint);
         pool.execute(() -> {
             try {
-                Bitmap bitmap = decode(source.get(), 1280);
+                Bitmap bitmap = decode(source.get(), maxEdge);
                 if (bitmap == null) {
                     return;
                 }

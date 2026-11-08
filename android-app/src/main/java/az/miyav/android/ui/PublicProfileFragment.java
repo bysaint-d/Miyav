@@ -14,6 +14,8 @@ import az.miyav.android.MiyavApplication;
 import az.miyav.android.R;
 import az.miyav.android.databinding.FragmentPublicProfileBinding;
 import az.miyav.domain.auth.AuthSession;
+import az.miyav.domain.auth.PendingAction;
+import az.miyav.domain.auth.ProtectedAction;
 import az.miyav.domain.pet.Pet;
 import az.miyav.domain.user.PublicProfile;
 
@@ -36,8 +38,13 @@ public class PublicProfileFragment extends Fragment {
         });
         binding.listingList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.listingList.setAdapter(adapter);
-        load(UUID.fromString(requireArguments().getString("userId")));
         return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        UUID userId = UUID.fromString(requireArguments().getString("userId"));
+        Ui.app(this).authState().observe(getViewLifecycleOwner(), state -> load(userId));
     }
 
     @Override
@@ -50,11 +57,14 @@ public class PublicProfileFragment extends Fragment {
         binding.skeleton.setVisibility(View.VISIBLE);
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            AuthSession session = app.authService().requireSession();
-            PublicProfile profile = app.userService().publicProfile(session, userId).orElse(null);
-            List<Pet> listings = profile == null ? List.of() : app.petService().byPublisher(session, userId);
-            boolean self = userId.equals(session.userId());
-            return new Loaded(profile, listings, self);
+            AuthSession viewer = app.auth().viewer();
+            PublicProfile profile = app.discovery().publisher(viewer, userId).orElse(null);
+            List<Pet> listings = profile == null ? List.of() : app.discovery().byPublisher(viewer, userId);
+            boolean self = viewer != null && userId.equals(viewer.userId());
+            if (viewer != null) {
+                app.auth().takePending(ProtectedAction.CONTACT_OWNER, "userId", userId.toString());
+            }
+            return new Loaded(profile, listings, self, viewer == null);
         }, loaded -> {
             binding.skeleton.setVisibility(View.GONE);
             if (loaded.profile == null) {
@@ -64,7 +74,8 @@ public class PublicProfileFragment extends Fragment {
             binding.content.setVisibility(View.VISIBLE);
             binding.toolbar.setTitle(loaded.profile.fullName());
             PublisherCards.bind(this, binding.publisher, loaded.profile, loaded.self,
-                    getString(R.string.contact_walk_message), false);
+                    getString(R.string.contact_walk_message), false,
+                    loaded.guest ? PendingAction.of(ProtectedAction.CONTACT_OWNER, "userId", userId.toString()) : null);
             adapter.replace(loaded.listings);
             binding.listingsEmpty.setVisibility(loaded.listings.isEmpty() ? View.VISIBLE : View.GONE);
         }, code -> {
@@ -77,11 +88,13 @@ public class PublicProfileFragment extends Fragment {
         final PublicProfile profile;
         final List<Pet> listings;
         final boolean self;
+        final boolean guest;
 
-        Loaded(PublicProfile profile, List<Pet> listings, boolean self) {
+        Loaded(PublicProfile profile, List<Pet> listings, boolean self, boolean guest) {
             this.profile = profile;
             this.listings = listings;
             this.self = self;
+            this.guest = guest;
         }
     }
 }

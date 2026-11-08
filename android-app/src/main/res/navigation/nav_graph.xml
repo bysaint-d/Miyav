@@ -4,11 +4,31 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/splashFragment">
 
+    <!-- Sign-in keeps the back stack so the user returns to the screen that asked for it. -->
     <action
-        android:id="@+id/action_global_login"
+        android:id="@+id/action_global_sign_in"
         app:destination="@id/loginFragment"
-        app:popUpTo="@id/nav_graph"
-        app:popUpToInclusive="true" />
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out"
+        app:launchSingleTop="true" />
+
+    <action
+        android:id="@+id/action_global_favorites"
+        app:destination="@id/favoritesFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_info"
+        app:destination="@id/infoFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
 
     <action
         android:id="@+id/action_global_home"
@@ -51,6 +71,97 @@
         app:popEnterAnim="@anim/pop_in"
         app:popExitAnim="@anim/pop_out" />
 
+    <action
+        android:id="@+id/action_global_walk_editor"
+        app:destination="@id/walkEditorFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_walk_detail"
+        app:destination="@id/walkDetailFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_inbox"
+        app:destination="@id/inboxFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_chat"
+        app:destination="@id/chatFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_my_pets"
+        app:destination="@id/myPetsListFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <fragment
+        android:id="@+id/myPetsListFragment"
+        android:name="az.miyav.android.ui.MyAnimalsFragment"
+        android:label="@string/my_pets_title" />
+
+    <fragment
+        android:id="@+id/inboxFragment"
+        android:name="az.miyav.android.ui.InboxFragment"
+        android:label="@string/action_messages" />
+
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="az.miyav.android.ui.ChatFragment"
+        android:label="@string/action_messages">
+        <argument
+            android:name="conversationId"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="listingId"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="withUserId"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="title"
+            android:defaultValue=""
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/walkEditorFragment"
+        android:name="az.miyav.android.ui.WalkEditorFragment"
+        android:label="@string/wl_editor_title">
+        <argument
+            android:name="listingId"
+            android:defaultValue=""
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/walkDetailFragment"
+        android:name="az.miyav.android.ui.WalkDetailFragment"
+        android:label="@string/wl_editor_title">
+        <argument
+            android:name="listingId"
+            app:argType="string" />
+    </fragment>
+
     <fragment
         android:id="@+id/publicProfileFragment"
         android:name="az.miyav.android.ui.PublicProfileFragment"
@@ -73,7 +184,27 @@
     <fragment
         android:id="@+id/loginFragment"
         android:name="az.miyav.android.ui.LoginFragment"
-        android:label="@string/auth_login" />
+        android:label="@string/auth_login">
+        <argument
+            android:name="mode"
+            android:defaultValue="login"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="az.miyav.android.ui.FavoritesFragment"
+        android:label="@string/favorites_title" />
+
+    <fragment
+        android:id="@+id/infoFragment"
+        android:name="az.miyav.android.ui.InfoFragment"
+        android:label="@string/legal_help">
+        <argument
+            android:name="kind"
+            android:defaultValue="help"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/homeFragment"
