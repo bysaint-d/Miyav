@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="104dp"
+    android:layout_height="104dp"
+    android:layout_marginEnd="8dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/photoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/surface_muted"
+        android:contentDescription="@null"
+        android:scaleType="center"
+        android:src="@drawable/ic_paw"
+        app:shapeAppearanceOverlay="@style/Shape.Miyav.Photo" />
+
+    <ImageButton
+        android:id="@+id/removeButton"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="4dp"
+        android:background="@drawable/bg_round_scrim"
+        android:contentDescription="@string/pet_photo_remove"
+        android:src="@drawable/ic_close"
+        app:tint="@color/text_on_brand" />
+</FrameLayout>

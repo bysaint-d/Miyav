@@ -1,0 +1,10 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    implementation project(":shared:domain")
+    implementation project(":shared:common")
+    implementation libs.okhttp
+    implementation libs.gson
+}

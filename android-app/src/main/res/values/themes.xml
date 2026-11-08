@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- MIYAV design system: warm light theme, coral brand, pastel accents. -->
+    <style name="Theme.MIYAV" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/brand_coral</item>
+        <item name="colorOnPrimary">@color/text_on_brand</item>
+        <item name="colorPrimaryContainer">@color/pastel_peach</item>
+        <item name="colorOnPrimaryContainer">@color/brand_coral_dark</item>
+        <item name="colorSecondary">@color/brand_lavender</item>
+        <item name="colorOnSecondary">@color/text_on_brand</item>
+        <item name="colorSecondaryContainer">@color/pastel_lavender</item>
+        <item name="colorOnSecondaryContainer">@color/text_primary</item>
+        <item name="colorTertiary">@color/brand_mint</item>
+        <item name="colorTertiaryContainer">@color/pastel_mint</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/surface_muted</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorSurfaceContainer">@color/surface</item>
+        <item name="colorSurfaceContainerLow">@color/surface</item>
+        <item name="colorSurfaceContainerHigh">@color/surface</item>
+        <item name="colorSurfaceContainerHighest">@color/surface_muted</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorOutlineVariant">@color/outline</item>
+        <item name="colorError">@color/error</item>
+        <item name="android:colorBackground">@color/bg_app</item>
+        <item name="android:windowBackground">@color/bg_app</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="29">false</item>
+        <item name="textInputStyle">@style/Widget.Miyav.TextInput</item>
+        <item name="materialButtonStyle">@style/Widget.Miyav.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.Miyav.Button.Outlined</item>
+        <item name="borderlessButtonStyle">@style/Widget.Miyav.Button.Text</item>
+        <item name="materialCardViewStyle">@style/Widget.Miyav.Card</item>
+        <item name="bottomNavigationStyle">@style/Widget.Miyav.BottomNavigation</item>
+        <item name="toolbarStyle">@style/Widget.Miyav.Toolbar</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Miyav.Dialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Miyav.BottomSheet</item>
+        <item name="chipStyle">@style/Widget.Miyav.Chip</item>
+    </style>
+
+    <style name="ThemeOverlay.Miyav.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorPrimary">@color/brand_coral</item>
+        <item name="shapeAppearanceOverlay">@style/Shape.Miyav.Large</item>
+    </style>
+
+    <style name="ThemeOverlay.Miyav.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Miyav.BottomSheet</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+    </style>
+
+    <style name="Widget.Miyav.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/surface</item>
+        <item name="shapeAppearance">@style/Shape.Miyav.Sheet</item>
+    </style>
+
+    <style name="Shape.Miyav.Sheet" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">@dimen/radius_xl</item>
+        <item name="cornerSizeTopRight">@dimen/radius_xl</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="Shape.Miyav.Large" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_xl</item>
+    </style>
+
+    <style name="Shape.Miyav.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="Shape.Miyav.Photo" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_md</item>
+    </style>
+
+    <style name="Shape.Miyav.CardTop" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">@dimen/radius_lg</item>
+        <item name="cornerSizeTopRight">@dimen/radius_lg</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <!-- Inputs -->
+    <style name="Widget.Miyav.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_sm</item>
+        <item name="boxStrokeColor">@color/input_stroke</item>
+        <item name="boxBackgroundColor">@color/surface</item>
+        <item name="hintTextColor">@color/brand_coral</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+    </style>
+
+    <style name="Widget.Miyav.TextInput.Dropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_sm</item>
+        <item name="boxStrokeColor">@color/input_stroke</item>
+        <item name="boxBackgroundColor">@color/surface</item>
+        <item name="hintTextColor">@color/brand_coral</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+    </style>
+
+    <!-- Buttons -->
+    <style name="Widget.Miyav.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="backgroundTint">@color/button_primary</item>
+        <item name="android:textColor">@color/text_on_brand</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="Widget.Miyav.Button.Tonal" parent="Widget.Miyav.Button">
+        <item name="backgroundTint">@color/pastel_peach</item>
+        <item name="android:textColor">@color/brand_coral_dark</item>
+        <item name="iconTint">@color/brand_coral_dark</item>
+    </style>
+
+    <style name="Widget.Miyav.Button.WhatsApp" parent="Widget.Miyav.Button">
+        <item name="backgroundTint">@color/brand_whatsapp</item>
+        <item name="iconTint">@color/text_on_brand</item>
+    </style>
+
+    <style name="Widget.Miyav.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="strokeColor">@color/outline</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="backgroundTint">@color/surface</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="iconTint">@color/text_primary</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="Widget.Miyav.Button.Segment" parent="Widget.Miyav.Button.Outlined">
+        <item name="backgroundTint">@color/segment_background</item>
+        <item name="android:textColor">@color/segment_text</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">46dp</item>
+    </style>
+
+    <style name="Widget.Miyav.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/brand_coral_dark</item>
+        <item name="iconTint">@color/brand_coral_dark</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.Miyav.Button.Danger" parent="Widget.Miyav.Button.Outlined">
+        <item name="android:textColor">@color/error</item>
+    </style>
+
+    <!-- Surfaces -->
+    <style name="Widget.Miyav.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/surface</item>
+        <item name="cardCornerRadius">@dimen/radius_lg</item>
+        <item name="cardElevation">@dimen/elevation_card</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="Widget.Miyav.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">@color/surface</item>
+        <item name="itemIconTint">@color/nav_item</item>
+        <item name="itemTextColor">@color/nav_item</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.Miyav.NavIndicator</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.Miyav.NavLabel</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.Miyav.NavLabel</item>
+    </style>
+
+    <style name="Widget.Miyav.NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/pastel_peach</item>
+    </style>
+
+    <style name="Widget.Miyav.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextColor">@color/text_primary</item>
+        <item name="navigationIconTint">@color/text_primary</item>
+        <item name="titleTextAppearance">@style/TextAppearance.Miyav.Headline</item>
+    </style>
+
+    <style name="Widget.Miyav.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="chipBackgroundColor">@color/surface_muted</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="chipCornerRadius">@dimen/radius_sm</item>
+    </style>
+
+    <!-- Typography -->
+    <style name="TextAppearance.Miyav.Display" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.Miyav.Title" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.Miyav.Headline" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.Miyav.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:lineSpacingMultiplier">1.15</item>
+    </style>
+
+    <style name="TextAppearance.Miyav.Caption" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="TextAppearance.Miyav.Section" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.08</item>
+    </style>
+
+    <style name="TextAppearance.Miyav.NavLabel" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.Miyav.Badge" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+</resources>

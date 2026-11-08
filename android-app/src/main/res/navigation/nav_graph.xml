@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/splashFragment">
+
+    <action
+        android:id="@+id/action_global_login"
+        app:destination="@id/loginFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true" />
+
+    <action
+        android:id="@+id/action_global_home"
+        app:destination="@id/homeFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true" />
+
+    <action
+        android:id="@+id/action_global_recovery"
+        app:destination="@id/passwordFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true">
+        <argument
+            android:name="recovery"
+            android:defaultValue="true"
+            app:argType="boolean" />
+    </action>
+
+    <action
+        android:id="@+id/action_global_detail"
+        app:destination="@id/petDetailFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_public_profile"
+        app:destination="@id/publicProfileFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_location_picker"
+        app:destination="@id/locationPickerFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <fragment
+        android:id="@+id/publicProfileFragment"
+        android:name="az.miyav.android.ui.PublicProfileFragment"
+        android:label="@string/public_profile_title">
+        <argument
+            android:name="userId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/locationPickerFragment"
+        android:name="az.miyav.android.ui.LocationPickerFragment"
+        android:label="@string/location_picker_title" />
+
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="az.miyav.android.ui.SplashFragment"
+        android:label="@string/app_name" />
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="az.miyav.android.ui.LoginFragment"
+        android:label="@string/auth_login" />
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="az.miyav.android.ui.HomeFragment"
+        android:label="@string/home_title">
+        <action
+            android:id="@+id/action_home_to_detail"
+            app:destination="@id/petDetailFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/pop_in"
+            app:popExitAnim="@anim/pop_out" />
+        <action
+            android:id="@+id/action_home_to_editor"
+            app:destination="@id/petEditorFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/pop_in"
+            app:popExitAnim="@anim/pop_out" />
+        <action
+            android:id="@+id/action_home_to_notifications"
+            app:destination="@id/notificationsFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/pop_in"
+            app:popExitAnim="@anim/pop_out" />
+        <action
+            android:id="@+id/action_home_to_password"
+            app:destination="@id/passwordFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/pop_in"
+            app:popExitAnim="@anim/pop_out" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/petDetailFragment"
+        android:name="az.miyav.android.ui.PetDetailFragment"
+        android:label="@string/home_title">
+        <argument
+            android:name="petId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_detail_to_editor"
+            app:destination="@id/petEditorFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/pop_in"
+            app:popExitAnim="@anim/pop_out" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/petEditorFragment"
+        android:name="az.miyav.android.ui.PetEditorFragment"
+        android:label="@string/pet_create">
+        <argument
+            android:name="petId"
+            android:defaultValue=""
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="az.miyav.android.ui.NotificationsFragment"
+        android:label="@string/notifications_title" />
+
+    <fragment
+        android:id="@+id/passwordFragment"
+        android:name="az.miyav.android.ui.PasswordFragment"
+        android:label="@string/auth_change_password">
+        <argument
+            android:name="recovery"
+            android:defaultValue="false"
+            app:argType="boolean" />
+    </fragment>
+</navigation>

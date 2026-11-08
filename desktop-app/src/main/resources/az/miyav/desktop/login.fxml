@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="az.miyav.desktop.LoginController" styleClass="screen">
+    <VBox alignment="CENTER" spacing="14" maxWidth="420">
+        <padding>
+            <Insets top="48" right="32" bottom="48" left="32"/>
+        </padding>
+        <Label fx:id="title" styleClass="wordmark"/>
+        <TextField fx:id="fullName" maxWidth="360"/>
+        <TextField fx:id="email" maxWidth="360"/>
+        <PasswordField fx:id="password" maxWidth="360"/>
+        <Button fx:id="loginButton" onAction="#onLogin" styleClass="primary" maxWidth="360" mnemonicParsing="false"/>
+        <Button fx:id="registerButton" onAction="#onRegister" styleClass="ghost" maxWidth="360" mnemonicParsing="false"/>
+        <Button fx:id="resetButton" onAction="#onReset" styleClass="ghost" maxWidth="360" mnemonicParsing="false"/>
+        <Label fx:id="message" wrapText="true" maxWidth="360" styleClass="muted"/>
+        <HBox alignment="CENTER" spacing="8">
+            <Button fx:id="az" onAction="#useAz" styleClass="ghost" mnemonicParsing="false"/>
+            <Button fx:id="en" onAction="#useEn" styleClass="ghost" mnemonicParsing="false"/>
+            <Button fx:id="ru" onAction="#useRu" styleClass="ghost" mnemonicParsing="false"/>
+        </HBox>
+    </VBox>
+</StackPane>

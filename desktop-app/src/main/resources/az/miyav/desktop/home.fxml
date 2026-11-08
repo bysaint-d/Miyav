@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="az.miyav.desktop.HomeController" styleClass="screen" spacing="12">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label fx:id="title" styleClass="wordmark"/>
+        <HBox spacing="8" alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+            <Button fx:id="az" onAction="#useAz" styleClass="ghost" mnemonicParsing="false"/>
+            <Button fx:id="en" onAction="#useEn" styleClass="ghost" mnemonicParsing="false"/>
+            <Button fx:id="ru" onAction="#useRu" styleClass="ghost" mnemonicParsing="false"/>
+            <Button fx:id="logoutButton" onAction="#onLogout" styleClass="primary" mnemonicParsing="false"/>
+        </HBox>
+    </HBox>
+    <Label fx:id="stats" wrapText="true" styleClass="muted"/>
+    <HBox spacing="8">
+        <Button fx:id="usersButton" onAction="#showUsers" styleClass="ghost" mnemonicParsing="false"/>
+        <Button fx:id="listingsButton" onAction="#showListings" styleClass="ghost" mnemonicParsing="false"/>
+        <Button fx:id="applicationsButton" onAction="#showApplications" styleClass="ghost" mnemonicParsing="false"/>
+        <Button fx:id="reportsButton" onAction="#showReports" styleClass="ghost" mnemonicParsing="false"/>
+    </HBox>
+    <Label fx:id="empty" wrapText="true" styleClass="muted"/>
+    <ListView fx:id="rows" VBox.vgrow="ALWAYS"/>
+    <HBox spacing="8">
+        <Button fx:id="suspendButton" onAction="#onSuspend" styleClass="ghost" mnemonicParsing="false"/>
+        <Button fx:id="archiveButton" onAction="#onArchive" styleClass="ghost" mnemonicParsing="false"/>
+        <Button fx:id="restoreButton" onAction="#onRestore" styleClass="ghost" mnemonicParsing="false"/>
+        <Button fx:id="resolveButton" onAction="#onResolve" styleClass="ghost" mnemonicParsing="false"/>
+    </HBox>
+    <Label fx:id="message" wrapText="true" styleClass="muted"/>
+</VBox>

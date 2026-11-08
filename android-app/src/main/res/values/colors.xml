@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand -->
+    <color name="brand_coral">#FF6B4A</color>
+    <color name="brand_coral_dark">#E2532F</color>
+    <color name="brand_sun">#FFB938</color>
+    <color name="brand_mint">#1FB27A</color>
+    <color name="brand_lavender">#7B61FF</color>
+    <color name="brand_sky">#3B9EFF</color>
+    <color name="brand_whatsapp">#25D366</color>
+
+    <!-- Pastel containers -->
+    <color name="pastel_peach">#FFE8DF</color>
+    <color name="pastel_butter">#FFF3D1</color>
+    <color name="pastel_mint">#DDF6EC</color>
+    <color name="pastel_lavender">#EEEAFF</color>
+    <color name="pastel_sky">#E1F0FF</color>
+
+    <!-- Neutrals -->
+    <color name="bg_app">#FFF9F5</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_muted">#F6EFEA</color>
+    <color name="outline">#EFE4DD</color>
+    <color name="text_primary">#231A16</color>
+    <color name="text_secondary">#7A6E68</color>
+    <color name="text_on_brand">#FFFFFF</color>
+    <color name="error">#E5484D</color>
+    <color name="success">#1FB27A</color>
+
+    <!-- Effects -->
+    <color name="skeleton_base">#F1E8E2</color>
+    <color name="skeleton_highlight">#FFFCFA</color>
+    <color name="scrim">#66231A16</color>
+</resources>

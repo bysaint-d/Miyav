@@ -1,0 +1,142 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+def setting = { String key, String env ->
+    (localProperties.getProperty(key) ?: System.getenv(env) ?: "").trim()
+}
+def supabaseUrl = setting("supabase.url", "MIYAV_SUPABASE_URL")
+def supabaseKey = setting("supabase.publishableKey", "MIYAV_SUPABASE_PUBLISHABLE_KEY")
+if (supabaseKey.startsWith("sb_secret_")) {
+    throw new GradleException("A Supabase secret key must never be built into the Android app. Use the publishable key.")
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+def signingValue = { String key, String env ->
+    (keystoreProperties.getProperty(key) ?: System.getenv(env) ?: "").trim()
+}
+def uploadStoreFile = signingValue("storeFile", "MIYAV_UPLOAD_STORE_FILE")
+def hasReleaseSigning = !uploadStoreFile.isEmpty()
+
+def authScheme = "az.miyav.native"
+def authHost = "auth"
+
+android {
+    namespace "az.miyav.android"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "az.miyav.native"
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName "1.0.0"
+
+        buildConfigField "String", "SUPABASE_URL", "\"${supabaseUrl}\""
+        buildConfigField "String", "SUPABASE_PUBLISHABLE_KEY", "\"${supabaseKey}\""
+        buildConfigField "String", "AUTH_REDIRECT", "\"${authScheme}://${authHost}\""
+        manifestPlaceholders = [authScheme: authScheme, authHost: authHost]
+        resourceConfigurations += ["az", "en", "ru"]
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile rootProject.file(uploadStoreFile)
+                storePassword signingValue("storePassword", "MIYAV_UPLOAD_STORE_PASSWORD")
+                keyAlias signingValue("keyAlias", "MIYAV_UPLOAD_KEY_ALIAS")
+                keyPassword signingValue("keyPassword", "MIYAV_UPLOAD_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+
+    testOptions {
+        unitTests.all { test ->
+            test.environment("MIYAV_SUPABASE_URL", supabaseUrl)
+            test.environment("MIYAV_SUPABASE_PUBLISHABLE_KEY", supabaseKey)
+            ["MIYAV_IT_OWNER_EMAIL", "MIYAV_IT_OWNER_PASSWORD", "MIYAV_IT_APPLICANT_EMAIL", "MIYAV_IT_APPLICANT_PASSWORD"].each { name ->
+                def value = System.getenv(name)
+                if (value != null) {
+                    test.environment(name, value)
+                }
+            }
+            test.testLogging { events "passed", "skipped", "failed"; showStandardStreams = true }
+        }
+    }
+
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+
+    lint {
+        checkReleaseBuilds true
+        abortOnError true
+    }
+}
+
+tasks.configureEach { task ->
+    if (task.name in ["assembleRelease", "bundleRelease", "packageRelease"]) {
+        task.doFirst {
+            if (supabaseUrl.isEmpty() || supabaseKey.isEmpty()) {
+                throw new GradleException("Release build needs supabase.url and supabase.publishableKey in local.properties or MIYAV_SUPABASE_URL / MIYAV_SUPABASE_PUBLISHABLE_KEY.")
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation project(":shared:application")
+    implementation project(":shared:data")
+    implementation project(":shared:security")
+    implementation project(":shared:domain")
+    implementation project(":shared:common")
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
+    implementation libs.lifecycle.viewmodel
+    implementation libs.lifecycle.livedata
+    implementation libs.activity
+    implementation libs.fragment
+    implementation libs.recyclerview
+    implementation libs.swiperefreshlayout
+    implementation libs.exifinterface
+    implementation libs.osmdroid
+    implementation libs.room.runtime
+    annotationProcessor libs.room.compiler
+    implementation libs.work.runtime
+
+    testImplementation libs.junit4
+}

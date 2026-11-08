@@ -1,0 +1,21 @@
+plugins {
+    id "application"
+    id "org.openjfx.javafxplugin"
+}
+
+javafx {
+    version = libs.versions.javafx.get()
+    modules = ["javafx.controls", "javafx.fxml"]
+}
+
+application {
+    mainClass = "az.miyav.desktop.MiyavDesktopApp"
+}
+
+dependencies {
+    implementation project(":shared:application")
+    implementation project(":shared:data")
+    implementation project(":shared:security")
+    implementation project(":shared:domain")
+    implementation project(":shared:common")
+}

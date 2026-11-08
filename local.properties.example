@@ -1,0 +1,11 @@
+# Copy to local.properties (gitignored). Never commit the real file.
+# Android SDK location (Android Studio writes this automatically).
+sdk.dir=C:\\Users\\<you>\\AppData\\Local\\Android\\Sdk
+
+# Supabase -> Project Settings -> API (Data API) -> Project URL
+supabase.url=https://<project-ref>.supabase.co
+
+# Supabase -> Project Settings -> API Keys -> Publishable key (sb_publishable_...)
+# Public client key. NEVER put a secret key (sb_secret_...) or the service_role JWT here;
+# the build fails on purpose if a secret key is detected.
+supabase.publishableKey=sb_publishable_<value>

@@ -1,0 +1,10 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    api project(":shared:domain")
+    implementation project(":shared:security")
+    implementation project(":shared:common")
+    testImplementation libs.mockito.core
+}

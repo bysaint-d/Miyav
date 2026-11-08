@@ -1,0 +1,4 @@
+# Copy to config/supabase.properties (gitignored) or set the same values as environment variables.
+# Use the publishable/anon key only. Never put a service_role or sb_secret key here.
+MIYAV_SUPABASE_URL=https://<project-ref>.supabase.co
+MIYAV_SUPABASE_PUBLISHABLE_KEY=sb_publishable_<value>

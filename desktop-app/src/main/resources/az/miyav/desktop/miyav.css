@@ -1,0 +1,65 @@
+.screen {
+    -fx-background-color: #0e0e0e;
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-font-size: 14px;
+}
+
+.wordmark {
+    -fx-text-fill: #f7f7f5;
+    -fx-font-size: 28px;
+    -fx-font-weight: 700;
+}
+
+.label {
+    -fx-text-fill: #f7f7f5;
+}
+
+.muted {
+    -fx-text-fill: #8a8a8a;
+}
+
+.text-field, .password-field {
+    -fx-background-color: #161616;
+    -fx-text-fill: #f7f7f5;
+    -fx-prompt-text-fill: #8a8a8a;
+    -fx-background-radius: 12;
+    -fx-border-color: #2a2a2a;
+    -fx-border-radius: 12;
+    -fx-padding: 10 12 10 12;
+}
+
+.button {
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-padding: 10 16 10 16;
+}
+
+.primary {
+    -fx-background-color: #f7f7f5;
+    -fx-text-fill: #111111;
+}
+
+.ghost {
+    -fx-background-color: transparent;
+    -fx-border-color: #2a2a2a;
+    -fx-border-radius: 12;
+    -fx-text-fill: #f7f7f5;
+}
+
+.list-view {
+    -fx-background-color: #161616;
+    -fx-border-color: #2a2a2a;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 4;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f7f7f5;
+    -fx-padding: 10 12 10 12;
+}
+
+.list-cell:selected {
+    -fx-background-color: #222222;
+}

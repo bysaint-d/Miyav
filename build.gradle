@@ -1,0 +1,27 @@
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.javafx) apply false
+}
+
+subprojects { project ->
+    project.pluginManager.withPlugin("java") {
+        if (project.path == ":android-app") {
+            return
+        }
+        project.java {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+        project.tasks.withType(JavaCompile).configureEach {
+            options.encoding = "UTF-8"
+            options.release = 17
+        }
+        project.dependencies {
+            testImplementation libs.junit.jupiter
+            testRuntimeOnly libs.junit.platform.launcher
+        }
+        project.tasks.withType(Test).configureEach {
+            useJUnitPlatform()
+        }
+    }
+}
