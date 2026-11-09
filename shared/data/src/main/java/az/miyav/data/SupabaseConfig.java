@@ -44,6 +44,13 @@ public final class SupabaseConfig {
         return URI.create(url + pathAndQuery);
     }
 
+    /** Realtime websocket endpoint; the publishable key identifies the project, the user token joins channels. */
+    public String realtimeUrl() {
+        requireConfigured();
+        return url.replaceFirst("^http", "ws") + "/realtime/v1/websocket?apikey="
+                + java.net.URLEncoder.encode(publishableKey, StandardCharsets.UTF_8) + "&vsn=1.0.0";
+    }
+
     public String publishableKey() {
         requireConfigured();
         return publishableKey;

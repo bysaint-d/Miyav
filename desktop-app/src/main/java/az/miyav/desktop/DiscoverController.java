@@ -6,11 +6,23 @@ import az.miyav.common.locale.LocaleCode;
 import az.miyav.domain.auth.AuthSession;
 import az.miyav.domain.auth.PendingAction;
 import az.miyav.domain.auth.ProtectedAction;
+import az.miyav.domain.pet.AgeRange;
 import az.miyav.domain.pet.Pet;
+import az.miyav.domain.pet.PetFilters;
+import az.miyav.domain.pet.PetGender;
 import az.miyav.domain.pet.PetQuery;
+import az.miyav.domain.pet.PetSort;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.repository.FavoriteRepository;
+import az.miyav.domain.repository.LiveUpdates;
 import az.miyav.domain.user.PublicProfile;
+import az.miyav.desktop.user.ApplicationsPage;
+import az.miyav.desktop.user.MessagesPage;
+import az.miyav.desktop.user.MyListingsPage;
+import az.miyav.desktop.user.NotificationsPage;
+import az.miyav.desktop.user.ProfilePage;
+import az.miyav.desktop.user.UserContext;
+import az.miyav.desktop.user.UserPage;
 import az.miyav.security.AccessPolicy;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -28,12 +40,17 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import az.miyav.desktop.admin.Components;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -41,6 +58,7 @@ import javafx.util.StringConverter;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +87,28 @@ public final class DiscoverController {
     private boolean favorite;
     private int generation;
 
+    private static final String DISCOVER = "discover";
+    private static final double PHOTO_WIDTH = 520;
+    private static final double PHOTO_HEIGHT = 340;
+    private final Map<String, UserPage> pages = new LinkedHashMap<>();
+    private final Map<String, ToggleButton> tabs = new LinkedHashMap<>();
+    private MessagesPage messagesPage;
+    private UserPage shown;
+    private LiveUpdates.Subscription notificationFeed = LiveUpdates.NONE;
+    private int unreadMessages;
+    private int unreadNotifications;
+
+    private WalkBoard walkBoard;
+    private boolean walks;
+
+    @FXML private ToggleButton adoptionMode;
+    @FXML private ToggleButton walkMode;
+    @FXML private BorderPane root;
+    @FXML private HBox nav;
+    @FXML private HBox searchRow;
+    @FXML private HBox filterRow;
+    @FXML private SplitPane discoverPane;
+    @FXML private Button chatButton;
     @FXML private Label tagline;
     @FXML private Label modeBadge;
     @FXML private Button az;
@@ -80,6 +120,11 @@ public final class DiscoverController {
     @FXML private ComboBox<PetSpecies> species;
     @FXML private ComboBox<String> city;
     @FXML private ToggleButton savedOnly;
+    @FXML private ComboBox<PetGender> gender;
+    @FXML private ComboBox<AgeRange> age;
+    @FXML private ToggleButton vaccinatedOnly;
+    @FXML private ComboBox<PetSort> sort;
+    @FXML private Hyperlink resetFilters;
     @FXML private ListView<Pet> listings;
     @FXML private Label placeholder;
     @FXML private ImageView photo;
@@ -143,12 +188,203 @@ public final class DiscoverController {
         city.setConverter(converter(value -> value == null ? graph.text("filter.all") : value));
         city.getSelectionModel().selectFirst();
         city.setOnAction(event -> reload());
+        List<PetGender> genders = new ArrayList<>();
+        genders.add(null);
+        genders.add(PetGender.MALE);
+        genders.add(PetGender.FEMALE);
+        gender.getItems().setAll(genders);
+        gender.setConverter(converter(value -> value == null
+                ? graph.text("filters.gender") + ": " + graph.text("filter.all")
+                : graph.text("gender." + value.databaseValue())));
+        gender.getSelectionModel().selectFirst();
+        gender.setOnAction(event -> reload());
+        age.getItems().setAll(AgeRange.values());
+        age.setConverter(converter(value -> graph.text("filters.age." + value.name().toLowerCase(java.util.Locale.ROOT))));
+        age.getSelectionModel().select(AgeRange.ANY);
+        age.setOnAction(event -> reload());
+        vaccinatedOnly.setText("💉 " + graph.text("filters.vaccinated"));
+        sort.getItems().setAll(PetSort.values());
+        sort.setConverter(converter(value -> "↕ " + graph.text("filters.sort." + value.name().toLowerCase(java.util.Locale.ROOT))));
+        sort.getSelectionModel().select(PetSort.NEWEST);
+        sort.setOnAction(event -> reload());
+        resetFilters.setText(graph.text("filters.reset"));
 
         listings.setCellFactory(view -> new PetCell());
         listings.getSelectionModel().selectedItemProperty().addListener((observable, before, pet) -> show(pet));
+        chatButton.setText("💬 " + graph.text("discover.write_owner"));
+        ToggleGroup modes = new ToggleGroup();
+        adoptionMode.setToggleGroup(modes);
+        walkMode.setToggleGroup(modes);
+        adoptionMode.setText("🐾 " + graph.text("discover.mode_adoption"));
+        walkMode.setText("🐕 " + graph.text("discover.mode_walks"));
+        adoptionMode.setSelected(true);
+        walkBoard = new WalkBoard(graph, this::window, status::setText, this::gate, (room, other, name) -> {
+            messagesPage.prepare(room, other, name);
+            openPage("messages", room);
+        });
+        BorderPane.setMargin(walkBoard.view(), new Insets(0, 24, 0, 24));
+        buildNavigation();
         show(null);
         onAuthChanged();
         reload();
+    }
+
+    /** Discover plus the member pages; member pages ask guests to sign in first. */
+    private void buildNavigation() {
+        UserContext context = new UserContext(graph, status::setText, this::openPage, this::sessionLost,
+                this::refreshBadges, this::window);
+        messagesPage = new MessagesPage(context);
+        for (UserPage page : List.of(new MyListingsPage(context), new ApplicationsPage(context), messagesPage,
+                new NotificationsPage(context), new ProfilePage(context))) {
+            pages.put(page.id(), page);
+        }
+        ToggleGroup group = new ToggleGroup();
+        tabs.put(DISCOVER, tab(group, DISCOVER, "🔎", "user.nav.discover"));
+        for (UserPage page : pages.values()) {
+            tabs.put(page.id(), tab(group, page.id(), page.icon(), page.titleKey()));
+        }
+        tabs.get(DISCOVER).setSelected(true);
+        nav.getChildren().setAll(tabs.values());
+    }
+
+    /** The screen is being replaced (language switch, admin console); stop live connections and timers. */
+    void dispose() {
+        stopLive();
+    }
+
+    private ToggleButton tab(ToggleGroup group, String id, String icon, String titleKey) {
+        ToggleButton button = new ToggleButton(icon + "  " + graph.text(titleKey));
+        button.getStyleClass().add("chip");
+        button.setToggleGroup(group);
+        button.setMnemonicParsing(false);
+        button.setUserData(titleKey);
+        button.setOnAction(event -> openPage(id, null));
+        return button;
+    }
+
+    /** Switches the main area; member pages need an account. */
+    private void openPage(String id, UUID focus) {
+        if (!DISCOVER.equals(id) && !graph.session().signedIn()) {
+            if (!AuthDialog.show(window(), app, null)) {
+                selectTab(shown == null ? DISCOVER : shown.id());
+                return;
+            }
+            afterSignIn();
+        }
+        if (shown != null) {
+            shown.hidden();
+        }
+        selectTab(id);
+        boolean discover = DISCOVER.equals(id);
+        searchRow.setVisible(discover);
+        searchRow.setManaged(discover);
+        filterRow.setVisible(discover && !walks);
+        filterRow.setManaged(discover && !walks);
+        if (discover) {
+            shown = null;
+            root.setCenter(walks ? walkBoard.view() : discoverPane);
+            return;
+        }
+        UserPage page = pages.get(id);
+        shown = page;
+        VBox frame = new VBox(page.view());
+        VBox.setVgrow(page.view(), javafx.scene.layout.Priority.ALWAYS);
+        frame.setPadding(new Insets(0, 24, 0, 24));
+        root.setCenter(frame);
+        page.refresh();
+        if (focus != null) {
+            page.focus(focus);
+        }
+    }
+
+    private void selectTab(String id) {
+        ToggleButton button = tabs.get(id);
+        if (button != null) {
+            button.setSelected(true);
+        }
+    }
+
+    private void sessionLost() {
+        graph.session().expire();
+        onAuthChanged();
+    }
+
+    /** Unread chats and notifications on the navigation, updated live when a notification arrives. */
+    private void refreshBadges() {
+        if (!graph.session().signedIn()) {
+            unreadMessages = 0;
+            unreadNotifications = 0;
+            renderBadges();
+            return;
+        }
+        work(() -> {
+            AuthSession session = graph.session().requireSession();
+            return new int[]{graph.messaging().unreadCount(session), graph.notifications().unreadCount(session)};
+        }, counts -> {
+            unreadMessages = counts[0];
+            unreadNotifications = counts[1];
+            renderBadges();
+        }, code -> {
+        });
+    }
+
+    private void renderBadges() {
+        badge("messages", unreadMessages);
+        badge("notifications", unreadNotifications);
+    }
+
+    private void badge(String id, int count) {
+        ToggleButton button = tabs.get(id);
+        UserPage page = pages.get(id);
+        if (button != null && page != null) {
+            button.setText(page.icon() + "  " + graph.text(page.titleKey()) + (count > 0 ? "  (" + count + ")" : ""));
+        }
+    }
+
+    private void startLive() {
+        stopLive();
+        if (!graph.session().signedIn()) {
+            return;
+        }
+        notificationFeed = graph.live().watchNotifications(() -> graph.session().viewer(), () -> Platform.runLater(() -> {
+            refreshBadges();
+            if (shown != null && ("notifications".equals(shown.id()) || "applications".equals(shown.id()))) {
+                shown.refresh();
+            }
+        }));
+    }
+
+    private void stopLive() {
+        notificationFeed.close();
+        notificationFeed = LiveUpdates.NONE;
+        if (shown != null) {
+            shown.hidden();
+        }
+    }
+
+    @FXML
+    private void onChat() {
+        Pet pet = selected;
+        if (pet == null) {
+            return;
+        }
+        PendingAction action = PendingAction.of(ProtectedAction.CONTACT_OWNER, "petId", pet.id().toString());
+        if (!gate(action)) {
+            return;
+        }
+        graph.session().takePending(ProtectedAction.CONTACT_OWNER, "petId", pet.id().toString());
+        work(() -> {
+            AuthSession session = graph.session().requireSession();
+            UUID room = graph.messaging().openForAdoption(session, pet);
+            String name = graph.discovery().publisher(session, pet.ownerId()).map(PublicProfile::fullName).orElse("");
+            return new OwnerChat(room, name);
+        }, chat -> {
+            messagesPage.prepare(chat.room(), pet.ownerId(), chat.ownerName());
+            openPage("messages", chat.room());
+        });
+    }
+
+    private record OwnerChat(UUID room, String ownerName) {
     }
 
     /** Re-renders everything that depends on the account: header, admin entry, selected listing. */
@@ -165,14 +401,64 @@ public final class DiscoverController {
             case GUEST -> status.setText(graph.text("guest.profile.body"));
             default -> status.setText("");
         }
+        if (!signedIn && shown != null) {
+            openPage(DISCOVER, null);
+        }
+        if (signedIn) {
+            startLive();
+        } else {
+            stopLive();
+        }
+        refreshBadges();
         if (selected != null) {
             show(selected);
         }
+        walkBoard.refreshSelection();
     }
 
     @FXML
     private void onSearch() {
         reload();
+    }
+
+    @FXML
+    private void onAdoptionMode() {
+        setWalks(false);
+    }
+
+    @FXML
+    private void onWalkMode() {
+        setWalks(true);
+    }
+
+    /** Adoption listings or paid walk requests; walks keep only the species and city filters. */
+    private void setWalks(boolean next) {
+        walks = next;
+        adoptionMode.setSelected(!next);
+        walkMode.setSelected(next);
+        for (javafx.scene.Node node : List.of(search, savedOnly)) {
+            node.setVisible(!next);
+            node.setManaged(!next);
+        }
+        filterRow.setVisible(!next);
+        filterRow.setManaged(!next);
+        if (shown == null) {
+            root.setCenter(next ? walkBoard.view() : discoverPane);
+        }
+        reload();
+    }
+
+    @FXML
+    private void onResetFilters() {
+        gender.getSelectionModel().selectFirst();
+        age.getSelectionModel().select(AgeRange.ANY);
+        vaccinatedOnly.setSelected(false);
+        sort.getSelectionModel().select(PetSort.NEWEST);
+        reload();
+    }
+
+    private PetFilters filters() {
+        return new PetFilters(gender.getValue(), age.getValue(), vaccinatedOnly.isSelected(), sort.getValue());
     }
 
     @FXML
@@ -292,6 +578,7 @@ public final class DiscoverController {
 
     /** Refreshes account-specific data and offers to move device favourites to the account. */
     private void afterSignIn() {
+        graph.syncProfileLocale();
         onAuthChanged();
         int count = graph.favorites().guestCount();
         if (count > 0) {
@@ -316,9 +603,15 @@ public final class DiscoverController {
     }
 
     private void reload() {
+        if (walks) {
+            walkBoard.reload(species.getValue(), city.getValue());
+            return;
+        }
         int token = ++generation;
         boolean favoritesOnly = savedOnly.isSelected();
-        PetQuery query = new PetQuery(species.getValue(), city.getValue() == null ? "" : city.getValue(), search.getText(), 50, 0);
+        PetFilters filters = filters();
+        resetFilters.setVisible(filters.activeCount() > 0);
+        PetQuery query = new PetQuery(species.getValue(), city.getValue() == null ? "" : city.getValue(), search.getText(), 50, 0, filters);
         work(() -> {
             AuthSession viewer = graph.session().viewer();
             if (!favoritesOnly) {
@@ -327,14 +620,15 @@ public final class DiscoverController {
             Set<UUID> ids = graph.favorites().ids(viewer);
             List<Pet> pets = graph.discovery().listings(ids);
             graph.favorites().forgetUnavailable(viewer, ids, pets);
-            return pets;
+            return pets.stream().filter(filters::matches).toList();
         }, pets -> {
             if (token != generation) {
                 return;
             }
             UUID keep = selected == null ? null : selected.id();
             listings.getItems().setAll(pets);
-            listings.setPlaceholder(new Label(graph.text(favoritesOnly ? "favorites.empty" : "home.empty")));
+            listings.setPlaceholder(new Label(graph.text(favoritesOnly ? "favorites.empty"
+                    : filters.activeCount() > 0 ? "filters.empty" : "home.empty")));
             if (keep != null) {
                 pets.stream().filter(pet -> pet.id().equals(keep)).findFirst()
                         .ifPresent(pet -> listings.getSelectionModel().select(pet));
@@ -362,23 +656,29 @@ public final class DiscoverController {
         name.setText(pet.name());
         String breed = pet.breed().isEmpty() ? "" : " · " + pet.breed();
         facts.setText(graph.text("species." + pet.species().databaseValue()) + breed
-                + " · " + graph.text("discover.months", pet.ageMonths()) + " · " + pet.city());
+                + " · " + graph.text("gender." + pet.gender().databaseValue())
+                + " · " + graph.text("discover.months", pet.ageMonths())
+                + " · " + graph.text("vaccination." + pet.vaccination().databaseValue())
+                + " · " + pet.city());
         description.setText(pet.description());
         place.setText(pet.location() == null || pet.location().name().isEmpty()
                 ? "" : graph.text("discover.location", pet.location().name()));
-        photo.setImage(null);
+        Components.fill(photo, null, PHOTO_WIDTH, PHOTO_HEIGHT, 18);
         publisher.setText("");
         contact.setText("");
         boolean signedIn = graph.session().signedIn();
         contactButton.setText(graph.text("discover.contact"));
         contactButton.setVisible(!signedIn);
         contactButton.setManaged(!signedIn);
+        boolean own = graph.session().session().map(session -> session.userId().equals(pet.ownerId())).orElse(false);
+        chatButton.setVisible(!own);
+        chatButton.setManaged(!own);
         renderFavorite(false);
         UUID petId = pet.id();
         if (!pet.photoPaths().isEmpty()) {
-            image(pet.photoPaths().get(0), 960, image -> {
+            image(pet.photoPaths().get(0), 1040, image -> {
                 if (selected != null && selected.id().equals(petId)) {
-                    photo.setImage(image);
+                    Components.fill(photo, image, PHOTO_WIDTH, PHOTO_HEIGHT, 18);
                 }
             });
         }
@@ -619,19 +919,24 @@ public final class DiscoverController {
     }
 
     private final class PetCell extends ListCell<Pet> {
+        private static final double THUMB = 76;
         private final ImageView thumb = new ImageView();
+        private final Label glyph = new Label();
         private final Label title = new Label();
         private final Label meta = new Label();
         private final HBox root;
 
         PetCell() {
-            thumb.setFitWidth(64);
-            thumb.setFitHeight(64);
-            thumb.setPreserveRatio(true);
+            StackPane frame = new StackPane(glyph, thumb);
+            frame.getStyleClass().add("photo-placeholder");
+            frame.setMinSize(THUMB, THUMB);
+            frame.setMaxSize(THUMB, THUMB);
+            glyph.getStyleClass().add("nav-icon");
             title.getStyleClass().add("cell-title");
             meta.getStyleClass().add("muted");
-            root = new HBox(12, thumb, new VBox(4, title, meta));
+            root = new HBox(12, frame, new VBox(4, title, meta));
             root.setAlignment(Pos.CENTER_LEFT);
+            root.setMinHeight(THUMB + 8);
         }
 
         @Override
@@ -642,13 +947,15 @@ public final class DiscoverController {
                 return;
             }
             title.setText(pet.name());
-            meta.setText(graph.text("species." + pet.species().databaseValue()) + " · " + pet.city());
-            thumb.setImage(null);
+            meta.setText(graph.text("species." + pet.species().databaseValue()) + " · "
+                    + graph.text("discover.months", pet.ageMonths()) + " · " + pet.city());
+            glyph.setText(Components.speciesGlyph(pet.species().databaseValue()));
+            Components.fill(thumb, null, THUMB, THUMB, 12);
             if (!pet.photoPaths().isEmpty()) {
                 UUID id = pet.id();
-                image(pet.photoPaths().get(0), 128, image -> {
+                image(pet.photoPaths().get(0), 240, image -> {
                     if (getItem() != null && getItem().id().equals(id)) {
-                        thumb.setImage(image);
+                        Components.fill(thumb, image, THUMB, THUMB, 12);
                     }
                 });
             }

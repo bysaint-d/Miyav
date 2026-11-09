@@ -19,13 +19,10 @@
         android:layout_height="match_parent"
         android:background="@color/gallery_scrim" />
 
-    <!-- Bottom margin keeps the photo clear of the rounded sheet that overlaps the gallery. -->
     <ImageView
         android:id="@+id/photoView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/space_sm"
-        android:layout_marginBottom="28dp"
         android:contentDescription="@string/photo_open"
         android:scaleType="center"
         android:src="@drawable/ic_paw" />

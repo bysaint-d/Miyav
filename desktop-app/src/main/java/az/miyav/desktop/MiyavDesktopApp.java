@@ -87,6 +87,10 @@ public final class MiyavDesktopApp extends Application {
 
     private void show(String fxml) {
         screen = fxml;
+        if (discover != null) {
+            discover.dispose();
+            discover = null;
+        }
         FXMLLoader loader = new FXMLLoader(MiyavDesktopApp.class.getResource(fxml));
         loader.setControllerFactory(type -> {
             if (type == DiscoverController.class) {

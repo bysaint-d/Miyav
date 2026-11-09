@@ -68,6 +68,16 @@ class MessagingServiceTest {
     }
 
     @Test
+    void photosAreUploadedToTheChatThenPostedWithTheTrimmedCaption() {
+        UUID room = UUID.randomUUID();
+        byte[] jpeg = {(byte) 0xFF, (byte) 0xD8, 1};
+        when(repository.uploadPhoto(walker, room, jpeg)).thenReturn("path.jpg");
+        service.sendPhoto(walker, room, jpeg, "  Bax  ", null);
+        verify(repository).sendPhoto(walker, room, "path.jpg", "Bax", null);
+        assertThrows(AccessDeniedException.class, () -> service.sendPhoto(null, room, jpeg, "", null));
+    }
+
+    @Test
     void ownMessagesNeverCountAsUnread() {
         Conversation mine = new Conversation(UUID.randomUUID(), UUID.randomUUID(), "Aysel", NOW, "Salam", true, null, true);
         Conversation theirs = new Conversation(UUID.randomUUID(), UUID.randomUUID(), "Murad", NOW, "", false, BigDecimal.TEN, true);

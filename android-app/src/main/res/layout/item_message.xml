@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/row"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -42,6 +43,16 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.Miyav.Caption"
             android:visibility="gone" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/photoView"
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:layout_marginBottom="@dimen/space_xs"
+            android:contentDescription="@string/chat_photo"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            app:shapeAppearanceOverlay="@style/Shape.Miyav.Photo" />
 
         <TextView
             android:id="@+id/bodyView"

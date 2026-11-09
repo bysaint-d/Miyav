@@ -28,6 +28,7 @@ import az.miyav.android.location.DeviceLocation;
 import az.miyav.domain.auth.ProtectedAction;
 import az.miyav.domain.location.ListingLocation;
 import az.miyav.domain.pet.Pet;
+import az.miyav.domain.pet.PetFilters;
 import az.miyav.domain.pet.PetQuery;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.walk.WalkListing;
@@ -52,6 +53,7 @@ public class DiscoverFragment extends Fragment {
     private WalkListingAdapter walks;
     private boolean walkMode;
     private int walkOffset;
+    private PetFilters filters = PetFilters.NONE;
     private final ActivityResultLauncher<String[]> permission = registerForActivityResult(
             new ActivityResultContracts.RequestMultiplePermissions(), this::onPermission);
 
@@ -60,6 +62,7 @@ public class DiscoverFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentDiscoverBinding.inflate(inflater, container, false);
         walkMode = savedInstanceState == null || savedInstanceState.getBoolean(STATE_WALKS, true);
+        filters = PetFiltersSheet.restore(savedInstanceState);
         binding.modeGroup.check(walkMode ? R.id.modeWalks : R.id.modeAdoption);
         binding.modeGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked && (checkedId == R.id.modeWalks) != walkMode) {
@@ -116,6 +119,18 @@ public class DiscoverFragment extends Fragment {
                 clearNearby();
             }
         });
+        renderFilters();
+        binding.filtersChip.setOnClickListener(view -> {
+            renderFilters();
+            PetFiltersSheet.show(this, filters, nearLatitude != null, picked -> {
+                if (binding == null || picked.equals(filters)) {
+                    return;
+                }
+                filters = picked;
+                renderFilters();
+                reload();
+            });
+        });
         binding.notificationsButton.setOnClickListener(view -> {
             if (Gate.require(this, ProtectedAction.NOTIFICATIONS)) {
                 Ui.nav(this).navigate(R.id.action_home_to_notifications);
@@ -158,6 +173,14 @@ public class DiscoverFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(STATE_WALKS, walkMode);
+        PetFiltersSheet.save(outState, filters);
+    }
+
+    private void renderFilters() {
+        int active = filters.activeCount();
+        binding.filtersChip.setChecked(active > 0);
+        binding.filtersChip.setText(active == 0 ? getString(R.string.filters_button)
+                : getString(R.string.filters_button_count, active));
     }
 
     @Override
@@ -171,6 +194,7 @@ public class DiscoverFragment extends Fragment {
         binding.petList.setAdapter(walkMode ? walks : adapter);
         binding.searchLayout.setVisibility(walkMode ? View.GONE : View.VISIBLE);
         binding.nearbyChip.setVisibility(walkMode ? View.GONE : View.VISIBLE);
+        binding.filtersChip.setVisibility(walkMode ? View.GONE : View.VISIBLE);
         binding.cityLayout.setEnabled(walkMode || nearLatitude == null);
         hasMore = false;
     }
@@ -238,7 +262,7 @@ public class DiscoverFragment extends Fragment {
             return;
         }
         String cityValue = city.value() == null ? "" : city.value();
-        load(new PetQuery(species.value(), nearLatitude == null ? cityValue : "", Ui.text(binding.searchInput), PAGE, 0));
+        load(new PetQuery(species.value(), nearLatitude == null ? cityValue : "", Ui.text(binding.searchInput), PAGE, 0, filters));
     }
 
     private void load(PetQuery next) {
@@ -276,7 +300,7 @@ public class DiscoverFragment extends Fragment {
                 adapter.append(pets);
             }
             if (adapter.isEmpty()) {
-                States.message(binding.state, R.string.home_empty, null);
+                States.message(binding.state, next.filters().activeCount() > 0 ? R.string.filters_empty : R.string.home_empty, null);
             } else {
                 States.hide(binding.state);
             }

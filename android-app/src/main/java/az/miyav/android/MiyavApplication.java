@@ -17,6 +17,9 @@ import az.miyav.android.data.AndroidSessionStore;
 import az.miyav.android.data.MiyavDatabase;
 import az.miyav.android.data.PendingAuthEmail;
 import az.miyav.android.data.PendingGoogleSignIn;
+import az.miyav.android.push.Push;
+import az.miyav.application.PushService;
+import az.miyav.domain.repository.LiveUpdates;
 import az.miyav.android.sync.NotificationPollWorker;
 import az.miyav.android.sync.OutboxSyncWorker;
 import az.miyav.android.ui.MapSupport;
@@ -79,6 +82,8 @@ public class MiyavApplication extends Application {
     private SafetyService safety;
     private PlacesService places;
     private WalkTracker walkTracker;
+    private PushService push;
+    private LiveUpdates live;
     private final ExecutorService io = Executors.newFixedThreadPool(4);
 
     @Override
@@ -111,6 +116,9 @@ public class MiyavApplication extends Application {
         myPets = new MyPetsService(backend.ownPets());
         safety = new SafetyService(backend.safety());
         places = new PlacesService(backend.places(), time);
+        push = new PushService(backend.pushDevices());
+        live = backend.live();
+        Push.init(this);
         walkTracker = new WalkTracker(this);
         pendingAuthEmail = new PendingAuthEmail(this);
         photos = new PhotoLoader(this);
@@ -250,9 +258,19 @@ public class MiyavApplication extends Application {
         return walkListings;
     }
 
-    /** Private chats between signed-in users (walk price negotiation). */
+    /** Private chats between signed-in users (walk price negotiation, adoption questions). */
     public MessagingService messaging() {
         return messaging;
+    }
+
+    /** This phone's push token on the server. */
+    public PushService push() {
+        return push;
+    }
+
+    /** Realtime notices: open chats reload as soon as a message arrives. */
+    public LiveUpdates live() {
+        return live;
     }
 
     /** "Mənim heyvanlarım": the member's own pets. */
@@ -265,6 +283,14 @@ public class MiyavApplication extends Application {
     }
 
     public void onSignedOut() {
+        az.miyav.domain.auth.AuthSession session = auth.viewer();
+        if (session != null) {
+            if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+                io.execute(() -> Push.unregister(this, session));
+            } else {
+                Push.unregister(this, session);
+            }
+        }
         walkTracker.signOut();
         photos.clear();
         safety.clear();

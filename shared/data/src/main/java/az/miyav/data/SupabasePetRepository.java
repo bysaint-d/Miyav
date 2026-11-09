@@ -7,8 +7,10 @@ import az.miyav.domain.location.ListingLocation;
 import az.miyav.domain.pet.ListingExtras;
 import az.miyav.domain.pet.Pet;
 import az.miyav.domain.pet.PetFactory;
+import az.miyav.domain.pet.PetFilters;
 import az.miyav.domain.pet.PetGender;
 import az.miyav.domain.pet.PetQuery;
+import az.miyav.domain.pet.PetSort;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.pet.Vaccination;
 import az.miyav.domain.repository.PetRepository;
@@ -39,9 +41,10 @@ public final class SupabasePetRepository implements PetRepository {
 
     @Override
     public List<Pet> findPublished(PetQuery query, AuthSession session) {
+        PetFilters filters = query.filters();
         StringBuilder path = new StringBuilder("/rest/v1/adoption_listings?select=")
                 .append(SELECT)
-                .append("&status=eq.active&order=created_at.desc")
+                .append("&status=eq.active&order=").append(order(filters.sort()))
                 .append("&limit=").append(query.limit())
                 .append("&offset=").append(query.offset());
         if (!query.city().isEmpty()) {
@@ -49,6 +52,18 @@ public final class SupabasePetRepository implements PetRepository {
         }
         if (query.species() != null) {
             path.append("&species=eq.").append(query.species().databaseValue());
+        }
+        if (filters.gender() != null) {
+            path.append("&gender=eq.").append(filters.gender().databaseValue());
+        }
+        if (filters.age().minMonths() != null) {
+            path.append("&age_months=gte.").append(filters.age().minMonths());
+        }
+        if (filters.age().maxMonthsExclusive() != null) {
+            path.append("&age_months=lt.").append(filters.age().maxMonthsExclusive());
+        }
+        if (filters.vaccinatedOnly()) {
+            path.append("&vaccination=eq.").append(Vaccination.YES.databaseValue());
         }
         String search = sanitize(query.search());
         if (!search.isEmpty()) {
@@ -75,7 +90,29 @@ public final class SupabasePetRepository implements PetRepository {
         body.addProperty("p_search", sanitize(query.search()));
         body.addProperty("p_limit", query.limit());
         body.addProperty("p_offset", query.offset());
+        PetFilters filters = query.filters();
+        if (filters.gender() != null) {
+            body.addProperty("p_gender", filters.gender().databaseValue());
+        }
+        if (filters.age().minMonths() != null) {
+            body.addProperty("p_min_age", filters.age().minMonths());
+        }
+        if (filters.age().maxMonthsExclusive() != null) {
+            body.addProperty("p_max_age", filters.age().maxMonthsExclusive());
+        }
+        if (filters.vaccinatedOnly()) {
+            body.addProperty("p_vaccinated", true);
+        }
         return mapAll(client.send("POST", "/rest/v1/rpc/listings_near", session, body.toString()));
+    }
+
+    private static String order(PetSort sort) {
+        return switch (sort) {
+            case OLDEST -> "created_at.asc";
+            case YOUNGEST -> "age_months.asc,created_at.desc";
+            case ELDEST -> "age_months.desc,created_at.desc";
+            default -> "created_at.desc";
+        };
     }
 
     @Override

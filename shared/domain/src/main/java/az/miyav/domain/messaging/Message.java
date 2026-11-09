@@ -19,18 +19,18 @@ public final class Message {
     private final String body;
     private final UUID walkListingId;
     private final BigDecimal pricePerHour;
-    private final boolean image;
+    private final String imagePath;
     private final Instant createdAt;
 
     public Message(UUID id, UUID conversationId, UUID senderId, String body, UUID walkListingId,
-                   BigDecimal pricePerHour, boolean image, Instant createdAt) {
+                   BigDecimal pricePerHour, String imagePath, Instant createdAt) {
         this.id = Objects.requireNonNull(id, "id");
         this.conversationId = Objects.requireNonNull(conversationId, "conversationId");
         this.senderId = Objects.requireNonNull(senderId, "senderId");
         this.body = body == null ? "" : body;
         this.walkListingId = walkListingId;
         this.pricePerHour = pricePerHour;
-        this.image = image;
+        this.imagePath = imagePath == null || imagePath.isBlank() ? null : imagePath;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
     }
 
@@ -58,9 +58,13 @@ public final class Message {
         return Optional.ofNullable(pricePerHour);
     }
 
-    /** Photo messages from the other MIYAV app; shown as a placeholder here. */
     public boolean image() {
-        return image;
+        return imagePath != null;
+    }
+
+    /** Storage path in the private "messages" bucket; readable only by the two participants. */
+    public Optional<String> imagePath() {
+        return Optional.ofNullable(imagePath);
     }
 
     public Instant createdAt() {

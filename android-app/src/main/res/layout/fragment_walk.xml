@@ -57,6 +57,18 @@
                     android:text="@string/walk_subtitle"
                     android:textAppearance="@style/TextAppearance.Miyav.Caption" />
             </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/historyButton"
+                style="@style/Widget.Miyav.Button.Tonal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:minHeight="44dp"
+                android:text="@string/walk_history_button"
+                android:textSize="13sp"
+                app:icon="@drawable/ic_history"
+                app:iconSize="18dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -193,6 +205,16 @@
                             android:textColor="@color/brand_coral_dark"
                             android:textStyle="bold" />
                     </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/distanceText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="18dp"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/brand_coral_dark"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/petsText"

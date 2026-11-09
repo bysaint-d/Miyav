@@ -158,6 +158,31 @@ public final class Components {
         return view;
     }
 
+    /**
+     * Shows {@code image} in an existing view at exactly width × height, centre-cropped, with rounded
+     * corners, so every listing photo has the same size whatever its proportions.
+     */
+    public static void fill(ImageView view, Image image, double width, double height, double radius) {
+        view.setPreserveRatio(false);
+        view.setFitWidth(width);
+        view.setFitHeight(height);
+        view.setSmooth(true);
+        javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle(width, height);
+        clip.setArcWidth(radius * 2);
+        clip.setArcHeight(radius * 2);
+        view.setClip(clip);
+        view.setImage(image);
+        if (image == null || image.getWidth() <= 0 || image.getHeight() <= 0) {
+            view.setViewport(null);
+            return;
+        }
+        double scale = Math.max(width / image.getWidth(), height / image.getHeight());
+        double shownWidth = width / scale;
+        double shownHeight = height / scale;
+        view.setViewport(new Rectangle2D((image.getWidth() - shownWidth) / 2, (image.getHeight() - shownHeight) / 2,
+                shownWidth, shownHeight));
+    }
+
     /** The whole image inside width × height, keeping its proportions. */
     public static ImageView contain(Image image, double width, double height) {
         ImageView view = new ImageView(image);

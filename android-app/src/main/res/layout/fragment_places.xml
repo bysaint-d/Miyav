@@ -9,22 +9,69 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingStart="@dimen/space_xl"
         android:paddingTop="@dimen/space_lg"
-        android:paddingEnd="@dimen/space_xl">
+        android:paddingEnd="@dimen/space_lg">
 
-        <TextView
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/places_title"
+                android:textAppearance="@style/TextAppearance.Miyav.Title" />
+
+            <TextView
+                android:id="@+id/summaryView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/places_subtitle"
+                android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/viewGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/places_title"
-            android:textAppearance="@style/TextAppearance.Miyav.Title" />
+            app:selectionRequired="true"
+            app:singleSelection="true">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/places_subtitle"
-            android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/viewList"
+                style="@style/Widget.Miyav.Button.Segment"
+                android:layout_width="52dp"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/places_view_list"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                app:icon="@drawable/ic_list"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/viewMap"
+                style="@style/Widget.Miyav.Button.Segment"
+                android:layout_width="52dp"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/places_view_map"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                app:icon="@drawable/ic_map"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButtonToggleGroup
@@ -60,45 +107,134 @@
             app:iconSize="18dp" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
-    <com.google.android.material.chip.Chip
-        android:id="@+id/locationChip"
-        style="@style/Widget.Material3.Chip.Assist"
-        android:layout_width="wrap_content"
+    <HorizontalScrollView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/space_xl"
         android:layout_marginTop="@dimen/space_xs"
-        android:text="@string/places_location_default"
-        app:chipBackgroundColor="@color/chip_nearby"
-        app:chipIcon="@drawable/ic_my_location"
-        app:chipIconTint="@color/brand_coral"
-        app:chipIconVisible="true"
-        app:chipStrokeWidth="0dp" />
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/space_xl"
+        android:paddingEnd="@dimen/space_xl"
+        android:scrollbars="none">
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/refresh"
+        <com.google.android.material.chip.ChipGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleLine="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/locationChip"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/places_location_default"
+                app:chipBackgroundColor="@color/chip_nearby"
+                app:chipIcon="@drawable/ic_my_location"
+                app:chipIconTint="@color/brand_coral"
+                app:chipIconVisible="true"
+                app:chipStrokeWidth="0dp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/openNowChip"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/places_filter_open"
+                app:chipBackgroundColor="@color/chip_nearby"
+                app:chipStrokeWidth="0dp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/allDayChip"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/places_filter_24h"
+                app:chipBackgroundColor="@color/chip_nearby"
+                app:chipStrokeWidth="0dp" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <FrameLayout
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/placeList"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/placeList"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingStart="@dimen/space_lg"
+                    android:paddingTop="@dimen/space_xs"
+                    android:paddingEnd="@dimen/space_lg"
+                    android:paddingBottom="72dp" />
+
+                <include
+                    android:id="@+id/state"
+                    layout="@layout/view_state" />
+            </FrameLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <FrameLayout
+            android:id="@+id/mapPane"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/space_sm"
+            android:visibility="gone">
+
+            <org.osmdroid.views.MapView
+                android:id="@+id/map"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/myLocationButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="@dimen/space_lg"
+                android:contentDescription="@string/location_use"
+                android:src="@drawable/ic_my_location"
+                app:backgroundTint="@color/surface"
+                app:fabSize="mini"
+                app:tint="@color/brand_coral" />
+
+            <TextView
+                android:id="@+id/mapEmpty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:layout_marginTop="@dimen/space_lg"
+                android:background="@drawable/bg_map_card"
+                android:elevation="4dp"
                 android:paddingStart="@dimen/space_lg"
-                android:paddingTop="@dimen/space_xs"
+                android:paddingTop="@dimen/space_sm"
                 android:paddingEnd="@dimen/space_lg"
-                android:paddingBottom="72dp" />
+                android:paddingBottom="@dimen/space_sm"
+                android:text="@string/places_empty"
+                android:textColor="@color/text_primary"
+                android:visibility="gone" />
 
             <include
-                android:id="@+id/state"
-                layout="@layout/view_state" />
+                android:id="@+id/mapCard"
+                layout="@layout/item_place"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="@dimen/space_lg"
+                android:layout_marginEnd="@dimen/space_lg"
+                android:layout_marginBottom="76dp"
+                android:visibility="gone" />
         </FrameLayout>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </FrameLayout>
 
     <TextView
         android:layout_width="match_parent"

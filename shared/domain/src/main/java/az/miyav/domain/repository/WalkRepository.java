@@ -1,7 +1,9 @@
 package az.miyav.domain.repository;
 
 import az.miyav.domain.auth.AuthSession;
+import az.miyav.domain.location.GeoPoint;
 import az.miyav.domain.pet.PetSpecies;
+import az.miyav.domain.walk.WalkHistoryEntry;
 import az.miyav.domain.walk.WalkPet;
 import az.miyav.domain.walk.WalkSession;
 import az.miyav.domain.walk.Walker;
@@ -27,4 +29,19 @@ public interface WalkRepository {
     Optional<WalkSession> current(AuthSession session);
 
     List<Walker> nearby(AuthSession session);
+
+    /** The caller's own walks, newest first. */
+    default List<WalkHistoryEntry> history(AuthSession session, int limit, int offset) {
+        throw new UnsupportedOperationException("history");
+    }
+
+    /** The recorded route of one of the caller's walks, in order. */
+    default List<GeoPoint> route(AuthSession session, UUID sessionId) {
+        throw new UnsupportedOperationException("route");
+    }
+
+    /** Removes a finished walk and its route from the caller's history. */
+    default void deleteFromHistory(AuthSession session, UUID sessionId) {
+        throw new UnsupportedOperationException("deleteFromHistory");
+    }
 }

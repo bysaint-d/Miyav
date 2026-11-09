@@ -18,10 +18,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import az.miyav.android.auth.AuthLink;
+import az.miyav.android.push.Push;
 import az.miyav.android.databinding.ActivityMainBinding;
 import az.miyav.android.sync.NotificationPollWorker;
 import az.miyav.android.ui.Codes;
 import az.miyav.common.error.AppException;
+import az.miyav.common.locale.LocaleCode;
 import az.miyav.domain.auth.AuthState;
 
 public class MainActivity extends AppCompatActivity {
@@ -53,6 +55,9 @@ public class MainActivity extends AppCompatActivity {
         }
         MiyavApplication app = (MiyavApplication) getApplication();
         lastAuthState = app.auth().state();
+        if (lastAuthState == AuthState.AUTHENTICATED) {
+            Push.register(app);
+        }
         app.authState().observe(this, this::onAuthState);
     }
 
@@ -153,6 +158,14 @@ public class MainActivity extends AppCompatActivity {
         }
         if (state == AuthState.AUTHENTICATED && lastAuthState != AuthState.AUTHENTICATED) {
             NotificationPollWorker.schedule(this);
+            Push.register(app);
+            app.io().execute(() -> {
+                try {
+                    app.userService().syncLocale(app.auth().requireSession(), LocaleCode.fromTag(AppLocale.current(this)));
+                } catch (AppException ignored) {
+                    // Retried on the next sign-in or language change.
+                }
+            });
             app.io().execute(() -> {
                 int count = app.favorites().guestCount();
                 if (count > 0 && app.claimFavoritesOffer()) {

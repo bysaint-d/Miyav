@@ -84,6 +84,17 @@ public final class UserService {
         return users.updateProfile(session, current.withLocale(locale));
     }
 
+    /**
+     * Server notifications are written in the profile language, so the profile follows the language the
+     * member actually uses in the app. Writes only when it differs.
+     */
+    public void syncLocale(AuthSession session, LocaleCode locale) {
+        User current = current(session);
+        if (current.preferredLocale() != locale) {
+            users.updateProfile(session, current.withLocale(locale));
+        }
+    }
+
     public User updateAvatar(AuthSession session, byte[] jpeg) {
         requireMedia();
         User current = current(session);

@@ -2,8 +2,10 @@ package az.miyav.data;
 
 import az.miyav.data.http.HttpExchange;
 import az.miyav.domain.auth.AuthSession;
+import az.miyav.domain.location.GeoPoint;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.repository.WalkRepository;
+import az.miyav.domain.walk.WalkHistoryEntry;
 import az.miyav.domain.walk.WalkPet;
 import az.miyav.domain.walk.WalkSession;
 import az.miyav.domain.walk.Walker;
@@ -23,6 +25,10 @@ public final class SupabaseWalkRepository implements WalkRepository {
     private static final Type SESSION_ROWS = new TypeToken<List<SessionRow>>() {
     }.getType();
     private static final Type WALKER_ROWS = new TypeToken<List<WalkerRow>>() {
+    }.getType();
+    private static final Type HISTORY_ROWS = new TypeToken<List<HistoryRow>>() {
+    }.getType();
+    private static final Type ROUTE_ROWS = new TypeToken<List<RouteRow>>() {
     }.getType();
     private static final Type PET_ROWS = new TypeToken<List<PetRow>>() {
     }.getType();
@@ -132,6 +138,48 @@ public final class SupabaseWalkRepository implements WalkRepository {
         return walkers;
     }
 
+    @Override
+    public List<WalkHistoryEntry> history(AuthSession session, int limit, int offset) {
+        JsonObject body = new JsonObject();
+        body.addProperty("p_limit", limit);
+        body.addProperty("p_offset", offset);
+        List<HistoryRow> rows = client.gson().fromJson(rpc(session, "my_walks", body).body(), HISTORY_ROWS);
+        List<WalkHistoryEntry> walks = new ArrayList<>();
+        for (HistoryRow row : rows == null ? List.<HistoryRow>of() : rows) {
+            PetSpecies species;
+            try {
+                species = row.pet_species == null ? null : PetSpecies.fromDatabase(row.pet_species);
+            } catch (RuntimeException exception) {
+                species = null;
+            }
+            walks.add(new WalkHistoryEntry(UUID.fromString(row.id), row.pet_name, species,
+                    Timestamps.parse(row.started_at), row.ended_at == null ? null : Timestamps.parse(row.ended_at),
+                    row.open, row.distance_m, row.points,
+                    row.start_lat == null ? null : new GeoPoint(row.start_lat, row.start_lng),
+                    row.end_lat == null ? null : new GeoPoint(row.end_lat, row.end_lng)));
+        }
+        return walks;
+    }
+
+    @Override
+    public List<GeoPoint> route(AuthSession session, UUID sessionId) {
+        JsonObject body = new JsonObject();
+        body.addProperty("p_session", sessionId.toString());
+        List<RouteRow> rows = client.gson().fromJson(rpc(session, "my_walk_route", body).body(), ROUTE_ROWS);
+        List<GeoPoint> route = new ArrayList<>();
+        for (RouteRow row : rows == null ? List.<RouteRow>of() : rows) {
+            route.add(new GeoPoint(row.latitude, row.longitude));
+        }
+        return route;
+    }
+
+    @Override
+    public void deleteFromHistory(AuthSession session, UUID sessionId) {
+        JsonObject body = new JsonObject();
+        body.addProperty("p_session", sessionId.toString());
+        rpc(session, "delete_my_walk", body);
+    }
+
     private HttpExchange rpc(AuthSession session, String function, JsonObject body) {
         HttpExchange response = client.send("POST", "/rest/v1/rpc/" + function, session, body.toString());
         if (response.status() / 100 != 2) {
@@ -175,6 +223,26 @@ public final class SupabaseWalkRepository implements WalkRepository {
             ));
         }
         return sessions;
+    }
+
+    private static final class HistoryRow {
+        String id;
+        String pet_name;
+        String pet_species;
+        String started_at;
+        String ended_at;
+        boolean open;
+        double distance_m;
+        int points;
+        Double start_lat;
+        Double start_lng;
+        Double end_lat;
+        Double end_lng;
+    }
+
+    private static final class RouteRow {
+        double latitude;
+        double longitude;
     }
 
     private static final class SessionRow {

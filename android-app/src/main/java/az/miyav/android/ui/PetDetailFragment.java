@@ -343,6 +343,29 @@ public class PetDetailFragment extends Fragment {
                 ? PendingAction.of(ProtectedAction.CONTACT_OWNER, "petId", petId.toString())
                 : null;
         PublisherCards.bind(this, card, profile, owner, getString(R.string.contact_whatsapp_message, pet.name()), true, guestContact);
+        boolean chat = !owner && viewer != null;
+        card.chatButton.setVisibility(chat ? View.VISIBLE : View.GONE);
+        card.chatButton.setOnClickListener(chat ? view -> openOwnerChat(card, profile) : null);
+    }
+
+    /** In-app chat with the owner, also when they keep their phone number private. */
+    private void openOwnerChat(ViewPublisherCardBinding card, PublicProfile profile) {
+        Pet listing = pet;
+        card.chatButton.setEnabled(false);
+        Ui.run(this, () -> {
+            var app = Ui.app(this);
+            return app.messaging().openForAdoption(app.auth().requireSession(), listing);
+        }, room -> {
+            card.chatButton.setEnabled(true);
+            Bundle args = new Bundle();
+            args.putString("conversationId", room.toString());
+            args.putString("withUserId", profile.id().toString());
+            args.putString("title", profile.fullName());
+            Ui.nav(this).navigate(R.id.action_global_chat, args);
+        }, code -> {
+            card.chatButton.setEnabled(true);
+            Ui.snack(binding.getRoot(), code);
+        });
     }
 
     private void addFact(String text, int background) {

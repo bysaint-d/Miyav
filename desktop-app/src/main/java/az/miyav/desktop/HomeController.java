@@ -11,6 +11,7 @@ import az.miyav.desktop.admin.NearMeSection;
 import az.miyav.desktop.admin.NotificationsSection;
 import az.miyav.desktop.admin.OverviewSection;
 import az.miyav.desktop.admin.PetsSection;
+import az.miyav.desktop.admin.PlacesSection;
 import az.miyav.desktop.admin.ReportsSection;
 import az.miyav.desktop.admin.SettingsSection;
 import az.miyav.desktop.admin.UsersSection;
@@ -67,6 +68,7 @@ public final class HomeController {
                 this::sessionLost, () -> content.getScene().getWindow());
         register(new OverviewSection(context), new WalkingSection(context), new NearMeSection(context),
                 new AdoptionSection(context), new PetsSection(context), new UsersSection(context),
+                new PlacesSection(context),
                 new MessagesSection(context), new ReportsSection(context), new NotificationsSection(context),
                 new SettingsSection(context, this::selectLocale, this::signOut, app::showDiscover));
         buildSidebar();
@@ -87,7 +89,7 @@ public final class HomeController {
         brand.setStyle("-fx-padding: 0 8 18 12;");
         sidebar.getChildren().add(brand);
         group("console.group_community", List.of("overview", "walking", "nearme"));
-        group("console.group_content", List.of("adoption", "pets", "users"));
+        group("console.group_content", List.of("adoption", "pets", "users", "places"));
         group("console.group_safety", List.of("messages", "reports", "notifications"));
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
@@ -149,17 +151,6 @@ public final class HomeController {
     }
 
     private void selectLocale(LocaleCode locale) {
-        app.graph().session().session().ifPresent(session -> {
-            Thread worker = new Thread(() -> {
-                try {
-                    app.graph().users().updateLocale(session, locale);
-                } catch (AppException ignored) {
-                    // The console language still changes; the profile keeps its previous language.
-                }
-            }, "miyav-locale");
-            worker.setDaemon(true);
-            worker.start();
-        });
         app.selectLocale(locale);
     }
 

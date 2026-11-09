@@ -10,6 +10,11 @@ import az.miyav.application.DiscoveryService;
 import az.miyav.application.FavoritesService;
 import az.miyav.application.LocationService;
 import az.miyav.application.MemoryPendingActionStore;
+import az.miyav.application.MessagingService;
+import az.miyav.application.NotificationService;
+import az.miyav.application.PlacesService;
+import az.miyav.application.WalkListingService;
+import az.miyav.domain.repository.LiveUpdates;
 import az.miyav.application.PetService;
 import az.miyav.application.TelegramVerification;
 import az.miyav.application.UnavailableTelegramVerification;
@@ -29,6 +34,8 @@ import az.miyav.security.EncryptedFileSessionStore;
 import az.miyav.security.RoleGuard;
 import az.miyav.security.SessionStore;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class DesktopGraph {
@@ -46,7 +53,13 @@ public final class DesktopGraph {
     private final LocationService locations;
     private final SessionStore sessions;
     private final RoleGuard access;
+    private final Path home;
     private MessageCatalog catalog;
+    private MessagingService messaging;
+    private NotificationService notifications;
+    private LiveUpdates live = LiveUpdates.OFF;
+    private PlacesService places;
+    private WalkListingService walkListings;
 
     private DesktopGraph(
             AuthService auth,
@@ -62,7 +75,8 @@ public final class DesktopGraph {
             LocationService locations,
             SessionStore sessions,
             RoleGuard access,
-            MessageCatalog catalog
+            MessageCatalog catalog,
+            Path home
     ) {
         this.auth = auth;
         this.session = session;
@@ -79,6 +93,7 @@ public final class DesktopGraph {
         this.sessions = sessions;
         this.access = access;
         this.catalog = catalog;
+        this.home = home;
     }
 
     public static DesktopGraph load() {
@@ -93,7 +108,7 @@ public final class DesktopGraph {
         PetValidator petValidator = new PetValidator();
         SystemTimeSource time = new SystemTimeSource();
         AuthService auth = new AuthService(backend.auth(), backend.users(), sessions, new EmailValidator(), new PasswordValidator(), time);
-        return new DesktopGraph(
+        DesktopGraph graph = new DesktopGraph(
                 auth,
                 new AuthStateManager(auth, new MemoryPendingActionStore(), new AccessPolicy()),
                 new DiscoveryService(backend.catalog(), backend.pets(), backend.users(), backend.media(), petValidator),
@@ -107,8 +122,47 @@ public final class DesktopGraph {
                 new LocationService(),
                 sessions,
                 access,
-                new ResourceMessageCatalog(LocaleCode.AZ)
+                new ResourceMessageCatalog(savedLocale(home)),
+                home
         );
+        graph.messaging = new MessagingService(backend.messages());
+        graph.notifications = new NotificationService(backend.notifications());
+        graph.live = backend.live() == null ? LiveUpdates.OFF : backend.live();
+        graph.places = new PlacesService(backend.places(), time);
+        graph.walkListings = new WalkListingService(backend.walkListings(), time);
+        return graph;
+    }
+
+    /** Paid walk requests ("Gəzdirmə"): browse, offer a price, chat with the owner. */
+    public WalkListingService walkListings() {
+        return walkListings;
+    }
+
+    /** Vets and pet shops; admins maintain the list from the console. */
+    public PlacesService places() {
+        return places;
+    }
+
+    /** Private chats: walk negotiations and questions to adoption listing owners. */
+    public MessagingService messaging() {
+        return messaging;
+    }
+
+    public NotificationService notifications() {
+        return notifications;
+    }
+
+    /** Realtime notices so open chats and the notification badge update without waiting. */
+    public LiveUpdates live() {
+        return live;
+    }
+
+    private static LocaleCode savedLocale(Path home) {
+        try {
+            return LocaleCode.fromTag(Files.readString(home.resolve("locale")).trim());
+        } catch (IOException | RuntimeException exception) {
+            return LocaleCode.AZ;
+        }
     }
 
     public AuthService auth() {
@@ -174,8 +228,37 @@ public final class DesktopGraph {
         return catalog;
     }
 
+    /**
+     * Switches the UI language, remembers it for the next start and, when signed in, moves the profile to
+     * it so server notifications arrive in the same language.
+     */
     public void selectLocale(LocaleCode locale) {
         catalog = new ResourceMessageCatalog(locale);
+        if (home != null) {
+            try {
+                Files.createDirectories(home);
+                Files.writeString(home.resolve("locale"), locale.tag());
+            } catch (IOException | RuntimeException ignored) {
+                // The language still applies for this run.
+            }
+        }
+        syncProfileLocale();
+    }
+
+    /** Called after sign-in too; a failure leaves the profile language unchanged. */
+    public void syncProfileLocale() {
+        LocaleCode locale = catalog.locale();
+        session.session().ifPresent(current -> {
+            Thread worker = new Thread(() -> {
+                try {
+                    users.syncLocale(current, locale);
+                } catch (RuntimeException ignored) {
+                    // Retried on the next sign-in or language change.
+                }
+            }, "miyav-locale");
+            worker.setDaemon(true);
+            worker.start();
+        });
     }
 
     public String text(String key, Object... args) {

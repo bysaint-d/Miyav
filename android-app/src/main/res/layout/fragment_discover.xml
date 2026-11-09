@@ -219,6 +219,19 @@
             app:chipIconTint="@color/brand_coral"
             app:chipIconVisible="true"
             app:chipStrokeWidth="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/filtersChip"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checkable="true"
+            android:text="@string/filters_button"
+            app:chipBackgroundColor="@color/chip_nearby"
+            app:chipIcon="@drawable/ic_tune"
+            app:chipIconTint="@color/brand_coral"
+            app:chipIconVisible="true"
+            app:chipStrokeWidth="0dp" />
     </com.google.android.material.chip.ChipGroup>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

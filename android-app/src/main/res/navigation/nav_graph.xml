@@ -104,6 +104,36 @@
         app:popExitAnim="@anim/pop_out" />
 
     <action
+        android:id="@+id/action_global_walk_history"
+        app:destination="@id/walkHistoryFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_walk_route"
+        app:destination="@id/walkRouteFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <fragment
+        android:id="@+id/walkHistoryFragment"
+        android:name="az.miyav.android.ui.WalkHistoryFragment"
+        android:label="@string/walk_history_title" />
+
+    <fragment
+        android:id="@+id/walkRouteFragment"
+        android:name="az.miyav.android.ui.WalkRouteFragment"
+        android:label="@string/walk_route_title">
+        <argument
+            android:name="walkId"
+            app:argType="string" />
+    </fragment>
+
+    <action
         android:id="@+id/action_global_my_pets"
         app:destination="@id/myPetsListFragment"
         app:enterAnim="@anim/slide_in"

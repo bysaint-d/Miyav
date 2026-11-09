@@ -46,8 +46,8 @@ public final class PhotoLoader {
     }
 
     /**
-     * Gallery on the listing screen: the whole photo in {@code photo}, and the same bitmap behind it in
-     * {@code backdrop} (cropped to fill, blurred by the caller) so no photo is ever cut.
+     * Gallery on the listing screen: every photo fills the same frame (centre-cropped), so portrait and
+     * landscape photos look the same size; the whole photo opens in the full-screen viewer on tap.
      */
     public void listingGallery(ImageView photo, ImageView backdrop, String path) {
         backdrop.setImageDrawable(null);
@@ -57,7 +57,7 @@ public final class PhotoLoader {
         }
         String key = "listing:1440:" + path;
         backdrop.setTag(R.id.photo_tag, key);
-        load(photo, key, R.drawable.ic_paw, R.color.brand_coral, 1440, ImageView.ScaleType.FIT_CENTER,
+        load(photo, key, R.drawable.ic_paw, R.color.brand_coral, 1440, ImageView.ScaleType.CENTER_CROP,
                 () -> app.discovery().photo(app.auth().viewer(), path), bitmap -> {
                     if (key.equals(backdrop.getTag(R.id.photo_tag))) {
                         backdrop.setImageBitmap(bitmap);
@@ -102,6 +102,16 @@ public final class PhotoLoader {
     public void walkPetFull(ImageView view, String path) {
         load(view, "walkpet:1440:" + path, R.drawable.ic_paw, R.color.brand_coral, 1440, ImageView.ScaleType.MATRIX,
                 () -> app.walkListings().petPhoto(app.auth().viewer(), path));
+    }
+
+    /** A chat photo from the private messages bucket; only the two participants can read it. */
+    public void chat(ImageView view, String path, int maxEdge, ImageView.ScaleType fitted) {
+        if (path == null || !app.auth().signedIn()) {
+            placeholder(view, R.drawable.ic_image, R.color.brand_coral);
+            return;
+        }
+        load(view, "chat:" + maxEdge + ":" + path, R.drawable.ic_image, R.color.brand_coral, maxEdge, fitted,
+                () -> app.messaging().photo(app.auth().requireSession(), path));
     }
 
     /** Stops a pending load from landing in a recycled view that no longer shows a photo. */

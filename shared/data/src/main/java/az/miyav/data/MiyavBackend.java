@@ -6,7 +6,9 @@ import az.miyav.domain.repository.AdminRepository;
 import az.miyav.domain.repository.AdoptionRepository;
 import az.miyav.domain.repository.AuthRepository;
 import az.miyav.domain.repository.FavoriteRepository;
+import az.miyav.domain.repository.LiveUpdates;
 import az.miyav.domain.repository.MediaRepository;
+import az.miyav.domain.repository.PushDeviceRepository;
 import az.miyav.domain.repository.MessageRepository;
 import az.miyav.domain.repository.NotificationRepository;
 import az.miyav.domain.repository.PetRepository;
@@ -37,6 +39,8 @@ public final class MiyavBackend {
     private BroadcastRepository broadcasts;
     private SafetyRepository safety;
     private PlaceRepository places;
+    private PushDeviceRepository pushDevices;
+    private LiveUpdates live = LiveUpdates.OFF;
 
     public MiyavBackend(
             AuthRepository auth,
@@ -76,6 +80,8 @@ public final class MiyavBackend {
         backend.broadcasts = new SupabaseBroadcastRepository(client);
         backend.safety = new SupabaseSafetyRepository(client);
         backend.places = new SupabasePlaceRepository(client);
+        backend.pushDevices = new SupabasePushDeviceRepository(client);
+        backend.live = new SupabaseRealtime(config);
         return backend.withFeatures(
                 new SupabaseWalkRepository(client),
                 new SupabasePublicCatalogRepository(client),
@@ -96,6 +102,28 @@ public final class MiyavBackend {
     /** Owners' walking listings and walkers' offers. */
     public WalkListingRepository walkListings() {
         return walkListings;
+    }
+
+    /** Phone push tokens. */
+    public PushDeviceRepository pushDevices() {
+        return pushDevices;
+    }
+
+    /** Realtime notices for chats and notifications; a no-op until connected. */
+    public LiveUpdates live() {
+        return live;
+    }
+
+    /** Replaces the walk requests source, for offline previews. */
+    public MiyavBackend withWalkListings(WalkListingRepository walkListings) {
+        this.walkListings = walkListings;
+        return this;
+    }
+
+    /** Replaces the places source, for offline previews. */
+    public MiyavBackend withPlaces(PlaceRepository places) {
+        this.places = places;
+        return this;
     }
 
     /** Vets and pet shops on the Vets tab. */

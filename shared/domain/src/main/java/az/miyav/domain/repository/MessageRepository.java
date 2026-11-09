@@ -16,6 +16,14 @@ public interface MessageRepository {
 
     Message send(AuthSession session, UUID conversationId, String body, UUID walkListingId);
 
+    /** Uploads a JPEG to the chat's private folder and returns its storage path. */
+    String uploadPhoto(AuthSession session, UUID conversationId, byte[] jpeg);
+
+    /** A photo message; the database checks the path belongs to this chat and this sender. */
+    Message sendPhoto(AuthSession session, UUID conversationId, String imagePath, String caption, UUID walkListingId);
+
+    byte[] photo(AuthSession session, String imagePath);
+
     void markRead(AuthSession session, UUID conversationId);
 
     /**
@@ -23,4 +31,7 @@ public interface MessageRepository {
      * ignored); the owner names the walker who offered.
      */
     UUID openForWalk(AuthSession session, UUID listingId, UUID otherUserId);
+
+    /** Opens (or reuses) the chat with the owner of an active adoption listing. */
+    UUID openForAdoption(AuthSession session, UUID listingId);
 }

@@ -12,6 +12,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -31,6 +34,7 @@ import az.miyav.common.error.AppException;
 import az.miyav.common.error.ValidationException;
 import az.miyav.domain.auth.AuthSession;
 import az.miyav.domain.messaging.Message;
+import az.miyav.domain.repository.LiveUpdates;
 import az.miyav.domain.user.PublicProfile;
 import az.miyav.domain.walk.WalkListing;
 import az.miyav.domain.walk.WalkListingDetails;
@@ -53,8 +57,13 @@ import java.util.UUID;
  */
 public class ChatFragment extends Fragment {
     private static final long POLL_MS = 6000;
+    private static final long LIVE_POLL_MS = 30000;
+    private static final int PHOTO_EDGE = 1600;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable poll = this::poll;
+    private final ActivityResultLauncher<PickVisualMediaRequest> picker = registerForActivityResult(
+            new ActivityResultContracts.PickVisualMedia(), this::onPhotoPicked);
+    private LiveUpdates.Subscription live = LiveUpdates.NONE;
     private FragmentChatBinding binding;
     private MessageAdapter adapter;
     private UUID room;
@@ -79,13 +88,17 @@ public class ChatFragment extends Fragment {
         otherName = args.getString("title", "");
         binding.toolbar.setNavigationOnClickListener(view -> Ui.nav(this).popBackStack());
         binding.toolbar.setOnClickListener(view -> openProfile());
-        adapter = new MessageAdapter(this::accept);
+        adapter = new MessageAdapter(Ui.app(this), this::accept,
+                path -> PhotoViewerDialog.openChat(getParentFragmentManager(), path));
         LinearLayoutManager layout = new LinearLayoutManager(requireContext());
         layout.setStackFromEnd(true);
         binding.messageList.setLayoutManager(layout);
         binding.messageList.setAdapter(adapter);
         binding.sendButton.setOnClickListener(view -> send());
         binding.priceButton.setOnClickListener(view -> proposePrice());
+        binding.photoButton.setOnClickListener(view -> picker.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build()));
         binding.listingBanner.setOnClickListener(view -> {
             if (contextListing != null) {
                 Bundle walk = new Bundle();
@@ -101,13 +114,30 @@ public class ChatFragment extends Fragment {
     public void onResume() {
         super.onResume();
         load();
+        watch();
         handler.postDelayed(poll, POLL_MS);
     }
 
     @Override
     public void onPause() {
         handler.removeCallbacks(poll);
+        live.close();
+        live = LiveUpdates.NONE;
         super.onPause();
+    }
+
+    /** New messages arrive over Realtime; polling stays as a slower safety net. */
+    private void watch() {
+        UUID target = room;
+        if (target == null || live != LiveUpdates.NONE || !isResumed()) {
+            return;
+        }
+        MiyavApplication app = Ui.app(this);
+        live = app.live().watchConversation(() -> app.auth().viewer(), target, () -> handler.post(() -> {
+            if (binding != null) {
+                load();
+            }
+        }));
     }
 
     @Override
@@ -126,7 +156,7 @@ public class ChatFragment extends Fragment {
 
     /** Only asks for new messages; a full reload happens when something arrived. */
     private void poll() {
-        handler.postDelayed(poll, POLL_MS);
+        handler.postDelayed(poll, live.live() ? LIVE_POLL_MS : POLL_MS);
         UUID target = room;
         if (target == null || loading) {
             return;
@@ -237,6 +267,7 @@ public class ChatFragment extends Fragment {
         }
         States.hide(binding.state);
         renderTitle();
+        watch();
         contextListing = listingArg;
         for (int i = loaded.history.size() - 1; contextListing == null && i >= 0; i--) {
             contextListing = loaded.history.get(i).walkListingId().orElse(null);
@@ -293,6 +324,34 @@ public class ChatFragment extends Fragment {
         }, code -> {
             binding.sendButton.setEnabled(true);
             Ui.snack(binding.getRoot(), code);
+        });
+    }
+
+    /** Sends the picked photo, with whatever is typed in the box as its caption. */
+    private void onPhotoPicked(android.net.Uri uri) {
+        UUID target = room;
+        if (uri == null || target == null || binding == null) {
+            return;
+        }
+        String caption = Ui.text(binding.messageInput).trim();
+        UUID about = contextListing;
+        android.content.Context context = requireContext().getApplicationContext();
+        binding.photoButton.setEnabled(false);
+        binding.sendButton.setEnabled(false);
+        Ui.snack(binding.getRoot(), R.string.chat_photo_sending);
+        Ui.run(this, () -> {
+            MiyavApplication app = Ui.app(this);
+            byte[] jpeg = JpegEncoder.fromUri(context, uri, PHOTO_EDGE);
+            return app.messaging().sendPhoto(app.auth().requireSession(), target, jpeg, caption, about);
+        }, sent -> {
+            binding.photoButton.setEnabled(true);
+            binding.sendButton.setEnabled(true);
+            binding.messageInput.setText("");
+            load();
+        }, code -> {
+            binding.photoButton.setEnabled(true);
+            binding.sendButton.setEnabled(true);
+            Ui.snack(binding.getRoot(), "validation.pet".equals(code) ? "chat.photo" : code);
         });
     }
 
@@ -392,12 +451,17 @@ public class ChatFragment extends Fragment {
     private static final class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.Holder> {
         private final List<Message> items = new ArrayList<>();
         private final List<Boolean> acceptable = new ArrayList<>();
+        private final MiyavApplication app;
         private final java.util.function.Consumer<Message> onAccept;
+        private final java.util.function.Consumer<String> onPhoto;
         private Map<UUID, WalkListing> listings = Map.of();
         private UUID me;
 
-        MessageAdapter(java.util.function.Consumer<Message> onAccept) {
+        MessageAdapter(MiyavApplication app, java.util.function.Consumer<Message> onAccept,
+                       java.util.function.Consumer<String> onPhoto) {
+            this.app = app;
             this.onAccept = onAccept;
+            this.onPhoto = onPhoto;
         }
 
         /** The owner may accept only the walker's latest price, and only while that offer is pending at that price. */
@@ -460,10 +524,16 @@ public class ChatFragment extends Fragment {
                     holder.binding.priceTotal.setVisibility(View.VISIBLE);
                 }
             }
-            String body = message.body();
-            if (body.isEmpty() && message.image()) {
-                body = context.getString(R.string.chat_photo);
+            String photo = message.imagePath().orElse(null);
+            holder.binding.photoView.setVisibility(photo == null ? View.GONE : View.VISIBLE);
+            if (photo == null) {
+                app.photos().forget(holder.binding.photoView);
+                holder.binding.photoView.setOnClickListener(null);
+            } else {
+                app.photos().chat(holder.binding.photoView, photo, 720, android.widget.ImageView.ScaleType.CENTER_CROP);
+                holder.binding.photoView.setOnClickListener(view -> onPhoto.accept(photo));
             }
+            String body = message.body();
             holder.binding.bodyView.setText(body);
             holder.binding.bodyView.setVisibility(body.isEmpty() ? View.GONE : View.VISIBLE);
             holder.binding.acceptButton.setVisibility(acceptable.get(position) ? View.VISIBLE : View.GONE);

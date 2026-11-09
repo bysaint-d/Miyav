@@ -7,10 +7,15 @@ import az.miyav.domain.location.ListingLocation;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.repository.WalkRepository;
 import az.miyav.domain.text.TextRules;
+import az.miyav.domain.location.GeoPoint;
+import az.miyav.domain.walk.WalkHistoryEntry;
 import az.miyav.domain.walk.WalkPet;
 import az.miyav.domain.walk.WalkSession;
+import az.miyav.domain.walk.WalkStats;
 import az.miyav.domain.walk.Walker;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +31,29 @@ public final class WalkingService {
 
     public WalkingService(WalkRepository walks) {
         this.walks = walks;
+    }
+
+    /** The member's own walks (up to 200), newest first; the route stays private to them. */
+    public List<WalkHistoryEntry> history(AuthSession session) {
+        requireSession(session);
+        return walks.history(session, 200, 0);
+    }
+
+    public List<GeoPoint> route(AuthSession session, UUID walkId) {
+        requireSession(session);
+        return walks.route(session, walkId);
+    }
+
+    public void deleteFromHistory(AuthSession session, WalkHistoryEntry walk) {
+        requireSession(session);
+        if (walk.open()) {
+            throw new ValidationException("walk.still_open");
+        }
+        walks.deleteFromHistory(session, walk.id());
+    }
+
+    public static WalkStats stats(List<WalkHistoryEntry> history, Instant now) {
+        return WalkStats.of(history, now, ZoneId.of("Asia/Baku"));
     }
 
     public WalkSession start(AuthSession session, PetSpecies species, String petName, String message,

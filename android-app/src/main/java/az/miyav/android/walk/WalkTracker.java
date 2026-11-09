@@ -46,11 +46,47 @@ public final class WalkTracker {
         }
     }
 
+    /** Same thresholds as the server's route recorder: ignore jitter and GPS jumps. */
+    private static final double MIN_STEP_M = 12;
+    private static final double MAX_SPEED_MPS = 50;
     private final MiyavApplication app;
     private final MutableLiveData<State> state = new MutableLiveData<>(new State(null, null, null, null));
+    private volatile double distanceMeters;
+    private Double lastLatitude;
+    private Double lastLongitude;
+    private long lastAtMillis;
 
     public WalkTracker(MiyavApplication app) {
         this.app = app;
+    }
+
+    /** Distance walked in the current walk, counted on this phone (and seeded from history after a restart). */
+    public double distanceMeters() {
+        return distanceMeters;
+    }
+
+    private synchronized void resetDistance(double latitude, double longitude) {
+        distanceMeters = 0;
+        lastLatitude = latitude;
+        lastLongitude = longitude;
+        lastAtMillis = System.currentTimeMillis();
+    }
+
+    private synchronized void addStep(double latitude, double longitude) {
+        long now = System.currentTimeMillis();
+        if (lastLatitude != null) {
+            double step = az.miyav.domain.location.ListingLocation.distanceMeters(lastLatitude, lastLongitude, latitude, longitude);
+            if (step < MIN_STEP_M) {
+                return;
+            }
+            if (step / Math.max(1, (now - lastAtMillis) / 1000.0) > MAX_SPEED_MPS) {
+                return;
+            }
+            distanceMeters += step;
+        }
+        lastLatitude = latitude;
+        lastLongitude = longitude;
+        lastAtMillis = now;
     }
 
     public LiveData<State> state() {
@@ -68,6 +104,15 @@ public final class WalkTracker {
             try {
                 AuthSession session = app.auth().requireSession();
                 Optional<WalkSession> open = app.walkingService().current(session);
+                if (open.isPresent()) {
+                    try {
+                        app.walkingService().history(session).stream()
+                                .filter(walk -> walk.id().equals(open.get().id())).findFirst()
+                                .ifPresent(walk -> distanceMeters = Math.max(distanceMeters, walk.distanceMeters()));
+                    } catch (AppException ignored) {
+                        // The distance restarts from zero; the server keeps the full route anyway.
+                    }
+                }
                 State previous = snapshot();
                 state.postValue(new State(open.orElse(null), previous.latitude, previous.longitude, null));
                 if (open.isPresent() && open.get().status() == WalkSession.Status.ACTIVE) {
@@ -87,6 +132,7 @@ public final class WalkTracker {
                 AuthSession session = app.auth().requireSession();
                 WalkSession started = app.walkingService().start(session, species, petName, message,
                         location.getLatitude(), location.getLongitude());
+                resetDistance(location.getLatitude(), location.getLongitude());
                 state.postValue(new State(started, location.getLatitude(), location.getLongitude(), "walk.started"));
                 startService();
             } catch (AppException exception) {
@@ -102,6 +148,7 @@ public final class WalkTracker {
                 AuthSession session = app.auth().requireSession();
                 WalkSession started = app.walkingService().startWith(session, petIds, walkListingId, message,
                         location.getLatitude(), location.getLongitude());
+                resetDistance(location.getLatitude(), location.getLongitude());
                 state.postValue(new State(started, location.getLatitude(), location.getLongitude(), "walk.started"));
                 startService();
             } catch (AppException exception) {
@@ -162,6 +209,7 @@ public final class WalkTracker {
         }
         try {
             WalkSession updated = app.walkingService().updateLocation(app.auth().requireSession(), latitude, longitude);
+            addStep(latitude, longitude);
             state.postValue(new State(updated, latitude, longitude, null));
         } catch (AppException exception) {
             if ("walk.no_session".equals(exception.code()) || "auth.session_expired".equals(exception.code())) {

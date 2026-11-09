@@ -167,6 +167,104 @@ class SupabaseContractTest {
     }
 
     @Test
+    void detailedFilterReachesPostgrestAndTheNearbyFunction() {
+        SupabaseConfig config = SupabaseConfig.parse("https://example.supabase.co", "sb_publishable_test");
+        RecordingTransport transport = new RecordingTransport();
+        transport.body = "[]";
+        SupabasePetRepository pets = new SupabasePetRepository(new SupabaseClient(config, transport));
+        az.miyav.domain.pet.PetFilters filters = new az.miyav.domain.pet.PetFilters(
+                az.miyav.domain.pet.PetGender.FEMALE, az.miyav.domain.pet.AgeRange.YOUNG, true,
+                az.miyav.domain.pet.PetSort.YOUNGEST);
+        az.miyav.domain.pet.PetQuery query = new az.miyav.domain.pet.PetQuery(null, "", "", 20, 0, filters);
+
+        pets.findPublished(query, null);
+        assertTrue(transport.path.contains("&gender=eq.female"));
+        assertTrue(transport.path.contains("&age_months=gte.6&age_months=lt.24"));
+        assertTrue(transport.path.contains("&vaccination=eq.yes"));
+        assertTrue(transport.path.contains("order=age_months.asc,created_at.desc"));
+        assertEquals(4, filters.activeCount());
+
+        pets.findNear(40.4, 49.85, 10, query, null);
+        assertTrue(transport.requestBody.contains("\"p_gender\":\"female\""));
+        assertTrue(transport.requestBody.contains("\"p_min_age\":6") && transport.requestBody.contains("\"p_max_age\":24"));
+        assertTrue(transport.requestBody.contains("\"p_vaccinated\":true"));
+
+        pets.findPublished(az.miyav.domain.pet.PetQuery.firstPage(), null);
+        assertTrue(transport.path.contains("order=created_at.desc"));
+        assertTrue(!transport.path.contains("gender=") && !transport.path.contains("age_months="));
+    }
+
+    @Test
+    void realtimeJoinsWithTheUserTokenAndPushTokensUpsertByToken() {
+        SupabaseConfig config = SupabaseConfig.parse("https://example.supabase.co", "sb_publishable_test");
+        assertEquals("wss://example.supabase.co/realtime/v1/websocket?apikey=sb_publishable_test&vsn=1.0.0", config.realtimeUrl());
+        UUID room = UUID.randomUUID();
+        String join = SupabaseRealtime.joinMessage("realtime:t", "messages", "conversation_id=eq." + room, "user-token", "1").toString();
+        assertTrue(join.contains("\"event\":\"phx_join\""));
+        assertTrue(join.contains("\"table\":\"messages\"") && join.contains("\"filter\":\"conversation_id=eq." + room + "\""));
+        assertTrue(join.contains("\"access_token\":\"user-token\""));
+
+        RecordingTransport transport = new RecordingTransport();
+        SupabasePushDeviceRepository devices = new SupabasePushDeviceRepository(new SupabaseClient(config, transport));
+        AuthSession session = new AuthSession(UUID.randomUUID(), "a@example.com", "user-token", "r",
+                Instant.parse("2030-01-01T00:00:00Z"), UserRole.OWNER);
+        devices.register(session, "f".repeat(40), "fcm");
+        assertTrue(transport.path.endsWith("/rest/v1/push_devices?on_conflict=token"));
+        assertTrue(transport.headers.get("Prefer").contains("resolution=merge-duplicates"));
+        assertTrue(transport.requestBody.contains("\"platform\":\"fcm\""));
+        assertEquals("Bearer user-token", transport.headers.get("Authorization"));
+        assertThrows(az.miyav.common.error.ValidationException.class, () -> devices.register(session, "short", "fcm"));
+    }
+
+    @Test
+    void placesReadTheNewFieldsAndAdminsUpsertById() {
+        SupabaseConfig config = SupabaseConfig.parse("https://example.supabase.co", "sb_publishable_test");
+        RecordingTransport transport = new RecordingTransport();
+        SupabasePlaceRepository places = new SupabasePlaceRepository(new SupabaseClient(config, transport));
+        UUID id = UUID.randomUUID();
+        transport.body = "[{\"id\":\"" + id + "\",\"kind\":\"vet\",\"name\":\"HappyVet\",\"address\":null,\"phone\":null,"
+                + "\"opening_hours\":\"24/7\",\"latitude\":40.39,\"longitude\":49.86,\"is_24h\":true,\"whatsapp\":\"994519529618\","
+                + "\"verified\":true,\"active\":true}]";
+        az.miyav.domain.place.Place place = places.list(az.miyav.domain.place.Place.Kind.VET).get(0);
+        assertTrue(transport.path.contains("active=eq.true") && transport.path.contains("is_24h,whatsapp,verified"));
+        assertTrue(place.open24h() && place.verified());
+        assertEquals("994519529618", place.whatsapp().orElseThrow());
+
+        AuthSession admin = new AuthSession(UUID.randomUUID(), "a@example.com", "admin-token", "r",
+                Instant.parse("2030-01-01T00:00:00Z"), UserRole.ADMIN);
+        places.save(admin, place);
+        assertTrue(transport.path.contains("/rest/v1/places?on_conflict=id"));
+        assertTrue(transport.headers.get("Prefer").contains("resolution=merge-duplicates"));
+        assertTrue(transport.requestBody.contains("\"verified\":true") && transport.requestBody.contains("\"address\":null"));
+        assertEquals("Bearer admin-token", transport.headers.get("Authorization"));
+    }
+
+    @Test
+    void walkHistoryMapsDistanceRouteAndOpenWalks() {
+        SupabaseConfig config = SupabaseConfig.parse("https://example.supabase.co", "sb_publishable_test");
+        RecordingTransport transport = new RecordingTransport();
+        SupabaseWalkRepository walks = new SupabaseWalkRepository(new SupabaseClient(config, transport));
+        AuthSession session = new AuthSession(UUID.randomUUID(), "a@example.com", "user-token", "r",
+                Instant.parse("2030-01-01T00:00:00Z"), UserRole.OWNER);
+        UUID id = UUID.randomUUID();
+        transport.body = "[{\"id\":\"" + id + "\",\"pet_name\":\"Maks\",\"pet_species\":\"dog\",\"started_at\":\"2026-11-09T14:05:27.85+00:00\","
+                + "\"ended_at\":\"2026-11-09T14:35:27.85+00:00\",\"open\":false,\"distance_m\":1830.5,\"points\":42,"
+                + "\"start_lat\":40.40930,\"start_lng\":49.86710,\"end_lat\":40.41500,\"end_lng\":49.87000},"
+                + "{\"id\":\"" + UUID.randomUUID() + "\",\"pet_name\":\"Leo\",\"pet_species\":null,\"started_at\":\"2026-11-10T08:00:00+00:00\","
+                + "\"ended_at\":null,\"open\":true,\"distance_m\":0,\"points\":0,\"start_lat\":null,\"start_lng\":null,\"end_lat\":null,\"end_lng\":null}]";
+        var history = walks.history(session, 50, 0);
+        assertTrue(transport.path.endsWith("/rest/v1/rpc/my_walks"));
+        assertEquals(1830.5, history.get(0).distanceMeters(), 0.01);
+        assertTrue(history.get(0).hasRoute());
+        assertEquals(30, history.get(0).duration(Instant.now()).toMinutes());
+        assertTrue(history.get(1).open() && history.get(1).endedAt().isEmpty() && !history.get(1).hasRoute());
+
+        transport.body = "[{\"latitude\":40.4093,\"longitude\":49.8671,\"recorded_at\":\"2026-11-09T14:05:30+00:00\"}]";
+        assertEquals(49.8671, walks.route(session, id).get(0).longitude(), 0.00001);
+        assertTrue(transport.requestBody.contains("\"p_session\":\"" + id + "\""));
+    }
+
+    @Test
     void listingStatusAndSearchStayInsideTheLiveContract() {
         assertEquals(PetStatus.PUBLISHED, ListingStatusMapper.toDomain("active"));
         assertEquals(PetStatus.ARCHIVED, ListingStatusMapper.toDomain("deleted"));

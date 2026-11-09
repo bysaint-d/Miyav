@@ -109,6 +109,16 @@
             android:visibility="gone"
             app:icon="@drawable/ic_phone" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/chatButton"
+            style="@style/Widget.Miyav.Button.Tonal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/chat_write_owner"
+            android:visibility="gone"
+            app:icon="@drawable/ic_chat" />
+
         <TextView
             android:id="@+id/contactUnavailable"
             android:layout_width="match_parent"

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,26 +28,34 @@ import java.util.List;
 public class PhotoViewerDialog extends DialogFragment {
     private static final String PATHS = "paths";
     private static final String START = "start";
-    private static final String WALK_PET = "walkPet";
+    private static final String SOURCE = "source";
+    private static final int LISTING = 0;
+    private static final int WALK_PET = 1;
+    private static final int CHAT = 2;
     private DialogPhotoViewerBinding binding;
 
     static void open(FragmentManager manager, List<String> paths, int start) {
-        show(manager, paths, start, false);
+        show(manager, paths, start, LISTING);
     }
 
     /** The pet photo of a walk request, which lives in the pets bucket rather than with listings. */
     static void openWalkPet(FragmentManager manager, String path) {
-        show(manager, List.of(path), 0, true);
+        show(manager, List.of(path), 0, WALK_PET);
     }
 
-    private static void show(FragmentManager manager, List<String> paths, int start, boolean walkPet) {
+    /** A photo sent in a chat, from the private messages bucket. */
+    static void openChat(FragmentManager manager, String path) {
+        show(manager, List.of(path), 0, CHAT);
+    }
+
+    private static void show(FragmentManager manager, List<String> paths, int start, int source) {
         if (paths.isEmpty() || manager.findFragmentByTag("photo-viewer") != null) {
             return;
         }
         Bundle args = new Bundle();
         args.putStringArrayList(PATHS, new ArrayList<>(paths));
         args.putInt(START, start);
-        args.putBoolean(WALK_PET, walkPet);
+        args.putInt(SOURCE, source);
         PhotoViewerDialog dialog = new PhotoViewerDialog();
         dialog.setArguments(args);
         dialog.show(manager, "photo-viewer");
@@ -66,7 +75,7 @@ public class PhotoViewerDialog extends DialogFragment {
         int start = Math.max(0, Math.min(requireArguments().getInt(START), paths.size() - 1));
         LinearLayoutManager layout = new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false);
         binding.pager.setLayoutManager(layout);
-        binding.pager.setAdapter(new Pages(Ui.app(this), paths, requireArguments().getBoolean(WALK_PET)));
+        binding.pager.setAdapter(new Pages(Ui.app(this), paths, requireArguments().getInt(SOURCE)));
         new PagerSnapHelper().attachToRecyclerView(binding.pager);
         binding.pager.scrollToPosition(start);
         binding.counter.setVisibility(paths.size() > 1 ? View.VISIBLE : View.GONE);
@@ -103,12 +112,12 @@ public class PhotoViewerDialog extends DialogFragment {
     private static final class Pages extends RecyclerView.Adapter<Pages.Holder> {
         private final MiyavApplication app;
         private final List<String> paths;
-        private final boolean walkPet;
+        private final int source;
 
-        Pages(MiyavApplication app, List<String> paths, boolean walkPet) {
+        Pages(MiyavApplication app, List<String> paths, int source) {
             this.app = app;
             this.paths = paths;
-            this.walkPet = walkPet;
+            this.source = source;
         }
 
         @NonNull
@@ -119,10 +128,11 @@ public class PhotoViewerDialog extends DialogFragment {
 
         @Override
         public void onBindViewHolder(@NonNull Holder holder, int position) {
-            if (walkPet) {
-                app.photos().walkPetFull(holder.binding.photoView, paths.get(position));
-            } else {
-                app.photos().listingFull(holder.binding.photoView, paths.get(position));
+            String path = paths.get(position);
+            switch (source) {
+                case WALK_PET -> app.photos().walkPetFull(holder.binding.photoView, path);
+                case CHAT -> app.photos().chat(holder.binding.photoView, path, 1440, ImageView.ScaleType.MATRIX);
+                default -> app.photos().listingFull(holder.binding.photoView, path);
             }
         }
 

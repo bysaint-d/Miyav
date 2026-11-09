@@ -21,6 +21,15 @@ tasks.register("consolePreview", JavaExec) {
     args = [layout.buildDirectory.dir("console-preview").get().asFile.absolutePath]
 }
 
+// Same for the member area: Discover, My listings, Applications, Messages, Notifications, Profile.
+tasks.register("memberPreview", JavaExec) {
+    group = "verification"
+    description = "Renders the member pages without a network and saves a screenshot of each page."
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "az.miyav.desktop.MemberPreview"
+    args = [layout.buildDirectory.dir("member-preview").get().asFile.absolutePath]
+}
+
 // The installed app has no config folder next to it, so the public project URL and publishable key
 // (the same values the APK carries) are bundled from local.properties or the environment.
 def localProperties = new Properties()
@@ -51,7 +60,7 @@ def generateClientConfig = tasks.register("generateClientConfig") {
 sourceSets.main.resources.srcDir(clientConfigDir)
 tasks.named("processResources") { dependsOn generateClientConfig }
 
-def appVersion = "1.3.0"
+def appVersion = "1.5.0"
 
 // Self-contained Windows app (own Java runtime) in build/jpackage/MIYAV; packaging/miyav.iss turns it into Setup.exe.
 tasks.register("packageAppImage", Exec) {

@@ -12,6 +12,12 @@ def setting = { String key, String env ->
 }
 def supabaseUrl = setting("supabase.url", "MIYAV_SUPABASE_URL")
 def supabaseKey = setting("supabase.publishableKey", "MIYAV_SUPABASE_PUBLISHABLE_KEY")
+// Firebase Cloud Messaging (push). All four come from the Firebase console, Android app settings; leave
+// them empty to build without push (the app then checks for notifications in the background instead).
+def firebaseProjectId = setting("firebase.projectId", "MIYAV_FIREBASE_PROJECT_ID")
+def firebaseAppId = setting("firebase.appId", "MIYAV_FIREBASE_APP_ID")
+def firebaseApiKey = setting("firebase.apiKey", "MIYAV_FIREBASE_API_KEY")
+def firebaseSenderId = setting("firebase.senderId", "MIYAV_FIREBASE_SENDER_ID")
 if (supabaseKey.startsWith("sb_secret_")) {
     throw new GradleException("A Supabase secret key must never be built into the Android app. Use the publishable key.")
 }
@@ -38,12 +44,16 @@ android {
         applicationId "az.miyav.native"
         minSdk 26
         targetSdk 35
-        versionCode 3
-        versionName "1.3.0"
+        versionCode 5
+        versionName "1.5.0"
 
         buildConfigField "String", "SUPABASE_URL", "\"${supabaseUrl}\""
         buildConfigField "String", "SUPABASE_PUBLISHABLE_KEY", "\"${supabaseKey}\""
         buildConfigField "String", "AUTH_REDIRECT", "\"${authScheme}://${authHost}\""
+        buildConfigField "String", "FIREBASE_PROJECT_ID", "\"${firebaseProjectId}\""
+        buildConfigField "String", "FIREBASE_APP_ID", "\"${firebaseAppId}\""
+        buildConfigField "String", "FIREBASE_API_KEY", "\"${firebaseApiKey}\""
+        buildConfigField "String", "FIREBASE_SENDER_ID", "\"${firebaseSenderId}\""
         manifestPlaceholders = [authScheme: authScheme, authHost: authHost]
         resourceConfigurations += ["az", "en", "ru"]
     }
@@ -137,6 +147,7 @@ dependencies {
     implementation libs.room.runtime
     annotationProcessor libs.room.compiler
     implementation libs.work.runtime
+    implementation libs.firebase.messaging
 
     testImplementation libs.junit4
 }

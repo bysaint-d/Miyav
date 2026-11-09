@@ -58,18 +58,23 @@ public final class MapSupport {
 
     /** Round marker with a species emoji, optionally ringed in the brand colour. */
     public static Drawable emojiMarker(Context context, String emoji, int fillColor, boolean highlighted) {
+        return emojiMarker(context, emoji, fillColor, ContextCompat.getColor(context, highlighted ? R.color.brand_coral : R.color.surface), 48);
+    }
+
+    /** Larger marker with a coloured ring, used for partner places. */
+    public static Drawable emojiMarker(Context context, String emoji, int fillColor, int ringColor, int sizeDp) {
         float density = context.getResources().getDisplayMetrics().density;
-        int size = Math.round(48 * density);
+        int size = Math.round(sizeDp * density);
         Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(ContextCompat.getColor(context, highlighted ? R.color.brand_coral : R.color.surface));
+        paint.setColor(ringColor);
         canvas.drawOval(new RectF(0, 0, size, size), paint);
         paint.setColor(fillColor);
-        float inset = 4 * density;
+        float inset = Math.max(4, sizeDp / 12f) * density;
         canvas.drawOval(new RectF(inset, inset, size - inset, size - inset), paint);
         Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
-        text.setTextSize(22 * density);
+        text.setTextSize(sizeDp * 0.46f * density);
         text.setTextAlign(Paint.Align.CENTER);
         text.setTypeface(Typeface.DEFAULT);
         Paint.FontMetrics metrics = text.getFontMetrics();

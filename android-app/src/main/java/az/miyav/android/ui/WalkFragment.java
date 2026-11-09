@@ -109,6 +109,11 @@ public class WalkFragment extends Fragment {
                 .setNegativeButton(android.R.string.cancel, null)
                 .show());
         binding.locateButton.setOnClickListener(view -> locateMe(true));
+        binding.historyButton.setOnClickListener(view -> {
+            if (Gate.require(this, az.miyav.domain.auth.ProtectedAction.WALK)) {
+                Ui.nav(this).navigate(R.id.action_global_walk_history);
+            }
+        });
         tracker().state().observe(getViewLifecycleOwner(), this::render);
         tracker().sync(this::onError);
         if (DeviceLocation.hasAny(requireContext())) {
@@ -178,7 +183,9 @@ public class WalkFragment extends Fragment {
             lastEvent = state;
             switch (state.event) {
                 case "walk.started" -> Ui.snack(binding.getRoot(), R.string.walk_started);
-                case "walk.ended" -> Ui.snack(binding.getRoot(), R.string.walk_ended);
+                case "walk.ended" -> Snackbar.make(binding.getRoot(), R.string.walk_ended, Snackbar.LENGTH_LONG)
+                        .setAction(R.string.walk_history_see, view -> Ui.nav(this).navigate(R.id.action_global_walk_history))
+                        .show();
                 case "walk.no_session" -> Ui.snack(binding.getRoot(), R.string.walk_no_session);
                 default -> {
                 }
@@ -198,10 +205,13 @@ public class WalkFragment extends Fragment {
         WalkTracker.State state = tracker().snapshot();
         if (state.session == null) {
             binding.durationText.setText("");
+            binding.distanceText.setText("");
             return;
         }
         long seconds = Math.max(0, Duration.between(state.session.startedAt(), Instant.now()).getSeconds());
         binding.durationText.setText(String.format(Locale.US, "%d:%02d:%02d", seconds / 3600, (seconds % 3600) / 60, seconds % 60));
+        binding.distanceText.setText(getString(R.string.walk_live_distance,
+                WalkHistoryFragment.km(requireContext(), tracker().distanceMeters())));
     }
 
     private void pollNearby() {

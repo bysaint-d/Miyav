@@ -177,6 +177,20 @@ final class Labels {
     }
 
     /** Manat amount without trailing zeros: 10, 12.5, 7.25. */
+    /** OSM opening hours in words: "Mo-Sa 09:00-17:00; Su off" becomes "B.e.–Şnb 09:00-17:00 · B. bağlı". */
+    static String hours(Context context, String spec) {
+        java.util.Locale locale = context.getResources().getConfiguration().getLocales().get(0);
+        String[] codes = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
+        String text = spec.trim();
+        for (int i = 0; i < codes.length; i++) {
+            String day = java.time.DayOfWeek.of(i + 1).getDisplayName(java.time.format.TextStyle.SHORT, locale);
+            text = text.replaceAll("\\b" + codes[i] + "\\b", day);
+        }
+        return text.replaceAll("(?i)\\boff\\b", context.getString(R.string.places_closed_day))
+                .replaceAll("(?<=\\p{L}\\.?)-(?=\\p{L})", "–")
+                .replace(";", " ·");
+    }
+
     static String money(BigDecimal amount) {
         BigDecimal plain = amount.stripTrailingZeros();
         return (plain.scale() < 0 ? plain.setScale(0) : plain).toPlainString();

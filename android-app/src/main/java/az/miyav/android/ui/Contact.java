@@ -60,6 +60,10 @@ final class Contact {
         launch(context, new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phone.replaceAll("[^0-9+]", ""))));
     }
 
+    static void web(Context context, String url) {
+        launch(context, new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+    }
+
     static String listingLink(java.util.UUID listingId) {
         return "az.miyav.native://listing/" + listingId;
     }

@@ -197,6 +197,15 @@ public final class ConsolePreview {
         MiyavBackend backend = new MiyavBackend(mock(AuthRepository.class), users, pets, adoptions,
                 mock(MessageRepository.class), mock(NotificationRepository.class), media, adminActions)
                 .withFeatures(mock(WalkRepository.class), mock(PublicCatalogRepository.class), mock(FavoriteRepository.class), insights);
+        az.miyav.domain.repository.PlaceRepository places = mock(az.miyav.domain.repository.PlaceRepository.class);
+        when(places.listAll(any())).thenReturn(List.of(
+                new az.miyav.domain.place.Place(UUID.randomUUID(), az.miyav.domain.place.Place.Kind.VET, "Zoo HappyVet",
+                        "Koroğlu Rəhimov küç. 9", "+994519529618", "24/7", 40.395808, 49.860549, true, "994519529618", true, true),
+                new az.miyav.domain.place.Place(UUID.randomUUID(), az.miyav.domain.place.Place.Kind.VET, "White Bear",
+                        "Qurban Abbasov küç. 128", "0502000750", "Mo-Sa 09:00-20:00", 40.346692, 49.837101, false, null, false, true),
+                new az.miyav.domain.place.Place(UUID.randomUUID(), az.miyav.domain.place.Place.Kind.VET, "Baytarlıq Apteki",
+                        "Azadlıq pr.", null, null, 40.434136, 49.843982, false, null, false, false)));
+        backend.withPlaces(places);
         return DesktopGraph.create(backend, sessions, Path.of(System.getProperty("java.io.tmpdir"), "miyav-preview"));
     }
 

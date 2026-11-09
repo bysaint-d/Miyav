@@ -8,13 +8,19 @@ public final class PetQuery {
     private final String search;
     private final int limit;
     private final int offset;
+    private final PetFilters filters;
 
     public PetQuery(PetSpecies species, String city, String search, int limit, int offset) {
+        this(species, city, search, limit, offset, PetFilters.NONE);
+    }
+
+    public PetQuery(PetSpecies species, String city, String search, int limit, int offset, PetFilters filters) {
         this.species = species;
         this.city = city == null ? "" : city.trim();
         this.search = search == null ? "" : search.trim();
         this.limit = limit;
         this.offset = offset;
+        this.filters = filters == null ? PetFilters.NONE : filters;
     }
 
     public static PetQuery firstPage() {
@@ -41,8 +47,12 @@ public final class PetQuery {
         return offset;
     }
 
+    public PetFilters filters() {
+        return filters;
+    }
+
     public PetQuery nextPage() {
-        return new PetQuery(species, city, search, limit, offset + limit);
+        return new PetQuery(species, city, search, limit, offset + limit, filters);
     }
 
     @Override
@@ -57,11 +67,12 @@ public final class PetQuery {
                 && offset == query.offset
                 && species == query.species
                 && city.equals(query.city)
-                && search.equals(query.search);
+                && search.equals(query.search)
+                && filters.equals(query.filters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(species, city, search, limit, offset);
+        return Objects.hash(species, city, search, limit, offset, filters);
     }
 }

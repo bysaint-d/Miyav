@@ -47,6 +47,31 @@ public final class MessagingService {
         return messages.send(session, conversationId, body, walkListingId);
     }
 
+    /** Uploads the JPEG to the chat's private folder, then posts it with an optional caption. */
+    public Message sendPhoto(AuthSession session, UUID conversationId, byte[] jpeg, String caption, UUID walkListingId) {
+        requireSession(session);
+        String text = caption == null ? "" : caption.trim();
+        if (text.length() > Message.MAX_LENGTH) {
+            throw new ValidationException("chat.text");
+        }
+        String path = messages.uploadPhoto(session, conversationId, jpeg);
+        return messages.sendPhoto(session, conversationId, path, text, walkListingId);
+    }
+
+    public byte[] photo(AuthSession session, String imagePath) {
+        requireSession(session);
+        return messages.photo(session, imagePath);
+    }
+
+    /** The chat with the owner of an adoption listing; owners cannot open one with themselves. */
+    public UUID openForAdoption(AuthSession session, az.miyav.domain.pet.Pet listing) {
+        requireSession(session);
+        if (listing.ownerId().equals(session.userId())) {
+            throw new ValidationException("chat.own_listing");
+        }
+        return messages.openForAdoption(session, listing.id());
+    }
+
     public void markRead(AuthSession session, UUID conversationId) {
         requireSession(session);
         messages.markRead(session, conversationId);

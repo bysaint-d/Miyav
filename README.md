@@ -57,9 +57,16 @@ Both clients open on Discover without an account. Guests browse, search, filter,
 - Adoption apply / accept / reject / cancel through SQL RPCs.
 - Android coarse location mapped to Bakı, Sumqayıt, or Abşeron.
 - Desktop admin dashboard (users, listings, applications, reports) gated by `private.is_admin()`.
+- Desktop member area next to Discover: My listings (create, photos, publish, archive), Applications
+  (incoming and sent), Messages (live chat with photos), Notifications, Profile (details, photo, password).
+- Detailed listing filter on Android and desktop: gender, age band, vaccinated only, sort order.
+- In-app chat with photos and "Message the owner" on adoption listings; Realtime updates with poll fallback.
+- Phone push through FCM (`dispatch-push` Edge Function) once Firebase is configured.
+- Server notifications in the recipient's language (az, en, ru).
 - Adoption outbox retry when apply fails with a network error.
 
-Telegram, Google PKCE completion, and message send are deferred. See `KNOWN_LIMITATIONS.md` and `PRODUCTION_READINESS_REPORT.md`.
+Telegram is deferred. See `KNOWN_LIMITATIONS.md` and `PRODUCTION_READINESS_REPORT.md`. Preview the desktop
+member pages offline with `gradlew.bat :desktop-app:memberPreview` (screenshots in `desktop-app/build/member-preview`).
 
 ## Layout
 

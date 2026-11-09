@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="az.miyav.desktop.DiscoverController" styleClass="screen">
+            fx:id="root" fx:controller="az.miyav.desktop.DiscoverController" styleClass="screen">
     <top>
         <VBox spacing="14">
             <padding>
@@ -36,16 +36,26 @@
                 <Button fx:id="adminButton" onAction="#onAdmin" styleClass="ghost" mnemonicParsing="false"/>
                 <Button fx:id="accountButton" onAction="#onAccount" styleClass="primary" mnemonicParsing="false"/>
             </HBox>
-            <HBox spacing="10" alignment="CENTER_LEFT">
+            <HBox fx:id="nav" spacing="8" alignment="CENTER_LEFT"/>
+            <HBox fx:id="searchRow" spacing="10" alignment="CENTER_LEFT">
+                <ToggleButton fx:id="adoptionMode" onAction="#onAdoptionMode" styleClass="chip" mnemonicParsing="false"/>
+                <ToggleButton fx:id="walkMode" onAction="#onWalkMode" styleClass="chip" mnemonicParsing="false"/>
                 <TextField fx:id="search" onAction="#onSearch" HBox.hgrow="ALWAYS"/>
                 <ComboBox fx:id="species" prefWidth="150"/>
                 <ComboBox fx:id="city" prefWidth="150"/>
                 <ToggleButton fx:id="savedOnly" onAction="#onSearch" styleClass="ghost" mnemonicParsing="false"/>
             </HBox>
+            <HBox fx:id="filterRow" spacing="10" alignment="CENTER_LEFT">
+                <ComboBox fx:id="gender" prefWidth="200"/>
+                <ComboBox fx:id="age" prefWidth="220"/>
+                <ToggleButton fx:id="vaccinatedOnly" onAction="#onSearch" styleClass="ghost" mnemonicParsing="false"/>
+                <ComboBox fx:id="sort" prefWidth="170"/>
+                <Hyperlink fx:id="resetFilters" onAction="#onResetFilters" styleClass="link"/>
+            </HBox>
         </VBox>
     </top>
     <center>
-        <SplitPane dividerPositions="0.4" styleClass="split">
+        <SplitPane fx:id="discoverPane" dividerPositions="0.4" styleClass="split">
             <BorderPane.margin>
                 <Insets right="24" left="24"/>
             </BorderPane.margin>
@@ -56,7 +66,7 @@
                         <Insets top="20" right="24" bottom="24" left="24"/>
                     </padding>
                     <Label fx:id="placeholder" wrapText="true" styleClass="muted"/>
-                    <ImageView fx:id="photo" fitWidth="520" fitHeight="320" preserveRatio="true"/>
+                    <ImageView fx:id="photo" fitWidth="520" fitHeight="340" preserveRatio="false"/>
                     <Label fx:id="name" styleClass="detail-title"/>
                     <Label fx:id="facts" wrapText="true" styleClass="muted"/>
                     <Label fx:id="description" wrapText="true"/>
@@ -67,6 +77,7 @@
                         <Button fx:id="favoriteButton" onAction="#onFavorite" styleClass="ghost" mnemonicParsing="false"/>
                         <Button fx:id="applyButton" onAction="#onApply" styleClass="primary" mnemonicParsing="false"/>
                         <Button fx:id="contactButton" onAction="#onContact" styleClass="ghost" mnemonicParsing="false"/>
+                        <Button fx:id="chatButton" onAction="#onChat" styleClass="ghost" mnemonicParsing="false"/>
                     </HBox>
                 </VBox>
             </ScrollPane>

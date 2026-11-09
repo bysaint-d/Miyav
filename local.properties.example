@@ -9,3 +9,13 @@ supabase.url=https://<project-ref>.supabase.co
 # Public client key. NEVER put a secret key (sb_secret_...) or the service_role JWT here;
 # the build fails on purpose if a secret key is detected.
 supabase.publishableKey=sb_publishable_<value>
+
+# Firebase Cloud Messaging (phone push). Firebase console -> Project settings -> General -> Your apps ->
+# Android app az.miyav.native. Leave all four empty to build without push; the app then checks for new
+# notifications in the background every ~15 minutes instead.
+# Server side: Firebase -> Project settings -> Service accounts -> Generate new private key, then store the
+# whole JSON as the Supabase Edge Function secret FCM_SERVICE_ACCOUNT (used by dispatch-push).
+firebase.projectId=
+firebase.appId=
+firebase.apiKey=
+firebase.senderId=
