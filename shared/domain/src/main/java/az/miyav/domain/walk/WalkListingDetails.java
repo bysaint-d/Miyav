@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * What an owner fills in when asking for a walk: the pet, when, for how long, the hourly price and
@@ -28,9 +30,16 @@ public final class WalkListingDetails {
     private final String city;
     private final ListingLocation area;
     private final String notes;
+    private final UUID petId;
 
     public WalkListingDetails(String petName, PetSpecies species, Instant startsAt, int durationMinutes,
                               BigDecimal pricePerHour, String city, ListingLocation area, String notes) {
+        this(petName, species, startsAt, durationMinutes, pricePerHour, city, area, notes, null);
+    }
+
+    /** {@code petId} links one of the owner's own pets, whose photo the listing then shows; may be null. */
+    public WalkListingDetails(String petName, PetSpecies species, Instant startsAt, int durationMinutes,
+                              BigDecimal pricePerHour, String city, ListingLocation area, String notes, UUID petId) {
         String name = petName == null ? "" : petName.trim();
         if (name.isEmpty() || name.length() > 60) {
             throw new ValidationException("validation.walk_pet");
@@ -56,6 +65,11 @@ public final class WalkListingDetails {
         this.city = city;
         this.area = area == null ? null : approximate(area);
         this.notes = note;
+        this.petId = petId;
+    }
+
+    public Optional<UUID> petId() {
+        return Optional.ofNullable(petId);
     }
 
     public String petName() {

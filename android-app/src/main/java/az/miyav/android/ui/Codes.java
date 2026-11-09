@@ -78,6 +78,13 @@ public final class Codes {
             case "petprofile.notes" -> R.string.petprofile_notes;
             case "chat.rate_limited" -> R.string.chat_rate_limited;
             case "chat.unavailable" -> R.string.chat_unavailable;
+            case "account.admin" -> R.string.account_admin;
+            case "account.delete_failed" -> R.string.account_delete_failed;
+            case "report.reason" -> R.string.report_reason;
+            case "report.self" -> R.string.report_self;
+            case "report.rate_limited" -> R.string.report_rate_limited;
+            case "chat.blocked" -> R.string.chat_blocked;
+            case "walk.pet_not_own" -> R.string.walk_pet_not_own;
             default -> R.string.error_generic;
         };
     }

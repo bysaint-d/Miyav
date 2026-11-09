@@ -72,6 +72,24 @@ public final class SupabaseNotificationRepository implements NotificationReposit
         }
     }
 
+    @Override
+    public void delete(AuthSession session, UUID notificationId) {
+        remove(session, "id=eq." + notificationId);
+    }
+
+    @Override
+    public void deleteAll(AuthSession session) {
+        remove(session, "user_id=eq." + session.userId());
+    }
+
+    private void remove(AuthSession session, String filter) {
+        HttpExchange response = client.send("DELETE", "/rest/v1/notifications?" + filter, session, null,
+                Map.of("Prefer", "return=minimal"));
+        if (response.status() / 100 != 2) {
+            throw PostgrestErrors.from(response);
+        }
+    }
+
     private static final class NotificationRow {
         String id;
         String user_id;

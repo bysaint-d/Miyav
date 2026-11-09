@@ -16,6 +16,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -28,6 +29,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -115,6 +117,15 @@ public final class DiscoverController {
         termsLink.setText(graph.text("legal.terms"));
         privacyLink.setText(graph.text("legal.privacy"));
         placeholder.setText(graph.text("discover.select"));
+        photo.setCursor(Cursor.HAND);
+        Tooltip.install(photo, new Tooltip(graph.text("photo.open")));
+        photo.setOnMouseClicked(event -> {
+            Pet pet = selected;
+            if (pet != null && photo.getImage() != null) {
+                PhotoViewer.open(window(), pet.name(), pet.photoPaths(), 0,
+                        path -> graph.discovery().photo(graph.session().viewer(), path));
+            }
+        });
 
         List<PetSpecies> speciesValues = new ArrayList<>();
         speciesValues.add(null);
@@ -167,12 +178,20 @@ public final class DiscoverController {
     @FXML
     private void onAccount() {
         if (graph.session().signedIn()) {
-            work(() -> {
-                graph.session().signOut();
-                return Boolean.TRUE;
-            }, done -> {
-                onAuthChanged();
-                reload();
+            ButtonType signOut = new ButtonType(graph.text("auth.logout"), ButtonBar.ButtonData.OK_DONE);
+            ButtonType delete = new ButtonType(graph.text("account.delete"), ButtonBar.ButtonData.OTHER);
+            Alert choice = new Alert(Alert.AlertType.NONE, graph.text("account.menu_body"), signOut, delete, ButtonType.CANCEL);
+            choice.initOwner(window());
+            choice.setTitle(graph.text("account.menu_title"));
+            choice.showAndWait().ifPresent(picked -> {
+                if (picked == signOut) {
+                    work(() -> {
+                        graph.session().signOut();
+                        return Boolean.TRUE;
+                    }, done -> afterAccountChange(""));
+                } else if (picked == delete) {
+                    confirmDelete();
+                }
             });
             return;
         }
@@ -430,6 +449,31 @@ public final class DiscoverController {
         root.setAlignment(Pos.TOP_LEFT);
         stage.setScene(scene(root));
         stage.showAndWait();
+    }
+
+    /** Permanent deletion after an explicit second confirmation. */
+    private void confirmDelete() {
+        ButtonType delete = new ButtonType(graph.text("account.delete_confirm"), ButtonBar.ButtonData.OK_DONE);
+        Alert confirm = new Alert(Alert.AlertType.WARNING, graph.text("account.delete_body"), delete, ButtonType.CANCEL);
+        confirm.initOwner(window());
+        confirm.setTitle(graph.text("account.delete"));
+        confirm.setHeaderText(graph.text("account.delete_title"));
+        if (confirm.showAndWait().filter(delete::equals).isEmpty()) {
+            return;
+        }
+        status.setText("…");
+        work(() -> {
+            graph.session().deleteAccount();
+            return Boolean.TRUE;
+        }, done -> afterAccountChange(graph.text("account.deleted")));
+    }
+
+    private void afterAccountChange(String message) {
+        onAuthChanged();
+        reload();
+        if (!message.isEmpty()) {
+            status.setText(message);
+        }
     }
 
     private javafx.scene.Scene scene(javafx.scene.Parent root) {

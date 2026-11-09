@@ -65,6 +65,11 @@ public class PetDetailFragment extends Fragment {
         petId = UUID.fromString(requireArguments().getString("petId"));
         binding.backButton.setOnClickListener(view -> Ui.nav(this).popBackStack());
         photos = new PhotoAdapter(Ui.app(this), null);
+        photos.onOpen(position -> {
+            if (pet != null) {
+                PhotoViewerDialog.open(getChildFragmentManager(), pet.photoPaths(), position);
+            }
+        });
         LinearLayoutManager layout = new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false);
         binding.photoList.setLayoutManager(layout);
         binding.photoList.setAdapter(photos);

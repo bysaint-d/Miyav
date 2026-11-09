@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointForward;
@@ -23,6 +25,7 @@ import az.miyav.android.databinding.FragmentWalkEditorBinding;
 import az.miyav.common.error.ValidationException;
 import az.miyav.domain.auth.AuthSession;
 import az.miyav.domain.location.ListingLocation;
+import az.miyav.domain.pet.PetProfile;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.walk.WalkListing;
 import az.miyav.domain.walk.WalkListingDetails;
@@ -36,8 +39,11 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /** Owner's walk request: pet, when, how long, price per hour (the total is shown live) and an approximate area. */
@@ -52,6 +58,9 @@ public class WalkEditorFragment extends Fragment {
     private LocalTime time;
     private Form snapshot;
     private boolean loaded;
+    private PetTileAdapter pets;
+    private UUID petId;
+    private UUID justAdded;
 
     @Nullable
     @Override
@@ -64,6 +73,16 @@ public class WalkEditorFragment extends Fragment {
                 value -> Labels.duration(requireContext(), value), 60);
         duration.onChange(this::renderTotal);
         city = new Choice<>(binding.cityInput, Labels.CITIES, value -> value, Labels.CITIES.get(0));
+        pets = new PetTileAdapter(Ui.app(this), this::pickPet, () -> PetEditorSheet.open(getChildFragmentManager(), null));
+        binding.petPicker.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
+        binding.petPicker.setAdapter(pets);
+        getChildFragmentManager().setFragmentResultListener(PetEditorSheet.RESULT, getViewLifecycleOwner(), (key, result) -> {
+            if (!result.getBoolean(PetEditorSheet.DELETED)) {
+                justAdded = UUID.fromString(result.getString(PetEditorSheet.PET_ID));
+            }
+            loadPets();
+        });
+        loadPets();
         if (date == null) {
             LocalDateTime start = LocalDateTime.now().plusHours(2).truncatedTo(ChronoUnit.HOURS);
             date = start.toLocalDate();
@@ -127,6 +146,8 @@ public class WalkEditorFragment extends Fragment {
             }
             current = listing;
             WalkListingDetails details = listing.details();
+            petId = details.petId().orElse(null);
+            pets.setSelected(petId == null ? Set.of() : Set.of(petId));
             area = details.area();
             LocalDateTime start = LocalDateTime.ofInstant(details.startsAt(), ZoneId.systemDefault());
             date = start.toLocalDate();
@@ -138,6 +159,51 @@ public class WalkEditorFragment extends Fragment {
             busy(false);
             binding.messageView.setText(Codes.text(code));
         });
+    }
+
+    /** The member's pets as tiles; a pet added from here is picked straight away. */
+    private void loadPets() {
+        Ui.run(this, () -> {
+            MiyavApplication app = Ui.app(this);
+            return app.myPets().mine(app.auth().requireSession());
+        }, mine -> {
+            List<PetTileAdapter.Tile> tiles = new ArrayList<>();
+            for (PetProfile pet : mine) {
+                tiles.add(new PetTileAdapter.Tile(pet.id(), pet.name(),
+                        Labels.petMeta(requireContext(), pet.species(), pet.breed(), pet.ageYears()),
+                        pet.species(), pet.photoPath(), false));
+            }
+            pets.replace(tiles);
+            PetProfile added = null;
+            for (PetProfile pet : mine) {
+                if (pet.id().equals(justAdded)) {
+                    added = pet;
+                }
+            }
+            justAdded = null;
+            if (added != null) {
+                choose(added.id(), added.name(), added.species());
+            } else {
+                pets.setSelected(petId == null ? Set.of() : Set.of(petId));
+            }
+        }, code -> Ui.snack(binding.getRoot(), code));
+    }
+
+    private void pickPet(PetTileAdapter.Tile tile) {
+        if (tile.key.equals(petId)) {
+            petId = null;
+            pets.setSelected(Set.of());
+            return;
+        }
+        choose((UUID) tile.key, tile.name, tile.species);
+    }
+
+    private void choose(UUID id, String name, PetSpecies kind) {
+        petId = id;
+        pets.setSelected(Set.of(id));
+        binding.nameInput.setText(name);
+        binding.nameLayout.setError(null);
+        species.select(kind);
     }
 
     private void fill(Form form) {
@@ -270,7 +336,7 @@ public class WalkEditorFragment extends Fragment {
         }
         try {
             return new WalkListingDetails(form.petName, form.species, start, form.minutes == null ? 0 : form.minutes,
-                    price, form.city, area, form.notes);
+                    price, form.city, area, form.notes, petId);
         } catch (ValidationException exception) {
             switch (exception.code()) {
                 case "validation.walk_pet" -> binding.nameLayout.setError(getString(R.string.validation_walk_pet));

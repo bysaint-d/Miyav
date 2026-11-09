@@ -13,6 +13,8 @@ import az.miyav.domain.repository.PetRepository;
 import az.miyav.domain.repository.PublicCatalogRepository;
 import az.miyav.domain.repository.BroadcastRepository;
 import az.miyav.domain.repository.OwnPetRepository;
+import az.miyav.domain.repository.PlaceRepository;
+import az.miyav.domain.repository.SafetyRepository;
 import az.miyav.domain.repository.UserRepository;
 import az.miyav.domain.repository.WalkListingRepository;
 import az.miyav.domain.repository.WalkRepository;
@@ -33,6 +35,8 @@ public final class MiyavBackend {
     private WalkListingRepository walkListings;
     private OwnPetRepository ownPets;
     private BroadcastRepository broadcasts;
+    private SafetyRepository safety;
+    private PlaceRepository places;
 
     public MiyavBackend(
             AuthRepository auth,
@@ -70,6 +74,8 @@ public final class MiyavBackend {
         backend.walkListings = new SupabaseWalkListingRepository(client);
         backend.ownPets = new SupabaseOwnPetRepository(client);
         backend.broadcasts = new SupabaseBroadcastRepository(client);
+        backend.safety = new SupabaseSafetyRepository(client);
+        backend.places = new SupabasePlaceRepository(client);
         return backend.withFeatures(
                 new SupabaseWalkRepository(client),
                 new SupabasePublicCatalogRepository(client),
@@ -90,6 +96,16 @@ public final class MiyavBackend {
     /** Owners' walking listings and walkers' offers. */
     public WalkListingRepository walkListings() {
         return walkListings;
+    }
+
+    /** Vets and pet shops on the Vets tab. */
+    public PlaceRepository places() {
+        return places;
+    }
+
+    /** Reports and blocks between members. */
+    public SafetyRepository safety() {
+        return safety;
     }
 
     /** Admin push broadcasts. */

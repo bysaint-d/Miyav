@@ -85,6 +85,15 @@ public final class PostgrestErrors {
         if ("too many messages".equals(message)) {
             return new ValidationException("chat.rate_limited");
         }
+        if ("WALK_PET_NOT_OWN".equals(message)) {
+            return new ValidationException("walk.pet_not_own");
+        }
+        if ("USER_BLOCKED".equals(message)) {
+            return new AccessDeniedException("chat.blocked");
+        }
+        if ("too many reports".equals(message)) {
+            return new ValidationException("report.rate_limited");
+        }
         if ("23514".equals(code) || "22001".equals(code)) {
             return new ValidationException("validation.pet");
         }

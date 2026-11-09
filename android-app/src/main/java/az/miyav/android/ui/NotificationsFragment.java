@@ -8,7 +8,11 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import az.miyav.android.MiyavApplication;
 import az.miyav.android.R;
@@ -28,9 +32,27 @@ public class NotificationsFragment extends Fragment {
         adapter = new NotificationAdapter(notification -> {
             notification.conversationId().ifPresent(room -> Ui.openChat(this, room.toString(), null, null, null));
             markRead(notification);
-        });
+        }, this::delete);
         binding.itemList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.itemList.setAdapter(adapter);
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder from,
+                                  @NonNull RecyclerView.ViewHolder to) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder holder, int direction) {
+                delete(adapter.at(holder.getBindingAdapterPosition()));
+            }
+        }).attachToRecyclerView(binding.itemList);
+        binding.toolbar.getMenu().add(R.string.notifications_clear)
+                .setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS);
+        binding.toolbar.setOnMenuItemClickListener(item -> {
+            confirmClear();
+            return true;
+        });
         binding.refresh.setColorSchemeResources(R.color.text_on_brand);
         binding.refresh.setProgressBackgroundColorSchemeResource(R.color.brand_coral);
         binding.refresh.setOnChildScrollUpCallback((parent, child) -> binding.itemList.canScrollVertically(-1));
@@ -65,6 +87,41 @@ public class NotificationsFragment extends Fragment {
             binding.refresh.setRefreshing(false);
             States.message(binding.state, Codes.text(code), this::load);
         });
+    }
+
+    private void delete(Notification notification) {
+        adapter.remove(notification);
+        showEmptyIfNeeded();
+        Ui.run(this, () -> {
+            MiyavApplication app = Ui.app(this);
+            app.notificationService().delete(app.auth().requireSession(), notification.id());
+            return Boolean.TRUE;
+        }, done -> {
+        }, code -> {
+            Ui.snack(binding.getRoot(), code);
+            load();
+        });
+    }
+
+    private void confirmClear() {
+        if (adapter.isEmpty()) {
+            return;
+        }
+        new MaterialAlertDialogBuilder(requireContext())
+                .setMessage(R.string.notifications_clear_confirm)
+                .setPositiveButton(R.string.notifications_clear, (dialog, which) -> Ui.run(this, () -> {
+                    MiyavApplication app = Ui.app(this);
+                    app.notificationService().deleteAll(app.auth().requireSession());
+                    return Boolean.TRUE;
+                }, done -> load(), code -> Ui.snack(binding.getRoot(), code)))
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showEmptyIfNeeded() {
+        if (adapter.isEmpty()) {
+            States.message(binding.state, R.string.notifications_empty, null);
+        }
     }
 
     private void markRead(Notification notification) {

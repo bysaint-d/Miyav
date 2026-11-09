@@ -111,6 +111,47 @@
         app:popEnterAnim="@anim/pop_in"
         app:popExitAnim="@anim/pop_out" />
 
+    <action
+        android:id="@+id/action_global_settings"
+        app:destination="@id/settingsFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_profile_edit"
+        app:destination="@id/profileEditFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="az.miyav.android.ui.SettingsFragment"
+        android:label="@string/settings_title">
+        <action
+            android:id="@+id/action_settings_to_password"
+            app:destination="@id/passwordFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/pop_in"
+            app:popExitAnim="@anim/pop_out" />
+        <action
+            android:id="@+id/action_settings_to_notifications"
+            app:destination="@id/notificationsFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/pop_in"
+            app:popExitAnim="@anim/pop_out" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileEditFragment"
+        android:name="az.miyav.android.ui.ProfileEditFragment"
+        android:label="@string/profile_edit" />
+
     <fragment
         android:id="@+id/myPetsListFragment"
         android:name="az.miyav.android.ui.MyAnimalsFragment"

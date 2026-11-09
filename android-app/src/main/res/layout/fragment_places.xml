@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_app"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/space_xl"
+        android:paddingTop="@dimen/space_lg"
+        android:paddingEnd="@dimen/space_xl">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/places_title"
+            android:textAppearance="@style/TextAppearance.Miyav.Title" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/places_subtitle"
+            android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/kindGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_xl"
+        android:layout_marginTop="@dimen/space_md"
+        android:layout_marginEnd="@dimen/space_xl"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/kindVets"
+            style="@style/Widget.Miyav.Button.Segment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/places_vets"
+            app:icon="@drawable/ic_vet"
+            app:iconGravity="textStart"
+            app:iconSize="18dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/kindShops"
+            style="@style/Widget.Miyav.Button.Segment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/places_shops"
+            app:icon="@drawable/ic_paw"
+            app:iconGravity="textStart"
+            app:iconSize="18dp" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/locationChip"
+        style="@style/Widget.Material3.Chip.Assist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_xl"
+        android:layout_marginTop="@dimen/space_xs"
+        android:text="@string/places_location_default"
+        app:chipBackgroundColor="@color/chip_nearby"
+        app:chipIcon="@drawable/ic_my_location"
+        app:chipIconTint="@color/brand_coral"
+        app:chipIconVisible="true"
+        app:chipStrokeWidth="0dp" />
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/refresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/placeList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="@dimen/space_lg"
+                android:paddingTop="@dimen/space_xs"
+                android:paddingEnd="@dimen/space_lg"
+                android:paddingBottom="72dp" />
+
+            <include
+                android:id="@+id/state"
+                layout="@layout/view_state" />
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingBottom="2dp"
+        android:text="@string/places_attribution"
+        android:textColor="@color/text_secondary"
+        android:textSize="10sp" />
+</LinearLayout>

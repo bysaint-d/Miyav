@@ -2,9 +2,11 @@ package az.miyav.desktop.admin;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -140,6 +142,30 @@ public final class Components {
         }
         Image image = new Image(new ByteArrayInputStream(bytes), width, height, true, true);
         return image.isError() ? null : image;
+    }
+
+    /** Fills width × height with the image's centre, cropping the overflow instead of stretching it. */
+    public static ImageView cover(Image image, double width, double height) {
+        ImageView view = new ImageView(image);
+        double scale = Math.max(width / image.getWidth(), height / image.getHeight());
+        double shownWidth = width / scale;
+        double shownHeight = height / scale;
+        view.setViewport(new Rectangle2D((image.getWidth() - shownWidth) / 2, (image.getHeight() - shownHeight) / 2,
+                shownWidth, shownHeight));
+        view.setFitWidth(width);
+        view.setFitHeight(height);
+        view.setSmooth(true);
+        return view;
+    }
+
+    /** The whole image inside width × height, keeping its proportions. */
+    public static ImageView contain(Image image, double width, double height) {
+        ImageView view = new ImageView(image);
+        view.setPreserveRatio(true);
+        view.setFitWidth(width);
+        view.setFitHeight(height);
+        view.setSmooth(true);
+        return view;
     }
 
     public static String date(Instant instant, Locale locale) {

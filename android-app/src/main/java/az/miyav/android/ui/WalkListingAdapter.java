@@ -1,7 +1,6 @@
 package az.miyav.android.ui;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import az.miyav.android.MiyavApplication;
 import az.miyav.android.R;
 import az.miyav.android.databinding.ItemWalkListingBinding;
 import az.miyav.domain.walk.WalkListing;
@@ -21,10 +21,12 @@ import java.util.function.Consumer;
 /** Walk requests on Discover: who, when, where and the price per hour with the total. */
 final class WalkListingAdapter extends RecyclerView.Adapter<WalkListingAdapter.Holder> {
     private final List<WalkListing> listings = new ArrayList<>();
+    private final MiyavApplication app;
     private final Consumer<WalkListing> onClick;
     private boolean showStatus;
 
-    WalkListingAdapter(Consumer<WalkListing> onClick) {
+    WalkListingAdapter(MiyavApplication app, Consumer<WalkListing> onClick) {
+        this.app = app;
         this.onClick = onClick;
     }
 
@@ -60,9 +62,17 @@ final class WalkListingAdapter extends RecyclerView.Adapter<WalkListingAdapter.H
         WalkListingDetails details = listing.details();
         Context context = holder.itemView.getContext();
         holder.binding.speciesBadge.setText(Labels.speciesEmoji(details.species()));
-        holder.binding.speciesBadge.setBackgroundTintList(ColorStateList.valueOf(Labels.speciesColor(context, details.species())));
+        holder.binding.header.setBackgroundColor(Labels.speciesColor(context, details.species()));
+        String photo = listing.petPhotoPath().orElse(null);
+        if (photo == null) {
+            app.photos().forget(holder.binding.photoView);
+            holder.binding.speciesBadge.setVisibility(View.VISIBLE);
+        } else {
+            holder.binding.speciesBadge.setVisibility(View.GONE);
+            app.photos().walkPet(holder.binding.photoView, photo);
+        }
         holder.binding.titleView.setText(details.petName());
-        holder.binding.timeView.setText(Labels.date(details.startsAt()) + "  ·  " + Labels.duration(context, details.durationMinutes()));
+        holder.binding.timeView.setText(Labels.date(details.startsAt()) + " · " + Labels.duration(context, details.durationMinutes()));
         holder.binding.placeView.setText(Labels.walkPlace(details));
         holder.binding.priceView.setText(context.getString(R.string.wl_per_hour, Labels.money(listing.effectivePricePerHour())));
         holder.binding.totalView.setText(context.getString(R.string.wl_total, Labels.money(listing.effectiveTotal()),
@@ -83,6 +93,7 @@ final class WalkListingAdapter extends RecyclerView.Adapter<WalkListingAdapter.H
         Holder(ItemWalkListingBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
+            binding.getRoot().setClipToOutline(true);
         }
     }
 }

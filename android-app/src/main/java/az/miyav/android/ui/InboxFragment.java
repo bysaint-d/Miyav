@@ -64,7 +64,8 @@ public class InboxFragment extends Fragment {
         }
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            return app.messaging().inbox(app.auth().requireSession());
+            var session = app.auth().requireSession();
+            return app.safety().visible(session, app.messaging().inbox(session), Conversation::otherUserId);
         }, items -> {
             loaded = true;
             binding.refresh.setRefreshing(false);

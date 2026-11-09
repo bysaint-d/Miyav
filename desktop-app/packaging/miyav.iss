@@ -3,7 +3,7 @@
 ; then compile this script with Inno Setup (iscc desktop-app\packaging\miyav.iss).
 
 #define AppName "MIYAV"
-#define AppVersion "1.1.0"
+#define AppVersion "1.3.0"
 #define AppImage "..\build\jpackage\MIYAV"
 
 [Setup]

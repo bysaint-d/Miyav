@@ -47,4 +47,9 @@ public interface AuthRepository {
     default AuthSession exchangeCode(String authCode, String codeVerifier) {
         throw new UnsupportedOperationException("exchangeCode");
     }
+
+    /** Permanently deletes the signed-in user's account, data and files. */
+    default void deleteAccount(AuthSession session) {
+        throw new UnsupportedOperationException("deleteAccount");
+    }
 }

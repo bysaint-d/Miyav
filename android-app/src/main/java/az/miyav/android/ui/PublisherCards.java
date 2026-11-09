@@ -53,6 +53,9 @@ final class PublisherCards {
             card.whatsappButton.setOnClickListener(view -> Contact.whatsApp(context, number, whatsAppMessage));
             card.callButton.setOnClickListener(view -> Contact.call(context, number));
         });
+        card.safetyButton.setVisibility(self ? View.GONE : View.VISIBLE);
+        card.safetyButton.setOnClickListener(self ? null
+                : view -> SafetyActions.open(fragment, profile.id(), profile.fullName()));
         if (linkToProfile && !self) {
             card.publisherHeader.setOnClickListener(view -> {
                 Bundle args = new Bundle();

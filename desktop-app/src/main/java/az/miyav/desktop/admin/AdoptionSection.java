@@ -4,8 +4,10 @@ import az.miyav.domain.adoption.AdoptionApplication;
 import az.miyav.domain.adoption.ApplicationStatus;
 import az.miyav.domain.pet.Pet;
 import az.miyav.domain.pet.PetStatus;
+import az.miyav.desktop.PhotoViewer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -13,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
@@ -129,7 +132,7 @@ public final class AdoptionSection extends AdminSection {
     }
 
     private Node card(Pet pet) {
-        StackPane photo = photo(pet, 250, 170);
+        StackPane photo = photo(pet, 250, 190, false);
         Label name = Components.label(pet.name(), "card-title");
         Label meta = Components.label(speciesLine(pet), "caption");
         Label place = Components.label("📍 " + place(pet), "caption");
@@ -150,7 +153,8 @@ public final class AdoptionSection extends AdminSection {
         return card;
     }
 
-    private StackPane photo(Pet pet, double width, double height) {
+    /** Cards crop to fill the frame; the detail ({@code whole}) shows the entire photo and opens the viewer. */
+    private StackPane photo(Pet pet, double width, double height, boolean whole) {
         Label glyph = Components.label(Components.speciesGlyph(pet.species().databaseValue()), "photo-glyph");
         StackPane frame = new StackPane(glyph);
         frame.getStyleClass().add("photo-placeholder");
@@ -163,17 +167,27 @@ public final class AdoptionSection extends AdminSection {
         frame.setClip(clip);
         if (!pet.photoPaths().isEmpty()) {
             String path = pet.photoPaths().get(0);
+            double edge = Math.max(width, height) * 2;
             context.load(() -> context.graph().discovery().photo(context.session(), path), bytes -> {
-                var image = Components.image(bytes, width * 2, height * 2);
+                var image = Components.image(bytes, edge, edge);
                 if (image != null) {
-                    ImageView view = new ImageView(image);
-                    view.setPreserveRatio(false);
-                    view.setFitWidth(width);
-                    view.setFitHeight(height);
+                    ImageView view = whole ? Components.contain(image, width, height) : Components.cover(image, width, height);
                     frame.getChildren().setAll(view);
+                    if (pet.photoPaths().size() > 1) {
+                        Label count = Components.badge("📷 " + pet.photoPaths().size(), Components.Tone.NEUTRAL);
+                        StackPane.setAlignment(count, Pos.BOTTOM_RIGHT);
+                        StackPane.setMargin(count, new Insets(10));
+                        frame.getChildren().add(count);
+                    }
                 }
             }, code -> {
             });
+            if (whole) {
+                frame.setCursor(Cursor.HAND);
+                Tooltip.install(frame, new Tooltip(text("photo.open")));
+                frame.setOnMouseClicked(event -> PhotoViewer.open(frame.getScene().getWindow(), pet.name(), pet.photoPaths(), 0,
+                        photoPath -> context.graph().discovery().photo(context.session(), photoPath)));
+            }
         }
         return frame;
     }
@@ -209,7 +223,7 @@ public final class AdoptionSection extends AdminSection {
             restore.setOnAction(event -> moderate(stage, () -> context.graph().admin().restoreListing(context.session(), pet.id(), "desktop")));
             info.getChildren().add(restore);
         }
-        VBox root = new VBox(18, photo(pet, 460, 280), info);
+        VBox root = new VBox(18, photo(pet, 460, 340, true), info);
         root.getStyleClass().addAll("screen", "sheet");
         root.setPadding(new Insets(20));
         root.setPrefWidth(500);

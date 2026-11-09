@@ -45,17 +45,41 @@ public final class PhotoLoader {
         listing(view, path, placeholder, 720);
     }
 
-    /** Full-width gallery on the listing screen. */
-    public void listingLarge(ImageView view, String path, int placeholder) {
-        listing(view, path, placeholder, 1440);
+    /**
+     * Gallery on the listing screen: the whole photo in {@code photo}, and the same bitmap behind it in
+     * {@code backdrop} (cropped to fill, blurred by the caller) so no photo is ever cut.
+     */
+    public void listingGallery(ImageView photo, ImageView backdrop, String path) {
+        backdrop.setImageDrawable(null);
+        if (path == null) {
+            placeholder(photo, R.drawable.ic_paw, R.color.brand_coral);
+            return;
+        }
+        String key = "listing:1440:" + path;
+        backdrop.setTag(R.id.photo_tag, key);
+        load(photo, key, R.drawable.ic_paw, R.color.brand_coral, 1440, ImageView.ScaleType.FIT_CENTER,
+                () -> app.discovery().photo(app.auth().viewer(), path), bitmap -> {
+                    if (key.equals(backdrop.getTag(R.id.photo_tag))) {
+                        backdrop.setImageBitmap(bitmap);
+                    }
+                });
+    }
+
+    /** Full-screen viewer: the whole photo, positioned by the view's own matrix so it can be zoomed. */
+    public void listingFull(ImageView view, String path) {
+        listing(view, path, R.drawable.ic_paw, 1440, ImageView.ScaleType.MATRIX);
     }
 
     private void listing(ImageView view, String path, int placeholder, int maxEdge) {
+        listing(view, path, placeholder, maxEdge, ImageView.ScaleType.CENTER_CROP);
+    }
+
+    private void listing(ImageView view, String path, int placeholder, int maxEdge, ImageView.ScaleType fitted) {
         if (path == null) {
             placeholder(view, placeholder, R.color.brand_coral);
             return;
         }
-        load(view, "listing:" + maxEdge + ":" + path, placeholder, R.color.brand_coral, maxEdge,
+        load(view, "listing:" + maxEdge + ":" + path, placeholder, R.color.brand_coral, maxEdge, fitted,
                 () -> app.discovery().photo(app.auth().viewer(), path));
     }
 
@@ -65,8 +89,25 @@ public final class PhotoLoader {
             placeholder(view, R.drawable.ic_paw, R.color.brand_coral);
             return;
         }
-        load(view, "pet:" + path, R.drawable.ic_paw, R.color.brand_coral, 512,
+        load(view, "pet:" + path, R.drawable.ic_paw, R.color.brand_coral, 512, ImageView.ScaleType.CENTER_CROP,
                 () -> app.myPets().photo(app.auth().requireSession(), path));
+    }
+
+    /** The pet photo on a walk request; guests can see it while the request is open or assigned. */
+    public void walkPet(ImageView view, String path) {
+        load(view, "walkpet:" + path, R.drawable.ic_paw, R.color.brand_coral, 720, ImageView.ScaleType.CENTER_CROP,
+                () -> app.walkListings().petPhoto(app.auth().viewer(), path));
+    }
+
+    public void walkPetFull(ImageView view, String path) {
+        load(view, "walkpet:1440:" + path, R.drawable.ic_paw, R.color.brand_coral, 1440, ImageView.ScaleType.MATRIX,
+                () -> app.walkListings().petPhoto(app.auth().viewer(), path));
+    }
+
+    /** Stops a pending load from landing in a recycled view that no longer shows a photo. */
+    public void forget(ImageView view) {
+        view.setTag(R.id.photo_tag, null);
+        view.setImageDrawable(null);
     }
 
     /** Forgets a pet photo after it was replaced. */
@@ -85,7 +126,7 @@ public final class PhotoLoader {
             placeholder(view, R.drawable.ic_person, R.color.brand_lavender);
             return;
         }
-        load(view, "avatar:" + avatarPath, R.drawable.ic_person, R.color.brand_lavender, 256,
+        load(view, "avatar:" + avatarPath, R.drawable.ic_person, R.color.brand_lavender, 256, ImageView.ScaleType.CENTER_CROP,
                 () -> app.userService().avatar(avatarPath));
     }
 
@@ -117,11 +158,20 @@ public final class PhotoLoader {
         cache.evictAll();
     }
 
-    private void load(ImageView view, String key, int placeholder, int tint, int maxEdge, Supplier<byte[]> source) {
+    private void load(ImageView view, String key, int placeholder, int tint, int maxEdge, ImageView.ScaleType fitted,
+                      Supplier<byte[]> source) {
+        load(view, key, placeholder, tint, maxEdge, fitted, source, null);
+    }
+
+    private void load(ImageView view, String key, int placeholder, int tint, int maxEdge, ImageView.ScaleType fitted,
+                      Supplier<byte[]> source, Consumer<Bitmap> alsoShow) {
         view.setTag(R.id.photo_tag, key);
         Bitmap cached = cache.get(key);
         if (cached != null) {
-            show(view, cached, false);
+            show(view, cached, false, fitted);
+            if (alsoShow != null) {
+                alsoShow.accept(cached);
+            }
             return;
         }
         placeholder(view, placeholder, tint);
@@ -134,7 +184,10 @@ public final class PhotoLoader {
                 cache.put(key, bitmap);
                 main.post(() -> {
                     if (key.equals(view.getTag(R.id.photo_tag))) {
-                        show(view, bitmap, true);
+                        show(view, bitmap, true, fitted);
+                        if (alsoShow != null) {
+                            alsoShow.accept(bitmap);
+                        }
                     }
                 });
             } catch (RuntimeException ignored) {
@@ -149,9 +202,9 @@ public final class PhotoLoader {
         view.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(view.getContext(), tint)));
     }
 
-    private static void show(ImageView view, Bitmap bitmap, boolean animate) {
+    private static void show(ImageView view, Bitmap bitmap, boolean animate, ImageView.ScaleType fitted) {
         view.setImageTintList(null);
-        view.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        view.setScaleType(fitted);
         view.setImageBitmap(bitmap);
         if (animate) {
             view.setAlpha(0f);

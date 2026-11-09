@@ -175,6 +175,21 @@ public final class SupabaseAuthRepository implements AuthRepository {
         return sessionFrom(response);
     }
 
+    @Override
+    public void deleteAccount(AuthSession session) {
+        HttpExchange response = client.send("POST", "/functions/v1/delete-account", session, "{}");
+        if (response.status() / 100 == 2) {
+            return;
+        }
+        if (response.status() == 401) {
+            throw new PersistenceException("auth.session_expired");
+        }
+        if (response.status() == 403) {
+            throw new PersistenceException("account.admin");
+        }
+        throw new PersistenceException("account.delete_failed");
+    }
+
     private AuthSession sessionFrom(HttpExchange response) {
         if (response.status() / 100 != 2) {
             throw failure(response);

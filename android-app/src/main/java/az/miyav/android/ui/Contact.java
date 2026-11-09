@@ -43,6 +43,23 @@ final class Contact {
         }
     }
 
+    /** Turn-by-turn directions in Google Maps (the app when installed, otherwise the website). */
+    static void directions(Context context, double latitude, double longitude) {
+        Uri uri = Uri.parse(String.format(Locale.US,
+                "https://www.google.com/maps/dir/?api=1&destination=%.6f,%.6f", latitude, longitude));
+        Intent maps = new Intent(Intent.ACTION_VIEW, uri).setPackage("com.google.android.apps.maps");
+        try {
+            context.startActivity(maps);
+        } catch (ActivityNotFoundException exception) {
+            launch(context, new Intent(Intent.ACTION_VIEW, uri));
+        }
+    }
+
+    /** Dials a number exactly as published by the place. */
+    static void dial(Context context, String phone) {
+        launch(context, new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phone.replaceAll("[^0-9+]", ""))));
+    }
+
     static String listingLink(java.util.UUID listingId) {
         return "az.miyav.native://listing/" + listingId;
     }

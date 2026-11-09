@@ -67,6 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_sm"
             android:text="@string/guest_telegram"
+            android:visibility="gone"
             app:icon="@drawable/ic_telegram"
             app:iconGravity="textStart"
             app:iconTint="@color/brand_telegram" />

@@ -70,7 +70,11 @@ final class AuthDialog {
         Hyperlink later = new Hyperlink(graph.text("guest.later"));
         later.getStyleClass().add("link");
         later.setOnAction(event -> stage.close());
-        choices.getChildren().addAll(googleButton, emailButton, telegramButton, registerButton, later);
+        choices.getChildren().addAll(googleButton, emailButton);
+        if (graph.telegram().available()) {
+            choices.getChildren().add(telegramButton);
+        }
+        choices.getChildren().addAll(registerButton, later);
         choices.setAlignment(Pos.CENTER);
 
         fullName.setPromptText(graph.text("auth.full_name"));

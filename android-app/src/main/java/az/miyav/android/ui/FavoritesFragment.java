@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import az.miyav.android.MiyavApplication;
 import az.miyav.android.R;
@@ -36,7 +36,7 @@ public class FavoritesFragment extends Fragment {
             args.putString("petId", pet.id().toString());
             Ui.nav(this).navigate(R.id.action_global_detail, args);
         });
-        binding.itemList.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.itemList.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         binding.itemList.setAdapter(adapter);
         binding.syncButton.setOnClickListener(view -> Gate.require(this, ProtectedAction.SYNC_FAVORITES));
         return binding.getRoot();

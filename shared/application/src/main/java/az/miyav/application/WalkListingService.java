@@ -43,6 +43,11 @@ public final class WalkListingService {
         return listings.findById(id, viewer);
     }
 
+    /** The linked pet's photo on a listing; guests pass {@code null}. */
+    public byte[] petPhoto(AuthSession viewer, String path) {
+        return listings.petPhoto(viewer, path);
+    }
+
     public List<WalkListing> mine(AuthSession session) {
         requireSession(session);
         return listings.findMine(session);

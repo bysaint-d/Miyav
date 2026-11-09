@@ -16,16 +16,14 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import az.miyav.android.R;
 import az.miyav.android.databinding.FragmentDiscoverBinding;
-import az.miyav.android.databinding.SheetCreateChoiceBinding;
 import az.miyav.android.location.DeviceLocation;
 import az.miyav.domain.auth.ProtectedAction;
 import az.miyav.domain.location.ListingLocation;
@@ -36,6 +34,7 @@ import az.miyav.domain.walk.WalkListing;
 
 import java.util.Map;
 
+/** The public board: walk requests or adoption listings in a two-column grid, switched at the top. */
 public class DiscoverFragment extends Fragment {
     private static final String STATE_WALKS = "walk_mode";
     private static final int PAGE = 20;
@@ -60,12 +59,18 @@ public class DiscoverFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentDiscoverBinding.inflate(inflater, container, false);
-        if (savedInstanceState != null) {
-            walkMode = savedInstanceState.getBoolean(STATE_WALKS, walkMode);
-        }
+        walkMode = savedInstanceState == null || savedInstanceState.getBoolean(STATE_WALKS, true);
+        binding.modeGroup.check(walkMode ? R.id.modeWalks : R.id.modeAdoption);
+        binding.modeGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked && (checkedId == R.id.modeWalks) != walkMode) {
+                walkMode = checkedId == R.id.modeWalks;
+                applyMode();
+                reload();
+            }
+        });
         adapter = new PetCardAdapter(Ui.app(this), false, this::open);
-        walks = new WalkListingAdapter(this::openWalk);
-        LinearLayoutManager layout = new LinearLayoutManager(requireContext());
+        walks = new WalkListingAdapter(Ui.app(this), this::openWalk);
+        GridLayoutManager layout = new GridLayoutManager(requireContext(), 2);
         binding.petList.setLayoutManager(layout);
         binding.petList.setAdapter(walkMode ? walks : adapter);
         binding.petList.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -80,21 +85,6 @@ public class DiscoverFragment extends Fragment {
                     }
                 }
             }
-        });
-        binding.modeGroup.check(walkMode ? R.id.modeWalks : R.id.modeAdoption);
-        binding.modeGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked && (checkedId == R.id.modeWalks) != walkMode) {
-                walkMode = checkedId == R.id.modeWalks;
-                applyMode();
-                reload();
-            }
-        });
-        binding.mineChip.setOnClickListener(view -> {
-            if (binding.mineChip.isChecked() && !Gate.require(this, ProtectedAction.MANAGE_LISTINGS)) {
-                binding.mineChip.setChecked(false);
-                return;
-            }
-            reload();
         });
         applyMode();
         binding.refresh.setColorSchemeResources(R.color.text_on_brand);
@@ -133,7 +123,7 @@ public class DiscoverFragment extends Fragment {
         });
         binding.createButton.setOnClickListener(view -> {
             if (Gate.require(this, ProtectedAction.CREATE_LISTING)) {
-                chooseListingKind();
+                Ui.nav(this).navigate(walkMode ? R.id.action_global_walk_editor : R.id.action_home_to_editor);
             }
         });
         binding.favoritesButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_global_favorites));
@@ -176,27 +166,11 @@ public class DiscoverFragment extends Fragment {
         super.onDestroyView();
     }
 
-    /** Walk requests and adoption listings are posted from separate forms. */
-    private void chooseListingKind() {
-        BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
-        SheetCreateChoiceBinding choice = SheetCreateChoiceBinding.inflate(getLayoutInflater());
-        choice.walkOption.setOnClickListener(view -> {
-            sheet.dismiss();
-            Ui.nav(this).navigate(R.id.action_global_walk_editor);
-        });
-        choice.adoptionOption.setOnClickListener(view -> {
-            sheet.dismiss();
-            Ui.nav(this).navigate(R.id.action_home_to_editor);
-        });
-        sheet.setContentView(choice.getRoot());
-        sheet.show();
-    }
-
     private void applyMode() {
+        binding.greetingView.setText(walkMode ? R.string.walks_greeting : R.string.home_greeting);
         binding.petList.setAdapter(walkMode ? walks : adapter);
         binding.searchLayout.setVisibility(walkMode ? View.GONE : View.VISIBLE);
         binding.nearbyChip.setVisibility(walkMode ? View.GONE : View.VISIBLE);
-        binding.mineChip.setVisibility(walkMode ? View.VISIBLE : View.GONE);
         binding.cityLayout.setEnabled(walkMode || nearLatitude == null);
         hasMore = false;
     }
@@ -211,7 +185,6 @@ public class DiscoverFragment extends Fragment {
         loading = true;
         int token = ++generation;
         boolean firstPage = offset == 0;
-        boolean mine = binding.mineChip.isChecked();
         PetSpecies speciesValue = species.value();
         String cityValue = city.value();
         if (firstPage && walks.isEmpty() && !binding.refresh.isRefreshing()) {
@@ -220,19 +193,19 @@ public class DiscoverFragment extends Fragment {
         }
         Ui.run(this, () -> {
             var app = Ui.app(this);
-            return mine
-                    ? app.walkListings().mine(app.auth().requireSession())
-                    : app.walkListings().board(app.auth().viewer(), speciesValue, cityValue, PAGE, offset);
-        }, listings -> {
+            var viewer = app.auth().viewer();
+            var page = app.walkListings().board(viewer, speciesValue, cityValue, PAGE, offset);
+            return new Page<>(page.size(), app.safety().visible(viewer, page, WalkListing::ownerId));
+        }, result -> {
+            var listings = result.items;
             if (token != generation) {
                 return;
             }
             loading = false;
-            walkOffset = offset + listings.size();
-            hasMore = !mine && listings.size() == PAGE;
+            walkOffset = offset + result.fetched;
+            hasMore = result.fetched == PAGE;
             binding.refresh.setRefreshing(false);
             binding.skeleton.setVisibility(View.GONE);
-            walks.showStatus(mine);
             if (firstPage) {
                 walks.replace(listings);
                 binding.petList.scrollToPosition(0);
@@ -240,7 +213,7 @@ public class DiscoverFragment extends Fragment {
                 walks.append(listings);
             }
             if (walks.isEmpty()) {
-                States.message(binding.state, mine ? R.string.wl_mine_empty : R.string.wl_empty, null);
+                States.message(binding.state, R.string.wl_empty, null);
             } else {
                 States.hide(binding.state);
             }
@@ -281,16 +254,18 @@ public class DiscoverFragment extends Fragment {
         Ui.run(this, () -> {
             var app = Ui.app(this);
             var viewer = app.auth().viewer();
-            return lat == null
+            var page = lat == null
                     ? app.discovery().discover(viewer, next)
                     : app.discovery().near(viewer, lat, lng, RADIUS_KM, next);
-        }, pets -> {
+            return new Page<>(page.size(), app.safety().visible(viewer, page, Pet::ownerId));
+        }, result -> {
             if (token != generation) {
                 return;
             }
+            var pets = result.items;
             loading = false;
             query = next;
-            hasMore = pets.size() == next.limit();
+            hasMore = result.fetched == next.limit();
             binding.refresh.setRefreshing(false);
             binding.skeleton.setVisibility(View.GONE);
             adapter.origin(lat, lng);
@@ -398,6 +373,17 @@ public class DiscoverFragment extends Fragment {
         binding.nearbyChip.setText(getString(R.string.nearby_mode, RADIUS_KM));
         binding.cityLayout.setEnabled(false);
         reload();
+    }
+
+    /** One server page: how many rows came back (for paging) and the ones the viewer may see. */
+    private static final class Page<T> {
+        final int fetched;
+        final java.util.List<T> items;
+
+        Page(int fetched, java.util.List<T> items) {
+            this.fetched = fetched;
+            this.items = items;
+        }
     }
 
     private void clearNearby() {

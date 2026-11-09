@@ -166,6 +166,12 @@ public class WalkDetailFragment extends Fragment {
         binding.content.setVisibility(View.VISIBLE);
         binding.speciesBadge.setText(Labels.speciesEmoji(details.species()));
         binding.speciesBadge.setBackgroundTintList(ColorStateList.valueOf(Labels.speciesColor(context, details.species())));
+        String photo = listing.petPhotoPath().orElse(null);
+        binding.petPhotoView.setVisibility(photo == null ? View.GONE : View.VISIBLE);
+        if (photo != null) {
+            Ui.app(this).photos().walkPet(binding.petPhotoView, photo);
+            binding.petPhotoView.setOnClickListener(view -> PhotoViewerDialog.openWalkPet(getChildFragmentManager(), photo));
+        }
         binding.titleView.setText(details.petName());
         binding.statusView.setText(Labels.status(context, listing.status()));
         boolean agreed = listing.agreedPricePerHour().isPresent();

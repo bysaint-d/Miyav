@@ -66,16 +66,17 @@ final class PetCardAdapter extends RecyclerView.Adapter<PetCardAdapter.Holder> {
         Pet pet = pets.get(position);
         Context context = holder.itemView.getContext();
         holder.binding.titleView.setText(pet.name());
-        holder.binding.subtitleView.setText(Labels.summary(context, pet));
-        holder.binding.speciesBadge.setText(context.getString(R.string.format_icon_label,
-                Labels.speciesEmoji(pet.species()), Labels.species(context, pet.species())));
+        String breed = pet.breed().isEmpty() ? Labels.species(context, pet.species()) : pet.breed();
+        holder.binding.subtitleView.setText(breed + " · " + Labels.age(context, pet.ageMonths()));
+        holder.binding.placeView.setText(Labels.place(pet));
+        holder.binding.speciesBadge.setText(Labels.speciesEmoji(pet.species()));
         holder.binding.speciesBadge.setBackgroundTintList(ColorStateList.valueOf(Labels.speciesColor(context, pet.species())));
         holder.binding.statusChip.setVisibility(showStatus ? View.VISIBLE : View.GONE);
         holder.binding.statusChip.setText(Labels.status(context, pet.status()));
         ListingLocation location = pet.location();
         if (originLatitude != null && location != null) {
             double meters = ListingLocation.distanceMeters(originLatitude, originLongitude, location.latitude(), location.longitude());
-            holder.binding.distanceBadge.setText(context.getString(R.string.format_icon_label, "📍", Labels.distance(context, meters)));
+            holder.binding.distanceBadge.setText(Labels.distance(context, meters));
             holder.binding.distanceBadge.setVisibility(View.VISIBLE);
         } else {
             holder.binding.distanceBadge.setVisibility(View.GONE);
@@ -96,6 +97,7 @@ final class PetCardAdapter extends RecyclerView.Adapter<PetCardAdapter.Holder> {
         Holder(ItemPetCardBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
+            binding.getRoot().setClipToOutline(true);
         }
     }
 }

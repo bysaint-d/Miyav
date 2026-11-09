@@ -10,4 +10,12 @@ public interface NotificationRepository {
     List<Notification> list(AuthSession session);
 
     void markRead(AuthSession session, UUID notificationId);
+
+    default void delete(AuthSession session, UUID notificationId) {
+        throw new UnsupportedOperationException("delete");
+    }
+
+    default void deleteAll(AuthSession session) {
+        throw new UnsupportedOperationException("deleteAll");
+    }
 }

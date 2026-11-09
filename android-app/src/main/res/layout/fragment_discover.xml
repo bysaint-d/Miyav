@@ -31,13 +31,17 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/home_title"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/nav_listings"
                 android:textAppearance="@style/TextAppearance.Miyav.Title" />
 
             <TextView
+                android:id="@+id/greetingView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/home_greeting"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:textAppearance="@style/TextAppearance.Miyav.Caption" />
         </LinearLayout>
 
@@ -107,17 +111,8 @@
         android:layout_marginStart="@dimen/space_xl"
         android:layout_marginTop="@dimen/space_md"
         android:layout_marginEnd="@dimen/space_xl"
-        app:checkedButton="@id/modeAdoption"
         app:selectionRequired="true"
         app:singleSelection="true">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/modeAdoption"
-            style="@style/Widget.Miyav.Button.Segment"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/discover_mode_adoption" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/modeWalks"
@@ -125,7 +120,21 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/discover_mode_walks" />
+            android:text="@string/nav_walks"
+            app:icon="@drawable/ic_walk"
+            app:iconGravity="textStart"
+            app:iconSize="18dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/modeAdoption"
+            style="@style/Widget.Miyav.Button.Segment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/nav_adoption"
+            app:icon="@drawable/ic_paw"
+            app:iconGravity="textStart"
+            app:iconSize="18dp" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -210,20 +219,6 @@
             app:chipIconTint="@color/brand_coral"
             app:chipIconVisible="true"
             app:chipStrokeWidth="0dp" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/mineChip"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checkable="true"
-            android:text="@string/wl_mine"
-            android:visibility="gone"
-            app:chipBackgroundColor="@color/chip_nearby"
-            app:chipIcon="@drawable/ic_walk"
-            app:chipIconTint="@color/brand_coral"
-            app:chipIconVisible="true"
-            app:chipStrokeWidth="0dp" />
     </com.google.android.material.chip.ChipGroup>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -241,9 +236,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingStart="@dimen/space_lg"
-                android:paddingEnd="@dimen/space_lg"
-                android:paddingBottom="56dp" />
+                android:paddingStart="15dp"
+                android:paddingTop="@dimen/space_xs"
+                android:paddingEnd="15dp"
+                android:paddingBottom="72dp" />
 
             <az.miyav.android.ui.widget.ShimmerLayout
                 android:id="@+id/skeleton"

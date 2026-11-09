@@ -28,7 +28,7 @@ public class HomeFragment extends Fragment {
     private static final String STATE_TAB = "selected_tab";
     private FragmentHomeBinding binding;
     private Boolean renderedSignedIn;
-    private int selectedTab = R.id.tab_discover;
+    private int selectedTab = R.id.tab_listings;
     private final androidx.activity.result.ActivityResultLauncher<String> notificationPermission = registerForActivityResult(
             new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), granted -> {
                 if (granted) {
@@ -44,7 +44,7 @@ public class HomeFragment extends Fragment {
         // would otherwise highlight a different tab than the one shown (for example after a language change).
         binding.bottomNav.setSaveEnabled(false);
         if (savedInstanceState != null) {
-            selectedTab = savedInstanceState.getInt(STATE_TAB, R.id.tab_discover);
+            selectedTab = savedInstanceState.getInt(STATE_TAB, R.id.tab_listings);
         }
         binding.bottomNav.setSelectedItemId(selectedTab);
         binding.bottomNav.setOnItemSelectedListener(item -> {
@@ -162,7 +162,7 @@ public class HomeFragment extends Fragment {
         app.auth().takePending();
         switch (action.action()) {
             case CREATE_LISTING -> Ui.nav(this).navigate(R.id.action_home_to_editor);
-            case MANAGE_LISTINGS -> binding.bottomNav.setSelectedItemId(R.id.tab_pets);
+            case MANAGE_LISTINGS -> binding.bottomNav.setSelectedItemId(R.id.tab_profile);
             case APPLICATIONS -> binding.bottomNav.setSelectedItemId(R.id.tab_applications);
             case WALK -> binding.bottomNav.setSelectedItemId(R.id.tab_walk);
             case EDIT_PROFILE -> binding.bottomNav.setSelectedItemId(R.id.tab_profile);
@@ -190,8 +190,11 @@ public class HomeFragment extends Fragment {
         if (current == null) {
             return false;
         }
-        if (itemId == R.id.tab_discover) {
+        if (itemId == R.id.tab_listings) {
             return current instanceof DiscoverFragment;
+        }
+        if (itemId == R.id.tab_vets) {
+            return current instanceof PlacesFragment;
         }
         return signedIn != (current instanceof GuestTab);
     }
@@ -200,8 +203,8 @@ public class HomeFragment extends Fragment {
         boolean signedIn = Ui.app(this).auth().signedIn();
         renderedSignedIn = signedIn;
         Fragment tab;
-        if (itemId == R.id.tab_pets) {
-            tab = signedIn ? new MyPetsFragment() : GuestGateFragment.of(ProtectedAction.MANAGE_LISTINGS);
+        if (itemId == R.id.tab_vets) {
+            tab = new PlacesFragment();
         } else if (itemId == R.id.tab_walk) {
             tab = signedIn ? new WalkFragment() : GuestGateFragment.of(ProtectedAction.WALK);
         } else if (itemId == R.id.tab_applications) {

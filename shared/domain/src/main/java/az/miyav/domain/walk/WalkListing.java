@@ -19,6 +19,7 @@ public final class WalkListing {
     private final UUID walkerId;
     private final BigDecimal agreedPricePerHour;
     private final Instant createdAt;
+    private String petPhotoPath;
 
     public WalkListing(UUID id, UUID ownerId, WalkListingDetails details, WalkListingStatus status, UUID walkerId,
                        Instant createdAt) {
@@ -75,6 +76,17 @@ public final class WalkListing {
 
     public Instant createdAt() {
         return createdAt;
+    }
+
+    /** Storage path of the linked pet's photo, set by the server; empty when no pet with a photo is linked. */
+    public Optional<String> petPhotoPath() {
+        return Optional.ofNullable(petPhotoPath);
+    }
+
+    public WalkListing withPetPhoto(String path) {
+        WalkListing copy = new WalkListing(id, ownerId, details, status, walkerId, agreedPricePerHour, createdAt);
+        copy.petPhotoPath = path == null || path.isBlank() ? null : path;
+        return copy;
     }
 
     public boolean ownedBy(UUID userId) {

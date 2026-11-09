@@ -109,6 +109,12 @@ public final class AuthService {
         return establish(auth.exchangeCode(authCode, codeVerifier));
     }
 
+    /** Deletes the account on the server, then forgets it on this device. */
+    public synchronized void deleteAccount() {
+        auth.deleteAccount(requireSession());
+        sessions.clear();
+    }
+
     /** Forgets the local session without a network call, used when the server already rejected it. */
     public synchronized void discardSession() {
         sessions.clear();

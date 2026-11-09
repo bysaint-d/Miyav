@@ -16,7 +16,6 @@
     <dimen name="radius_xl">28dp</dimen>
 
     <!-- Elevation (shadows) -->
-    <dimen name="elevation_card">3dp</dimen>
     <dimen name="elevation_nav">12dp</dimen>
     <dimen name="elevation_fab">10dp</dimen>
 
@@ -26,7 +25,7 @@
     <dimen name="avatar_sm">44dp</dimen>
     <dimen name="avatar_md">64dp</dimen>
     <dimen name="avatar_lg">88dp</dimen>
-    <dimen name="card_photo_height">196dp</dimen>
-    <dimen name="detail_gallery_height">300dp</dimen>
+    <dimen name="tile_photo_height">120dp</dimen>
+    <dimen name="detail_gallery_height">340dp</dimen>
     <dimen name="map_preview_height">180dp</dimen>
 </resources>

@@ -17,15 +17,34 @@ import java.util.function.Consumer;
 final class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.Holder> {
     private final List<Notification> rows = new ArrayList<>();
     private final Consumer<Notification> onClick;
+    private final Consumer<Notification> onDelete;
 
-    NotificationAdapter(Consumer<Notification> onClick) {
+    NotificationAdapter(Consumer<Notification> onClick, Consumer<Notification> onDelete) {
         this.onClick = onClick;
+        this.onDelete = onDelete;
     }
 
     void replace(List<Notification> items) {
         rows.clear();
         rows.addAll(items);
         notifyDataSetChanged();
+    }
+
+    Notification at(int position) {
+        return rows.get(position);
+    }
+
+    /** Removes the row at once; the caller deletes it on the server and reloads on failure. */
+    void remove(Notification notification) {
+        int index = rows.indexOf(notification);
+        if (index >= 0) {
+            rows.remove(index);
+            notifyItemRemoved(index);
+        }
+    }
+
+    boolean isEmpty() {
+        return rows.isEmpty();
     }
 
     @NonNull
@@ -42,6 +61,7 @@ final class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter
         holder.binding.dateView.setText(Labels.date(notification.createdAt()));
         holder.binding.unreadDot.setVisibility(notification.unread() ? View.VISIBLE : View.INVISIBLE);
         holder.itemView.setOnClickListener(view -> onClick.accept(notification));
+        holder.binding.deleteButton.setOnClickListener(view -> onDelete.accept(notification));
     }
 
     @Override

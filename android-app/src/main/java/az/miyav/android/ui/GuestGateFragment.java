@@ -46,7 +46,7 @@ public class GuestGateFragment extends Fragment implements HomeFragment.GuestTab
         binding.signInButton.setOnClickListener(view -> Gate.require(this, action));
         binding.discoverButton.setOnClickListener(view -> {
             BottomNavigationView nav = requireParentFragment().requireView().findViewById(R.id.bottomNav);
-            nav.setSelectedItemId(R.id.tab_discover);
+            nav.setSelectedItemId(R.id.tab_listings);
         });
         return binding.getRoot();
     }

@@ -42,4 +42,9 @@ public interface WalkListingRepository {
     void withdraw(AuthSession session, UUID offerId);
 
     void respond(AuthSession session, UUID offerId, boolean accept);
+
+    /** Photo of the pet on a listing the viewer can see; guests pass {@code null}. */
+    default byte[] petPhoto(AuthSession viewer, String path) {
+        throw new UnsupportedOperationException("petPhoto");
+    }
 }

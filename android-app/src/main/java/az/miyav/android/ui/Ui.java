@@ -81,7 +81,7 @@ final class Ui {
 
     private static final java.util.Set<Integer> ACCOUNT_SCREENS = java.util.Set.of(
             R.id.petEditorFragment, R.id.notificationsFragment, R.id.passwordFragment, R.id.walkEditorFragment,
-            R.id.inboxFragment, R.id.chatFragment, R.id.myPetsListFragment);
+            R.id.inboxFragment, R.id.chatFragment, R.id.myPetsListFragment, R.id.settingsFragment, R.id.profileEditFragment);
 
     /** Opens a chat; any of the ids may be empty (the chat screen resolves the rest). */
     static void openChat(Fragment fragment, String conversationId, String listingId, String withUserId, String title) {

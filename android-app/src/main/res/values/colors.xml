@@ -14,6 +14,8 @@
     <color name="brand_sky">#4F8FBF</color>
     <color name="brand_whatsapp">#25D366</color>
     <color name="brand_telegram">#229ED9</color>
+    <color name="gallery_scrim">#33000000</color>
+    <color name="card_stroke">#E6E1D5</color>
     <color name="brand_peach">#F5C6A5</color>
     <color name="brand_sage">#B9DCD0</color>
 

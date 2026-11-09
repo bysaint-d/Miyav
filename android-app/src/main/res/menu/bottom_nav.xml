@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/tab_discover"
-        android:icon="@drawable/ic_explore"
-        android:title="@string/nav_discover" />
-    <item
-        android:id="@+id/tab_pets"
+        android:id="@+id/tab_listings"
         android:icon="@drawable/ic_paw"
-        android:title="@string/nav_pets" />
+        android:title="@string/nav_listings" />
+    <item
+        android:id="@+id/tab_vets"
+        android:icon="@drawable/ic_vet"
+        android:title="@string/nav_vets" />
     <item
         android:id="@+id/tab_walk"
         android:icon="@drawable/ic_nav_placeholder"

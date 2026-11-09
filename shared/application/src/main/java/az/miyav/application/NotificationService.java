@@ -31,4 +31,12 @@ public final class NotificationService {
     public void markRead(AuthSession session, UUID notificationId) {
         notifications.markRead(session, notificationId);
     }
+
+    public void delete(AuthSession session, UUID notificationId) {
+        notifications.delete(session, notificationId);
+    }
+
+    public void deleteAll(AuthSession session) {
+        notifications.deleteAll(session);
+    }
 }

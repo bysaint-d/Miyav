@@ -32,6 +32,8 @@ import az.miyav.application.FavoritesService;
 import az.miyav.application.LocationService;
 import az.miyav.application.MessagingService;
 import az.miyav.application.MyPetsService;
+import az.miyav.application.PlacesService;
+import az.miyav.application.SafetyService;
 import az.miyav.application.TelegramVerification;
 import az.miyav.application.UnavailableTelegramVerification;
 import az.miyav.application.NotificationService;
@@ -74,6 +76,8 @@ public class MiyavApplication extends Application {
     private WalkListingService walkListings;
     private MessagingService messaging;
     private MyPetsService myPets;
+    private SafetyService safety;
+    private PlacesService places;
     private WalkTracker walkTracker;
     private final ExecutorService io = Executors.newFixedThreadPool(4);
 
@@ -105,6 +109,8 @@ public class MiyavApplication extends Application {
         walkListings = new WalkListingService(backend.walkListings(), time);
         messaging = new MessagingService(backend.messages());
         myPets = new MyPetsService(backend.ownPets());
+        safety = new SafetyService(backend.safety());
+        places = new PlacesService(backend.places(), time);
         walkTracker = new WalkTracker(this);
         pendingAuthEmail = new PendingAuthEmail(this);
         photos = new PhotoLoader(this);
@@ -140,6 +146,16 @@ public class MiyavApplication extends Application {
 
     public FavoritesService favorites() {
         return favorites;
+    }
+
+    /** Nearest vets and pet shops. */
+    public PlacesService places() {
+        return places;
+    }
+
+    /** Reports and blocks; also filters blocked members out of lists. */
+    public SafetyService safety() {
+        return safety;
     }
 
     public TelegramVerification telegram() {
@@ -251,6 +267,7 @@ public class MiyavApplication extends Application {
     public void onSignedOut() {
         walkTracker.signOut();
         photos.clear();
+        safety.clear();
         favoritesOffered = false;
     }
 }

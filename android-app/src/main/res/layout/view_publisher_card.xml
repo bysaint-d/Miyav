@@ -117,5 +117,21 @@
             android:text="@string/contact_unavailable"
             android:textAppearance="@style/TextAppearance.Miyav.Caption"
             android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/safetyButton"
+            style="@style/Widget.Miyav.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="@dimen/space_xs"
+            android:minHeight="40dp"
+            android:text="@string/safety_action"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:visibility="gone"
+            app:icon="@drawable/ic_shield"
+            app:iconSize="16dp"
+            app:iconTint="@color/text_secondary" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -50,6 +50,7 @@ public class AuthSheet extends BottomSheetDialogFragment {
         binding.emailButton.setOnClickListener(view -> openForm(false));
         binding.registerButton.setOnClickListener(view -> openForm(true));
         binding.googleButton.setOnClickListener(view -> google());
+        binding.telegramButton.setVisibility(Ui.app(this).telegram().available() ? View.VISIBLE : View.GONE);
         binding.telegramButton.setOnClickListener(view -> telegram());
         binding.laterButton.setOnClickListener(view -> dismiss());
         return binding.getRoot();

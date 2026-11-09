@@ -1,62 +1,82 @@
 package az.miyav.android.ui;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.PickVisualMediaRequest;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
-import az.miyav.android.AppLocale;
-import az.miyav.android.BuildConfig;
 import az.miyav.android.MiyavApplication;
 import az.miyav.android.R;
 import az.miyav.android.databinding.FragmentProfileBinding;
-import az.miyav.common.error.AppException;
-import az.miyav.common.locale.LocaleCode;
+import az.miyav.domain.auth.AuthSession;
+import az.miyav.domain.pet.Pet;
 import az.miyav.domain.user.User;
+import az.miyav.domain.walk.WalkListing;
 
+import java.util.List;
+
+/** The signed-in member: who they are and the listings they posted. Settings live one tap away. */
 public class ProfileFragment extends Fragment {
+    private static final String STATE_WALKS = "profile_walks";
     private FragmentProfileBinding binding;
-    private Choice<String> city;
-    private boolean bindingLanguage;
-    private final ActivityResultLauncher<PickVisualMediaRequest> picker = registerForActivityResult(
-            new ActivityResultContracts.PickVisualMedia(), this::onAvatarPicked);
+    private PetCardAdapter pets;
+    private WalkListingAdapter walks;
+    private boolean showWalks;
+    private Loaded loaded;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentProfileBinding.inflate(inflater, container, false);
-        city = new Choice<>(binding.cityInput, Labels.CITIES, value -> value, Labels.CITIES.get(0));
-        binding.versionView.setText(getString(R.string.profile_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
-        binding.saveButton.setOnClickListener(view -> save());
-        binding.avatarButton.setOnClickListener(view -> pickAvatar());
-        binding.avatarView.setOnClickListener(view -> pickAvatar());
-        binding.myPetsButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_global_my_pets));
-        binding.messagesButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_global_inbox));
-        binding.notificationsButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_home_to_notifications));
-        binding.passwordButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_home_to_password));
-        binding.favoritesButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_global_favorites));
-        binding.helpButton.setOnClickListener(view -> InfoFragment.open(this, InfoFragment.HELP));
-        binding.termsButton.setOnClickListener(view -> InfoFragment.open(this, InfoFragment.TERMS));
-        binding.privacyButton.setOnClickListener(view -> InfoFragment.open(this, InfoFragment.PRIVACY));
-        binding.logoutButton.setOnClickListener(view -> new MaterialAlertDialogBuilder(requireContext())
-                .setMessage(R.string.auth_logout_confirm)
-                .setPositiveButton(R.string.auth_logout, (dialog, which) -> logout())
-                .setNegativeButton(android.R.string.cancel, null)
-                .show());
-        bindLanguage();
-        load();
+        if (savedInstanceState != null) {
+            showWalks = savedInstanceState.getBoolean(STATE_WALKS, false);
+        }
+        pets = new PetCardAdapter(Ui.app(this), true, pet -> {
+            Bundle args = new Bundle();
+            args.putString("petId", pet.id().toString());
+            Ui.nav(this).navigate(R.id.action_home_to_detail, args);
+        });
+        walks = new WalkListingAdapter(Ui.app(this), listing -> {
+            Bundle args = new Bundle();
+            args.putString("listingId", listing.id().toString());
+            Ui.nav(this).navigate(R.id.action_global_walk_detail, args);
+        });
+        walks.showStatus(true);
+        binding.listingList.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        binding.listingsGroup.check(showWalks ? R.id.walksTab : R.id.adoptionTab);
+        binding.listingsGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked) {
+                showWalks = checkedId == R.id.walksTab;
+                render();
+            }
+        });
+        binding.refresh.setColorSchemeResources(R.color.text_on_brand);
+        binding.refresh.setProgressBackgroundColorSchemeResource(R.color.brand_coral);
+        binding.refresh.setOnRefreshListener(this::load);
+        View.OnClickListener edit = view -> Ui.nav(this).navigate(R.id.action_global_profile_edit);
+        binding.editButton.setOnClickListener(edit);
+        binding.avatarView.setOnClickListener(edit);
+        binding.settingsButton.setOnClickListener(view -> Ui.nav(this).navigate(R.id.action_global_settings));
+        binding.newListingButton.setOnClickListener(view -> Ui.nav(this).navigate(showWalks
+                ? R.id.action_global_walk_editor : R.id.action_home_to_editor));
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        load();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(STATE_WALKS, showWalks);
     }
 
     @Override
@@ -66,143 +86,68 @@ public class ProfileFragment extends Fragment {
     }
 
     private void load() {
-        busy(true);
+        if (loaded == null && !binding.refresh.isRefreshing()) {
+            States.loading(binding.state);
+        }
         Ui.run(this, () -> {
             MiyavApplication app = Ui.app(this);
-            return app.userService().current(app.auth().requireSession());
-        }, user -> {
-            busy(false);
-            fill(user);
+            AuthSession session = app.auth().requireSession();
+            return new Loaded(app.userService().current(session), app.petService().mine(session),
+                    app.walkListings().mine(session));
+        }, result -> {
+            binding.refresh.setRefreshing(false);
+            loaded = result;
+            fill(result.user);
+            render();
         }, code -> {
-            busy(false);
-            binding.messageView.setText(Codes.text(code));
+            binding.refresh.setRefreshing(false);
+            if (loaded == null) {
+                States.message(binding.state, Codes.text(code), this::load);
+            } else {
+                Ui.snack(binding.getRoot(), code);
+            }
         });
     }
 
     private void fill(User user) {
         binding.nameView.setText(user.fullName());
-        binding.emailView.setText(getString(R.string.format_pair, user.email(), Labels.role(requireContext(), user.role())));
-        binding.nameInput.setText(user.fullName());
-        binding.districtInput.setText(user.district());
-        binding.phoneInput.setText(user.phone());
-        binding.bioInput.setText(user.bio());
-        binding.phonePublicSwitch.setChecked(user.phonePublic());
-        city.select(user.city());
+        String place = user.district().isEmpty() ? user.city() : user.city() + ", " + user.district();
+        binding.metaView.setText(place.isEmpty() ? user.email() : getString(R.string.format_pair, user.email(), place));
+        binding.bioView.setText(user.bio());
+        binding.bioView.setVisibility(user.bio().isEmpty() ? View.GONE : View.VISIBLE);
         Ui.app(this).photos().avatar(binding.avatarView, user);
     }
 
-    private void save() {
-        String name = Ui.text(binding.nameInput).trim();
-        binding.nameLayout.setError(null);
-        if (name.length() < 2 || name.length() > 100) {
-            binding.nameLayout.setError(getString(R.string.validation_name));
+    private void render() {
+        if (loaded == null) {
             return;
         }
-        String district = Ui.text(binding.districtInput);
-        String phone = Ui.text(binding.phoneInput).trim();
-        String bio = Ui.text(binding.bioInput).trim();
-        boolean phonePublic = binding.phonePublicSwitch.isChecked();
-        String cityValue = city.value();
-        binding.phoneLayout.setError(null);
-        if (!az.miyav.domain.user.PhoneNumbers.valid(phone)) {
-            binding.phoneLayout.setError(getString(R.string.validation_phone));
-            return;
+        binding.adoptionTab.setText(getString(R.string.profile_tab_adoption, loaded.pets.size()));
+        binding.walksTab.setText(getString(R.string.profile_tab_walks, loaded.walks.size()));
+        if (showWalks) {
+            walks.replace(loaded.walks);
+            binding.listingList.setAdapter(walks);
+        } else {
+            pets.replace(loaded.pets);
+            binding.listingList.setAdapter(pets);
         }
-        if (phonePublic && phone.isEmpty()) {
-            binding.phoneLayout.setError(getString(R.string.validation_phone_required));
-            return;
+        boolean empty = showWalks ? loaded.walks.isEmpty() : loaded.pets.isEmpty();
+        if (empty) {
+            States.message(binding.state, showWalks ? R.string.wl_mine_empty : R.string.empty_pets, null);
+        } else {
+            States.hide(binding.state);
         }
-        busy(true);
-        Ui.run(this, () -> {
-            MiyavApplication app = Ui.app(this);
-            return app.userService().updateProfile(app.auth().requireSession(), name, cityValue, district, phone, bio, phonePublic);
-        }, user -> {
-            busy(false);
-            fill(user);
-            binding.messageView.setText(R.string.profile_saved);
-        }, code -> {
-            busy(false);
-            if (code.startsWith("validation.phone")) {
-                binding.phoneLayout.setError(getString(Codes.text(code)));
-            } else {
-                binding.messageView.setText(Codes.text(code));
-            }
-        });
     }
 
-    private void pickAvatar() {
-        picker.launch(new PickVisualMediaRequest.Builder()
-                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-                .build());
-    }
+    private static final class Loaded {
+        final User user;
+        final List<Pet> pets;
+        final List<WalkListing> walks;
 
-    private void onAvatarPicked(@Nullable Uri uri) {
-        if (uri == null || binding == null) {
-            return;
+        Loaded(User user, List<Pet> pets, List<WalkListing> walks) {
+            this.user = user;
+            this.pets = pets;
+            this.walks = walks;
         }
-        busy(true);
-        Context context = requireContext().getApplicationContext();
-        Ui.run(this, () -> {
-            MiyavApplication app = Ui.app(this);
-            byte[] jpeg = JpegEncoder.fromUri(context, uri, 800);
-            return app.userService().updateAvatar(app.auth().requireSession(), jpeg);
-        }, user -> {
-            busy(false);
-            fill(user);
-            binding.messageView.setText(R.string.profile_saved);
-        }, code -> {
-            busy(false);
-            binding.messageView.setText(Codes.text(code));
-        });
-    }
-
-    private void bindLanguage() {
-        String current = AppLocale.current(requireContext());
-        bindingLanguage = true;
-        binding.languageGroup.check(switch (current) {
-            case "en" -> R.id.languageEn;
-            case "ru" -> R.id.languageRu;
-            default -> R.id.languageAz;
-        });
-        bindingLanguage = false;
-        binding.languageGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (!isChecked || bindingLanguage) {
-                return;
-            }
-            String tag = checkedId == R.id.languageEn ? "en" : checkedId == R.id.languageRu ? "ru" : "az";
-            if (tag.equals(current)) {
-                return;
-            }
-            MiyavApplication app = Ui.app(this);
-            app.io().execute(() -> {
-                try {
-                    app.userService().updateLocale(app.auth().requireSession(), LocaleCode.fromTag(tag));
-                } catch (AppException ignored) {
-                    // The device language still changes; the profile syncs on the next successful save.
-                }
-            });
-            AppLocale.select(requireActivity(), tag);
-        });
-    }
-
-    private void logout() {
-        MiyavApplication app = Ui.app(this);
-        busy(true);
-        Ui.run(this, () -> {
-            app.onSignedOut();
-            try {
-                app.auth().signOut();
-            } catch (AppException ignored) {
-                // The local session is cleared even when the server cannot be reached.
-            }
-            return Boolean.TRUE;
-        }, done -> Ui.signedOut(this, false), code -> Ui.signedOut(this, false));
-    }
-
-    private void busy(boolean busy) {
-        binding.progress.setVisibility(busy ? View.VISIBLE : View.INVISIBLE);
-        binding.saveButton.setEnabled(!busy);
-        binding.avatarButton.setEnabled(!busy);
-        binding.logoutButton.setEnabled(!busy);
     }
 }

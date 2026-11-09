@@ -36,7 +36,7 @@ public class PublicProfileFragment extends Fragment {
             args.putString("petId", pet.id().toString());
             Ui.nav(this).navigate(R.id.action_global_detail, args);
         });
-        binding.listingList.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.listingList.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2));
         binding.listingList.setAdapter(adapter);
         return binding.getRoot();
     }

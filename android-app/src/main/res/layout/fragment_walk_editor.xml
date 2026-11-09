@@ -44,6 +44,21 @@
                         android:text="@string/wl_section_pet"
                         android:textAppearance="@style/TextAppearance.Miyav.Section" />
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="@string/wl_pick_pet"
+                        android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/petPicker"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal" />
+
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/nameLayout"
                         android:layout_width="match_parent"

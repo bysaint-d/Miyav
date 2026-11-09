@@ -153,6 +153,42 @@ class AuthStateManagerTest {
     }
 
     @Test
+    void deletingTheAccountForgetsTheSessionAndReturnsToGuestMode() {
+        manager.restore();
+        signIn(UserRole.OWNER);
+        AuthSession session = sessions.load().orElseThrow();
+        manager.request(PendingAction.of(ProtectedAction.CREATE_LISTING));
+
+        manager.deleteAccount();
+
+        verify(auth).deleteAccount(session);
+        assertEquals(AuthState.GUEST, manager.state());
+        assertFalse(sessions.load().isPresent());
+        assertTrue(pending.load().isEmpty());
+    }
+
+    @Test
+    void failedDeletionKeepsTheUserSignedIn() {
+        manager.restore();
+        signIn(UserRole.ADMIN);
+        org.mockito.Mockito.doThrow(new PersistenceException("account.admin")).when(auth).deleteAccount(any());
+
+        PersistenceException failure = assertThrows(PersistenceException.class, manager::deleteAccount);
+
+        assertEquals("account.admin", failure.code());
+        assertEquals(AuthState.AUTHENTICATED, manager.state());
+        assertTrue(sessions.load().isPresent());
+    }
+
+    @Test
+    void guestsCannotDeleteAnAccount() {
+        manager.restore();
+        AccessDeniedException denied = assertThrows(AccessDeniedException.class, manager::deleteAccount);
+        assertEquals("auth.required", denied.code());
+        verify(auth, never()).deleteAccount(any());
+    }
+
+    @Test
     void googleSignInUsesPkceAndEndsAuthenticated() {
         manager.restore();
         UUID userId = UUID.randomUUID();

@@ -184,6 +184,21 @@ public final class AuthStateManager {
         }
     }
 
+    /** Whether the signed-in account has a password to change; Google-only accounts do not. */
+    public boolean usesPassword() {
+        return session().map(session -> SignInMethods.hasPassword(session.accessToken())).orElse(false);
+    }
+
+    /** Deletes the account permanently. On success the app is back in guest mode. */
+    public void deleteAccount() {
+        if (!signedIn()) {
+            throw new AccessDeniedException("auth.required");
+        }
+        auth.deleteAccount();
+        pending.clear();
+        set(AuthState.GUEST);
+    }
+
     public Optional<PendingAction> pending() {
         return pending.load();
     }

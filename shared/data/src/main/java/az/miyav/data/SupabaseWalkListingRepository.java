@@ -30,7 +30,9 @@ import java.util.UUID;
 /** {@code walk_listings} and {@code walk_offers} through PostgREST; assignment goes through RPCs. */
 public final class SupabaseWalkListingRepository implements WalkListingRepository {
     static final String SELECT = "id,owner_id,pet_name,pet_species,starts_at,duration_minutes,price_per_hour,city,"
-            + "latitude,longitude,location_name,notes,status,walker_id,agreed_price_per_hour,created_at";
+            + "latitude,longitude,location_name,notes,status,walker_id,agreed_price_per_hour,created_at,pet_id,pet_photo_path";
+    private static final java.util.regex.Pattern PHOTO_PATH = java.util.regex.Pattern.compile(
+            "[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\\.jpg");
     private static final String OFFER_SELECT = "id,listing_id,walker_id,message,status,price_per_hour,created_at";
     private static final Type ROWS = new TypeToken<List<ListingRow>>() {
     }.getType();
@@ -187,7 +189,25 @@ public final class SupabaseWalkListingRepository implements WalkListingRepositor
             body.addProperty("location_name", area.name());
         }
         body.addProperty("notes", details.notes());
+        if (details.petId().isPresent()) {
+            body.addProperty("pet_id", details.petId().get().toString());
+        } else {
+            body.add("pet_id", JsonNull.INSTANCE);
+        }
         return body;
+    }
+
+    @Override
+    public byte[] petPhoto(AuthSession viewer, String path) {
+        if (path == null || !PHOTO_PATH.matcher(path).matches()) {
+            throw new az.miyav.common.error.ValidationException("validation.pet");
+        }
+        az.miyav.data.http.HttpBinaryExchange response = client.sendBinary("GET",
+                "/storage/v1/object/authenticated/pets/" + path, viewer, null, null, Map.of());
+        if (response.status() / 100 != 2) {
+            throw new PersistenceException("network.unavailable");
+        }
+        return response.body();
     }
 
     private WalkListing single(HttpExchange response) {
@@ -209,10 +229,12 @@ public final class SupabaseWalkListingRepository implements WalkListingRepositor
                     || !ListingLocation.inArea(row.latitude, row.longitude)
                     ? null : new ListingLocation(row.latitude, row.longitude, row.location_name);
             WalkListingDetails details = new WalkListingDetails(row.pet_name, species(row.pet_species),
-                    Timestamps.parse(row.starts_at), row.duration_minutes, row.price_per_hour, row.city, area, row.notes);
+                    Timestamps.parse(row.starts_at), row.duration_minutes, row.price_per_hour, row.city, area, row.notes,
+                    row.pet_id == null ? null : UUID.fromString(row.pet_id));
             result.add(new WalkListing(UUID.fromString(row.id), UUID.fromString(row.owner_id), details,
                     WalkListingStatus.fromDatabase(row.status), row.walker_id == null ? null : UUID.fromString(row.walker_id),
-                    row.agreed_price_per_hour, row.created_at == null ? null : Timestamps.parse(row.created_at)));
+                    row.agreed_price_per_hour, row.created_at == null ? null : Timestamps.parse(row.created_at))
+                    .withPetPhoto(row.pet_photo_path));
         }
         return result;
     }
@@ -266,6 +288,8 @@ public final class SupabaseWalkListingRepository implements WalkListingRepositor
         String walker_id;
         BigDecimal agreed_price_per_hour;
         String created_at;
+        String pet_id;
+        String pet_photo_path;
     }
 
     private static final class OfferRow {

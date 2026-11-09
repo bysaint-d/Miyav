@@ -1,13 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.imageview.ShapeableImageView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/photoView"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginStart="4dp"
-    android:layout_marginEnd="4dp"
     android:background="@color/surface_muted"
-    android:contentDescription="@null"
-    android:scaleType="center"
-    android:src="@drawable/ic_paw"
-    app:shapeAppearanceOverlay="@style/Shape.Miyav.Photo" />
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/backdropView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.7"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/gallery_scrim" />
+
+    <!-- Bottom margin keeps the photo clear of the rounded sheet that overlaps the gallery. -->
+    <ImageView
+        android:id="@+id/photoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/space_sm"
+        android:layout_marginBottom="28dp"
+        android:contentDescription="@string/photo_open"
+        android:scaleType="center"
+        android:src="@drawable/ic_paw" />
+</FrameLayout>
