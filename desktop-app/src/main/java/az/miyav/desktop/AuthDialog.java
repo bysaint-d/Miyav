@@ -34,6 +34,8 @@ final class AuthDialog {
     private final PasswordField password = new PasswordField();
     private final Button submit = new Button();
     private final Label status = new Label();
+    private final javafx.scene.control.CheckBox terms = new javafx.scene.control.CheckBox();
+    private final VBox termsRow = new VBox(2);
     private DesktopGoogleSignIn google;
     private boolean register;
     private boolean signedIn;
@@ -93,7 +95,21 @@ final class AuthDialog {
         Hyperlink back = new Hyperlink("← " + graph.text("guest.sheet.title"));
         back.getStyleClass().add("link");
         back.setOnAction(event -> showChoices());
-        form.getChildren().addAll(fullName, email, password, submit, reset, back);
+        terms.setText(graph.text("auth.terms_agree"));
+        terms.setWrapText(true);
+        terms.selectedProperty().addListener((observable, before, checked) -> {
+            if (checked) {
+                status.setText("");
+            }
+        });
+        Hyperlink readTerms = new Hyperlink(graph.text("legal.terms"));
+        readTerms.getStyleClass().add("link");
+        readTerms.setOnAction(event -> legal("legal.terms", "legal.terms_body"));
+        Hyperlink readPrivacy = new Hyperlink(graph.text("legal.privacy"));
+        readPrivacy.getStyleClass().add("link");
+        readPrivacy.setOnAction(event -> legal("legal.privacy", "legal.privacy_body"));
+        termsRow.getChildren().addAll(terms, new javafx.scene.layout.HBox(4, readTerms, readPrivacy));
+        form.getChildren().addAll(fullName, email, password, termsRow, submit, reset, back);
         form.setAlignment(Pos.CENTER);
 
         status.setWrapText(true);
@@ -150,6 +166,8 @@ final class AuthDialog {
         form.setManaged(true);
         fullName.setVisible(register);
         fullName.setManaged(register);
+        termsRow.setVisible(register);
+        termsRow.setManaged(register);
         submit.setText(graph.text(register ? "auth.register" : "auth.login"));
         status.setText("");
         stage.sizeToScene();
@@ -158,8 +176,13 @@ final class AuthDialog {
 
     private void submit() {
         if (register) {
+            if (!terms.isSelected()) {
+                status.setText(graph.text("auth.terms_required"));
+                return;
+            }
+            boolean accepted = terms.isSelected();
             run(() -> {
-                graph.session().register(email.getText(), password.getText(), fullName.getText(), null);
+                graph.session().register(email.getText(), password.getText(), fullName.getText(), null, accepted);
                 return true;
             }, null);
         } else {
@@ -168,6 +191,18 @@ final class AuthDialog {
                 return true;
             }, null);
         }
+    }
+
+    private void legal(String titleKey, String bodyKey) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.initOwner(stage);
+        alert.setTitle(graph.text(titleKey));
+        alert.setHeaderText(graph.text(titleKey));
+        Label body = new Label(graph.text(bodyKey));
+        body.setWrapText(true);
+        body.setMaxWidth(460);
+        alert.getDialogPane().setContent(body);
+        alert.showAndWait();
     }
 
     private void google() {

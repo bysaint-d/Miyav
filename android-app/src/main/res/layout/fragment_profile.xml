@@ -123,6 +123,185 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/earningsCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/space_xs"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:contentDescription="@string/wallet_title"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_md">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/profile_stat_earnings"
+                            android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+
+                        <TextView
+                            android:id="@+id/earningsView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:maxLines="1"
+                            android:text="@string/profile_stat_none"
+                            android:textAppearance="@style/TextAppearance.Miyav.Headline" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:layout_marginEnd="@dimen/space_xs"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_md">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/profile_stat_completed"
+                            android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+
+                        <TextView
+                            android:id="@+id/completedView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:maxLines="1"
+                            android:text="@string/profile_stat_none"
+                            android:textAppearance="@style/TextAppearance.Miyav.Headline" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_md">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/profile_stat_rating"
+                            android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+
+                        <TextView
+                            android:id="@+id/ratingView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:maxLines="1"
+                            android:text="@string/profile_stat_none"
+                            android:textAppearance="@style/TextAppearance.Miyav.Headline" />
+
+                        <TextView
+                            android:id="@+id/ratingCount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textAppearance="@style/TextAppearance.Miyav.Caption"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/profile_section_personal"
+                android:textAppearance="@style/TextAppearance.Miyav.Section" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/walletButton"
+                        style="@style/Widget.Miyav.Button.Row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/wallet_title"
+                        app:icon="@drawable/ic_history" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/contractButton"
+                        style="@style/Widget.Miyav.Button.Row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_contract_bank"
+                        app:icon="@drawable/ic_document" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/applicationsButton"
+                        style="@style/Widget.Miyav.Button.Row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_adoption_applications"
+                        app:icon="@drawable/ic_paw" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/profile_section_support"
+                android:textAppearance="@style/TextAppearance.Miyav.Section" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/supportButton"
+                    style="@style/Widget.Miyav.Button.Row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_support"
+                    app:icon="@drawable/ic_whatsapp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_xl"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">

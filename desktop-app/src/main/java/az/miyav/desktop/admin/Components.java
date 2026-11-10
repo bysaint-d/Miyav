@@ -103,7 +103,7 @@ public final class Components {
 
     public static StackPane avatar(String initials, double size) {
         Label text = label(initials);
-        text.setStyle("-fx-font-size: " + Math.round(size * 0.38) + "px; -fx-font-weight: 700; -fx-text-fill: #315B49;");
+        text.setStyle("-fx-font-size: " + Math.round(size * 0.38) + "px; -fx-font-weight: 700; -fx-text-fill: #A84A12;");
         StackPane avatar = new StackPane(text);
         avatar.getStyleClass().add("avatar");
         avatar.setMinSize(size, size);

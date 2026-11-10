@@ -196,6 +196,17 @@ final class Labels {
         return (plain.scale() < 0 ? plain.setScale(0) : plain).toPlainString();
     }
 
+    /** Average stars with one decimal, e.g. "4.8". */
+    static String rating(BigDecimal average) {
+        return average.setScale(1, java.math.RoundingMode.HALF_UP).toPlainString();
+    }
+
+    /** "★★★★☆" for 1–5 stars. */
+    static String stars(int count) {
+        int filled = Math.max(0, Math.min(5, count));
+        return "★".repeat(filled) + "☆".repeat(5 - filled);
+    }
+
     static String walkPlace(WalkListingDetails details) {
         ListingLocation area = details.area();
         if (area != null && !area.name().isEmpty()) {

@@ -20,15 +20,16 @@
             android:gravity="top"
             android:orientation="horizontal">
 
-            <TextView
+            <ImageView
                 android:id="@+id/iconView"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@drawable/bg_map_card"
                 android:backgroundTint="@color/pastel_mint"
-                android:gravity="center"
                 android:importantForAccessibility="no"
-                android:textSize="22sp" />
+                android:padding="12dp"
+                android:src="@drawable/ic_vet"
+                app:tint="@color/brand_coral" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -89,7 +90,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:ellipsize="end"
-                    android:maxLines="2"
+                    android:lineSpacingMultiplier="1.1"
+                    android:maxLines="3"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -119,25 +121,21 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/directionsButton"
-                style="@style/Widget.Miyav.Button.Tonal"
+                style="@style/Widget.Miyav.Button.Tonal.PlaceAction"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:minHeight="44dp"
                 android:text="@string/places_directions"
-                android:textSize="14sp"
                 app:icon="@drawable/ic_map" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/callButton"
-                style="@style/Widget.Miyav.Button.Outlined"
+                style="@style/Widget.Miyav.Button.Outlined.PlaceAction"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/space_sm"
                 android:layout_weight="1"
-                android:minHeight="44dp"
                 android:text="@string/contact_call"
-                android:textSize="14sp"
                 app:icon="@drawable/ic_phone"
                 app:iconTint="@color/brand_mint" />
 

@@ -264,6 +264,39 @@
                     android:text="@string/pet_edit"
                     android:visibility="gone" />
 
+                <LinearLayout
+                    android:id="@+id/premiumSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:background="@drawable/bg_pastel_note"
+                    android:backgroundTint="@color/pastel_butter"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_md"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/premiumStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="8dp"
+                        android:gravity="center_vertical"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:visibility="gone"
+                        app:drawableStartCompat="@drawable/ic_star_small" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/premiumButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:backgroundTint="@color/brand_sun"
+                        android:textColor="@color/text_primary"
+                        app:icon="@drawable/ic_star"
+                        app:iconTint="@color/text_primary" />
+                </LinearLayout>
+
                 <com.google.android.material.progressindicator.LinearProgressIndicator
                     android:id="@+id/progress"
                     android:layout_width="match_parent"
@@ -297,8 +330,10 @@
         layout="@layout/view_state" />
 
     <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="@dimen/space_md">
 
@@ -312,10 +347,17 @@
             android:src="@drawable/ic_back"
             app:tint="@color/text_primary" />
 
-        <Space
+        <TextView
+            android:id="@+id/topTitle"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_md"
+            android:layout_marginEnd="@dimen/space_sm"
+            android:layout_weight="1"
+            android:alpha="0"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Miyav.Headline" />
 
         <ImageButton
             android:id="@+id/favoriteButton"

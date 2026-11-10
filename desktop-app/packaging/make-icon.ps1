@@ -1,4 +1,4 @@
-# Draws the MIYAV mark (paw print on a green squircle with a gold sparkle; same geometry as
+# Draws the MIYAV mark (paw print on a warm orange squircle with a cream sparkle; same geometry as
 # android-app/src/main/res/drawable/ic_mark.xml) and writes miyav.ico plus a 256 px PNG.
 param(
     [string]$IcoPath = "$PSScriptRoot\miyav.ico",
@@ -22,9 +22,9 @@ function New-Mark([int]$size) {
     $square.AddArc(100 - 2 * $r, 100 - 2 * $r, 2 * $r, 2 * $r, 0, 90)
     $square.AddArc(0, 100 - 2 * $r, 2 * $r, 2 * $r, 90, 90)
     $square.CloseFigure()
-    $fill = New-Object System.Drawing.Drawing2D.LinearGradientBrush ((New-Object System.Drawing.PointF 0, 0)), ((New-Object System.Drawing.PointF 100, 100)), ([System.Drawing.Color]::FromArgb(255, 0x4E, 0x9C, 0x7B)), ([System.Drawing.Color]::FromArgb(255, 0x1F, 0x37, 0x2E))
+    $fill = New-Object System.Drawing.Drawing2D.LinearGradientBrush ((New-Object System.Drawing.PointF 0, 0)), ((New-Object System.Drawing.PointF 100, 100)), ([System.Drawing.Color]::FromArgb(255, 0xF3, 0x9A, 0x4E)), ([System.Drawing.Color]::FromArgb(255, 0xA9, 0x46, 0x0F))
     $blend = New-Object System.Drawing.Drawing2D.ColorBlend 3
-    $blend.Colors = @([System.Drawing.Color]::FromArgb(255, 0x4E, 0x9C, 0x7B), [System.Drawing.Color]::FromArgb(255, 0x31, 0x5B, 0x49), [System.Drawing.Color]::FromArgb(255, 0x1F, 0x37, 0x2E))
+    $blend.Colors = @([System.Drawing.Color]::FromArgb(255, 0xF3, 0x9A, 0x4E), [System.Drawing.Color]::FromArgb(255, 0xDE, 0x6A, 0x1F), [System.Drawing.Color]::FromArgb(255, 0xA9, 0x46, 0x0F))
     $blend.Positions = @(0.0, 0.55, 1.0)
     $fill.InterpolationColors = $blend
     $g.FillPath($fill, $square)
@@ -49,7 +49,7 @@ function New-Mark([int]$size) {
     $g.FillEllipse($white, 64.8, 37.8, 14.4, 14.4)
     $g.Restore($state)
 
-    $gold = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 0xF2, 0xC4, 0x6D))
+    $gold = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 0xFF, 0xE7, 0xB8))
     $star = [System.Drawing.PointF[]]@(
         (New-Object System.Drawing.PointF 81, 11), (New-Object System.Drawing.PointF 82.8, 16.2),
         (New-Object System.Drawing.PointF 88, 18), (New-Object System.Drawing.PointF 82.8, 19.8),

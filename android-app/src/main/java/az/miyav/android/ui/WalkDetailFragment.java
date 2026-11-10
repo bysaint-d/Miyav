@@ -15,6 +15,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import az.miyav.android.MiyavApplication;
 import az.miyav.android.R;
+import az.miyav.android.databinding.DialogRateWalkerBinding;
 import az.miyav.android.databinding.FragmentWalkDetailBinding;
 import az.miyav.android.databinding.ItemWalkOfferBinding;
 import az.miyav.common.error.AppException;
@@ -23,15 +24,18 @@ import az.miyav.domain.auth.AuthSession;
 import az.miyav.domain.auth.PendingAction;
 import az.miyav.domain.auth.ProtectedAction;
 import az.miyav.domain.user.PublicProfile;
+import az.miyav.domain.walk.MyWalks;
 import az.miyav.domain.walk.WalkListing;
 import az.miyav.domain.walk.WalkListingDetails;
 import az.miyav.domain.walk.WalkListingStatus;
 import az.miyav.domain.walk.WalkOffer;
+import az.miyav.domain.walk.WalkerRating;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -81,6 +85,7 @@ public class WalkDetailFragment extends Fragment {
                 .show());
         binding.completeButton.setOnClickListener(view -> act(
                 (app, session) -> app.walkListings().complete(session, listing), R.string.wl_completed));
+        binding.rateButton.setOnClickListener(view -> rate());
         return binding.getRoot();
     }
 
@@ -117,24 +122,30 @@ public class WalkDetailFragment extends Fragment {
             AuthSession viewer = app.auth().viewer();
             WalkListing found = app.walkListings().find(viewer, listingId).orElse(null);
             if (found == null) {
-                return new Loaded(null, null, null, null, List.of(), null, null);
+                return new Loaded(null, null, null, null, List.of(), null, null, Map.of());
             }
-            PublicProfile owner = profile(app, viewer, found.ownerId());
-            PublicProfile walker = found.walkerId().map(id -> profile(app, viewer, id)).orElse(null);
+            boolean owns = viewer != null && found.ownedBy(viewer.userId());
+            var owner = Ui.async(() -> profile(app, viewer, found.ownerId()));
+            var walker = Ui.async(() -> found.walkerId().map(id -> profile(app, viewer, id)).orElse(null));
+            var offered = Ui.async(() -> owns ? app.walkListings().offersFor(viewer, found) : List.<WalkOffer>of());
+            var mine = Ui.async(() -> viewer != null && !owns ? app.walkListings().myOfferFor(viewer, found).orElse(null) : null);
+            PendingAction resume = viewer != null && !owns
+                    ? app.auth().takePending(ProtectedAction.OFFER_WALK, "listingId", listingId.toString()).orElse(null) : null;
+            List<WalkOffer> received = Ui.join(offered);
+            List<UUID> walkers = new ArrayList<>();
+            found.walkerId().ifPresent(walkers::add);
+            received.forEach(offer -> walkers.add(offer.walkerId()));
+            var ratings = Ui.async(() -> ratings(app, viewer, walkers));
+            List<java.util.concurrent.CompletableFuture<PublicProfile>> people = new ArrayList<>();
+            for (WalkOffer offer : received) {
+                people.add(Ui.async(() -> profile(app, viewer, offer.walkerId())));
+            }
             List<OfferRow> offers = new ArrayList<>();
-            WalkOffer mine = null;
-            PendingAction resume = null;
-            if (viewer != null) {
-                if (found.ownedBy(viewer.userId())) {
-                    for (WalkOffer offer : app.walkListings().offersFor(viewer, found)) {
-                        offers.add(new OfferRow(offer, profile(app, viewer, offer.walkerId())));
-                    }
-                } else {
-                    mine = app.walkListings().myOfferFor(viewer, found).orElse(null);
-                    resume = app.auth().takePending(ProtectedAction.OFFER_WALK, "listingId", listingId.toString()).orElse(null);
-                }
+            for (int i = 0; i < received.size(); i++) {
+                offers.add(new OfferRow(received.get(i), Ui.join(people.get(i))));
             }
-            return new Loaded(found, viewer == null ? null : viewer.userId(), owner, walker, offers, mine, resume);
+            return new Loaded(found, viewer == null ? null : viewer.userId(), Ui.join(owner), Ui.join(walker), offers,
+                    Ui.join(mine), resume, Ui.join(ratings));
         }, this::show, code -> {
             if (listing == null) {
                 States.message(binding.state, Codes.text(code), this::load);
@@ -142,6 +153,18 @@ public class WalkDetailFragment extends Fragment {
                 Ui.snack(binding.getRoot(), code);
             }
         });
+    }
+
+    /** Ratings are a nice-to-have on this screen; without them the walk still shows. */
+    private static Map<UUID, WalkerRating> ratings(MiyavApplication app, AuthSession viewer, List<UUID> walkers) {
+        if (viewer == null || walkers.isEmpty()) {
+            return Map.of();
+        }
+        try {
+            return app.walkListings().walkerRatings(viewer, walkers);
+        } catch (AppException exception) {
+            return Map.of();
+        }
     }
 
     private static PublicProfile profile(MiyavApplication app, AuthSession viewer, UUID userId) {
@@ -194,6 +217,7 @@ public class WalkDetailFragment extends Fragment {
         Instant now = Instant.now();
         boolean owner = loaded.viewer != null && listing.ownedBy(loaded.viewer);
         boolean walker = loaded.viewer != null && listing.walkedBy(loaded.viewer);
+        showRating(loaded, owner || walker);
         boolean canOffer = !owner && listing.acceptsOffers(now)
                 && (myOffer == null || myOffer.status() != WalkOffer.Status.ACCEPTED);
         binding.offerSection.setVisibility(canOffer ? View.VISIBLE : View.GONE);
@@ -210,11 +234,12 @@ public class WalkDetailFragment extends Fragment {
                 ? View.VISIBLE : View.GONE);
         binding.offersSection.setVisibility(owner && listing.status() != WalkListingStatus.CANCELLED ? View.VISIBLE : View.GONE);
         if (owner) {
-            showOffers(loaded.offers);
+            showOffers(loaded.offers, loaded.ratings);
         }
         binding.editButton.setVisibility(owner && listing.status() == WalkListingStatus.OPEN ? View.VISIBLE : View.GONE);
         binding.cancelButton.setVisibility(owner && listing.status().active() ? View.VISIBLE : View.GONE);
         binding.completeButton.setVisibility((owner || walker) && listing.completable(now) ? View.VISIBLE : View.GONE);
+        renderStage(loaded, owner, walker, now);
         binding.messageView.setText("");
         if (loaded.resume != null && binding.offerSection.getVisibility() == View.VISIBLE) {
             String draft = loaded.resume.argument("draft");
@@ -228,6 +253,79 @@ public class WalkDetailFragment extends Fragment {
                 }
             });
         }
+    }
+
+    /** The card at the top that says where this walk stands for the viewer and what happens next. */
+    private void renderStage(Loaded loaded, boolean owner, boolean walker, Instant now) {
+        if (loaded.viewer == null || (!owner && !walker && myOffer == null)) {
+            binding.stageCard.setVisibility(View.GONE);
+            return;
+        }
+        Context context = requireContext();
+        int pending = (int) loaded.offers.stream().filter(row -> row.offer.pending()).count();
+        MyWalks view = new MyWalks(loaded.viewer, List.of(listing),
+                myOffer == null ? Map.of() : Map.of(listing.id(), myOffer),
+                owner ? Map.of(listing.id(), pending) : Map.of());
+        MyWalks.Stage stage = view.stage(listing, now);
+        WalkListingDetails details = listing.details();
+        String price = Labels.money(listing.effectivePricePerHour());
+        String when = Labels.date(details.startsAt());
+        String title;
+        String body;
+        String hint = null;
+        switch (stage) {
+            case WAITING_FOR_OFFERS -> {
+                title = getString(R.string.wl_banner_waiting_title);
+                body = getString(R.string.wl_banner_waiting_body);
+            }
+            case OFFERS_TO_REVIEW -> {
+                title = getResources().getQuantityString(R.plurals.wl_banner_review_title, pending, pending);
+                body = getString(R.string.wl_banner_review_body);
+            }
+            case OFFER_SENT -> {
+                title = getString(R.string.wl_banner_sent_title);
+                body = getString(R.string.wl_banner_sent_body);
+            }
+            case AGREED -> {
+                title = getString(R.string.wl_banner_agreed_title);
+                String walkerName = loaded.walker == null || loaded.walker.fullName().isBlank()
+                        ? getString(R.string.wl_unknown_user) : loaded.walker.fullName();
+                body = owner ? getString(R.string.wl_banner_agreed_owner, walkerName, details.petName(), price, when)
+                        : getString(R.string.wl_banner_agreed_walker, details.petName(), price, when);
+                hint = getString(R.string.wl_banner_agreed_hint);
+            }
+            case OFFER_DECLINED -> {
+                title = getString(R.string.wl_banner_declined_title);
+                body = getString(R.string.wl_banner_declined_body);
+            }
+            case OFFER_WITHDRAWN -> {
+                title = getString(R.string.wl_banner_withdrawn_title);
+                body = getString(R.string.wl_banner_withdrawn_body);
+            }
+            case COMPLETED -> {
+                title = getString(R.string.wl_banner_completed_title);
+                body = getString(R.string.wl_banner_completed_body);
+            }
+            case EXPIRED -> {
+                title = getString(R.string.wl_banner_expired_title);
+                body = getString(R.string.wl_banner_expired_body);
+            }
+            default -> {
+                title = getString(R.string.wl_banner_cancelled_title);
+                body = getString(R.string.wl_banner_cancelled_body);
+            }
+        }
+        binding.stageCard.setVisibility(View.VISIBLE);
+        binding.stageCard.setBackgroundTintList(ColorStateList.valueOf(WalkStages.card(context, stage)));
+        binding.stageIcon.setText(WalkStages.icon(stage));
+        binding.stageTitle.setText(title);
+        binding.stageBody.setText(body);
+        binding.stageHint.setVisibility(hint == null ? View.GONE : View.VISIBLE);
+        binding.stageHint.setText(hint);
+        binding.stageCard.setOnClickListener(stage == MyWalks.Stage.AGREED ? card -> chat(null)
+                : stage == MyWalks.Stage.OFFERS_TO_REVIEW ? card -> binding.content.smoothScrollTo(0, binding.offersSection.getTop())
+                : null);
+        binding.stageCard.setClickable(stage == MyWalks.Stage.AGREED || stage == MyWalks.Stage.OFFERS_TO_REVIEW);
     }
 
     private void person(android.widget.TextView view, PublicProfile profile, UUID userId) {
@@ -258,7 +356,46 @@ public class WalkDetailFragment extends Fragment {
         binding.withdrawButton.setVisibility(myOffer.pending() ? View.VISIBLE : View.GONE);
     }
 
-    private void showOffers(List<OfferRow> offers) {
+    /** The walker's average under their name and, for the two people involved, this walk's stars and comment. */
+    private void showRating(Loaded loaded, boolean involved) {
+        WalkerRating average = listing.walkerId().map(loaded.ratings::get).orElse(null);
+        binding.walkerRatingView.setVisibility(average == null ? View.GONE : View.VISIBLE);
+        if (average != null) {
+            binding.walkerRatingView.setText(averageLine(average));
+        }
+        Integer stars = listing.walkerRating().orElse(null);
+        binding.reviewView.setVisibility(involved && stars != null ? View.VISIBLE : View.GONE);
+        if (involved && stars != null) {
+            String review = listing.walkerReview().isBlank() ? "" : "\n“" + listing.walkerReview() + "”";
+            binding.reviewView.setText(getString(R.string.wl_rated_line, Labels.stars(stars)) + review);
+        }
+        binding.rateButton.setVisibility(loaded.viewer != null && listing.rateableBy(loaded.viewer) ? View.VISIBLE : View.GONE);
+    }
+
+    private String averageLine(WalkerRating rating) {
+        return getString(R.string.wl_rating_average, Labels.rating(rating.average()),
+                getResources().getQuantityString(R.plurals.profile_rating_count, rating.count(), rating.count()));
+    }
+
+    private void rate() {
+        if (listing == null) {
+            return;
+        }
+        DialogRateWalkerBinding dialog = DialogRateWalkerBinding.inflate(getLayoutInflater());
+        WalkListing target = listing;
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.wl_rate_walker)
+                .setView(dialog.getRoot())
+                .setPositiveButton(R.string.wl_rate_send, (d, which) -> {
+                    int stars = Math.round(dialog.ratingBar.getRating());
+                    String review = Ui.text(dialog.reviewInput).trim();
+                    act((app, session) -> app.walkListings().rate(session, target, stars, review), R.string.wl_rated);
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showOffers(List<OfferRow> offers, Map<UUID, WalkerRating> ratings) {
         long active = offers.stream().filter(row -> row.offer.status() != WalkOffer.Status.WITHDRAWN).count();
         binding.offersTitle.setText(getString(R.string.wl_offers_title, (int) active));
         binding.offersEmpty.setVisibility(active == 0 ? View.VISIBLE : View.GONE);
@@ -278,7 +415,9 @@ public class WalkDetailFragment extends Fragment {
             Ui.app(this).photos().avatar(item.avatarView, row.profile == null ? null : row.profile.avatarPath());
             item.walkerRow.setOnClickListener(view -> openProfile(row.offer.walkerId()));
             String status = row.offer.pending() ? "" : "  ·  " + offerStatus(row.offer.status());
-            item.dateView.setText(row.offer.createdAt() == null ? status.trim() : Labels.date(row.offer.createdAt()) + status);
+            String date = row.offer.createdAt() == null ? status.trim() : Labels.date(row.offer.createdAt()) + status;
+            WalkerRating rating = ratings.get(row.offer.walkerId());
+            item.dateView.setText(rating == null ? date : averageLine(rating) + (date.isEmpty() ? "" : "  ·  " + date));
             item.messageView.setText(row.offer.message());
             item.messageView.setVisibility(row.offer.message().isEmpty() ? View.GONE : View.VISIBLE);
             item.priceView.setText(getString(R.string.wl_per_hour, Labels.money(row.offer.priceFor(listing.details()))));
@@ -387,6 +526,7 @@ public class WalkDetailFragment extends Fragment {
         binding.withdrawButton.setEnabled(!busy);
         binding.cancelButton.setEnabled(!busy);
         binding.completeButton.setEnabled(!busy);
+        binding.rateButton.setEnabled(!busy);
         binding.editButton.setEnabled(!busy);
         for (int i = 0; i < binding.offersList.getChildCount(); i++) {
             setEnabledDeep(binding.offersList.getChildAt(i), !busy);
@@ -426,9 +566,10 @@ public class WalkDetailFragment extends Fragment {
         final List<OfferRow> offers;
         final WalkOffer mine;
         final PendingAction resume;
+        final Map<UUID, WalkerRating> ratings;
 
         Loaded(WalkListing listing, UUID viewer, PublicProfile owner, PublicProfile walker, List<OfferRow> offers,
-               WalkOffer mine, PendingAction resume) {
+               WalkOffer mine, PendingAction resume, Map<UUID, WalkerRating> ratings) {
             this.listing = listing;
             this.viewer = viewer;
             this.owner = owner;
@@ -436,6 +577,7 @@ public class WalkDetailFragment extends Fragment {
             this.offers = offers;
             this.mine = mine;
             this.resume = resume;
+            this.ratings = ratings;
         }
     }
 }

@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Terms acceptance -->
+    <string name="auth_terms_agree">I have read and agree to the %1$s and the %2$s.</string>
+    <string name="auth_terms_required">To create an account, agree to the Terms of Service and the Privacy Policy.</string>
+    <string name="terms_update_title">Terms of Service updated</string>
+    <string name="terms_update_body">To keep using your account, please agree to the Terms of Service and the Privacy Policy.\n\nWhat changed: to keep members safe, MIYAV moderators may review messages, and listings can be made premium for a fee.</string>
+    <string name="terms_update_accept">I agree</string>
+    <string name="terms_update_read">Read</string>
+    <string name="terms_update_decline">Sign out</string>
+
+    <!-- Premium listings -->
+    <string name="premium_badge">Premium</string>
+    <string name="premium_cta">Make premium · %1$s ₼</string>
+    <string name="premium_active">Premium until %1$s. Shown first on Discover.</string>
+    <string name="premium_pending">Premium request is being reviewed.</string>
+    <string name="premium_rejected">Premium request was not approved. %1$s</string>
+    <string name="premium_extend">Extend premium · %1$s ₼</string>
+    <string name="premium_sheet_title">Make this listing premium</string>
+    <string name="premium_sheet_subtitle">%1$s ₼ — your listing is shown first on Discover for %2$d days.</string>
+    <string name="premium_step_method">1. Choose how you pay</string>
+    <string name="premium_method_m10">M10</string>
+    <string name="premium_method_card">Bank card</string>
+    <string name="premium_step_pay">2. Send %1$s ₼</string>
+    <string name="premium_pay_m10">M10 number</string>
+    <string name="premium_pay_card">Card number</string>
+    <string name="premium_copy">Copy</string>
+    <string name="premium_copied">Copied</string>
+    <string name="premium_step_receipt">3. Upload a photo of the payment receipt</string>
+    <string name="premium_pick_receipt">Choose receipt photo</string>
+    <string name="premium_change_receipt">Choose another photo</string>
+    <string name="premium_send">Send for approval</string>
+    <string name="premium_sent">Request sent. Your listing becomes premium once an admin checks the receipt.</string>
+    <string name="premium_review_note">Payments are checked by hand, usually within a few hours.</string>
+    <string name="premium_error_listing">Only a published listing can be made premium.</string>
+    <string name="premium_error_method">Choose a payment method.</string>
+    <string name="premium_error_receipt">Upload a photo of the payment receipt.</string>
+    <string name="premium_error_pending">A request for this listing is already being reviewed.</string>
+    <string name="premium_error_limit">Too many requests today. Please try again tomorrow.</string>
+    <string name="premium_error_closed">This request has already been reviewed.</string>
+
+    <string name="places_attribution_short" translatable="false">© OpenStreetMap</string>
+
+    <!-- My walks -->
+    <string name="my_walks_title">My walks</string>
+    <string name="my_walks_tab_agreed">Agreed</string>
+    <string name="my_walks_tab_offers">My offers</string>
+    <string name="my_walks_tab_requests">My requests</string>
+    <string name="my_walks_empty_agreed">No agreed walks yet. When an owner accepts your offer, or you choose a walker, it shows up here.</string>
+    <string name="my_walks_empty_offers">You have not offered on any walk yet. Find walk requests on Discover → Walking.</string>
+    <string name="my_walks_empty_requests">You have no walk requests yet.</string>
+    <string name="my_walks_new">New walk request</string>
+    <string name="nav_my_jobs">My jobs</string>
+
+    <!-- Profile: walker stats and support -->
+    <string name="profile_stat_earnings">Earnings</string>
+    <string name="profile_stat_completed">Completed jobs</string>
+    <string name="profile_stat_rating">Rating</string>
+    <string name="profile_stat_none">—</string>
+    <string name="profile_stat_money">%1$s ₼</string>
+    <string name="profile_section_personal">Personal details</string>
+    <string name="profile_section_support">Support</string>
+    <string name="profile_contract_bank">Contract and bank details</string>
+    <string name="profile_adoption_applications">Adoption applications</string>
+    <string name="profile_support">Support · WhatsApp</string>
+    <string name="profile_support_message">Hi! I am writing to MIYAV support.</string>
+    <string name="profile_stat_stars">%1$s ★</string>
+    <string name="profile_rating_none">No ratings yet</string>
+    <plurals name="profile_rating_count">
+        <item quantity="one">%1$d rating</item>
+        <item quantity="other">%1$d ratings</item>
+    </plurals>
+
+    <!-- Walker rating -->
+    <string name="wl_rate_walker">Rate the walker</string>
+    <string name="wl_rate_review">Review (optional)</string>
+    <string name="wl_rate_send">Send</string>
+    <string name="wl_rated">Rating sent. Thank you!</string>
+    <string name="wl_rated_line">Rating for this walk: %1$s</string>
+    <string name="wl_rating_average">★ %1$s · %2$s</string>
+    <string name="validation_walk_rating">Choose between 1 and 5 stars.</string>
+    <string name="validation_walk_review">The review can be at most 300 characters.</string>
+    <string name="walk_already_rated">You have already rated this walk.</string>
+
+    <!-- MIYAV wallet -->
+    <string name="wallet_title">My MIYAV wallet</string>
+    <string name="wallet_available">Available to withdraw</string>
+    <string name="wallet_summary">Earned: %1$s ₼ · Pending: %2$s ₼ · Paid out: %3$s ₼\nCompleted walks: %4$d</string>
+    <string name="wallet_withdraw">Request a withdrawal</string>
+    <string name="wallet_held">On hold: %1$s ₼ — walks you marked done yourself are added when the owner rates them or after 48 hours.</string>
+    <string name="wallet_hint_payout">To withdraw, first add your bank details and accept the walker agreement.</string>
+    <string name="wallet_hint_pending">An administrator is reviewing your request. The receipt appears here once you are paid.</string>
+    <string name="wallet_hint_minimum">The minimum withdrawal is %1$s ₼.</string>
+    <string name="wallet_hint_fee">A %1$s%% service fee is taken when you are paid.</string>
+    <string name="wallet_history">Withdrawals</string>
+    <string name="wallet_history_empty">No withdrawal requests yet.</string>
+    <string name="wallet_row_detail">%1$s · %2$s ₼ to be transferred · %3$s</string>
+    <string name="wallet_receipt">View receipt</string>
+    <string name="wallet_cancel">Cancel request</string>
+    <string name="wallet_cancel_confirm">Cancel this withdrawal? The amount goes back to your balance.</string>
+    <string name="wallet_cancelled">Request cancelled.</string>
+    <string name="wallet_status_pending">Pending</string>
+    <string name="wallet_status_paid">Paid</string>
+    <string name="wallet_status_rejected">Not approved</string>
+    <string name="wallet_status_cancelled">Cancelled</string>
+    <string name="wallet_amount">Amount</string>
+    <string name="wallet_amount_hint">Between %1$s ₼ and %2$s ₼</string>
+    <string name="wallet_to_account">Account: %1$s · %2$s</string>
+    <string name="wallet_breakdown">Service fee (%1$s%%): %2$s ₼\nTransferred to you: %3$s ₼</string>
+    <string name="wallet_send_request">Send request</string>
+    <string name="wallet_requested">Request sent. You will get a notification once an administrator pays it.</string>
+    <string name="wallet_receipt_title">Receipt %1$s</string>
+    <string name="wallet_receipt_text">Receipt no. %1$s\nDate: %2$s\n\nPaid to: %3$s\nBank: %4$s\nIBAN: %5$s\n\nAmount: %6$s ₼\nService fee (%7$s%%): %8$s ₼\nTransferred: %9$s ₼\n\nBank reference: %10$s\n\nMIYAV · pet walking</string>
+    <string name="wallet_share">Share</string>
+    <string name="withdrawal_error_minimum">Enter at least %1$s ₼.</string>
+    <string name="withdrawal_error_minimum_plain">The amount is below the minimum.</string>
+    <string name="withdrawal_error_balance">This amount is more than your balance.</string>
+    <string name="withdrawal_error_agreement">The walker agreement was updated. Accept it again in Bank details.</string>
+    <string name="withdrawal_error_closed">This request is already closed.</string>
+
+    <!-- Contract and bank details -->
+    <string name="payout_intro">What you earn from walks is paid to this account. Only you and MIYAV administrators can see these details.</string>
+    <string name="payout_section_bank">Bank details</string>
+    <string name="payout_holder">Account holder (full name)</string>
+    <string name="payout_holder_hint">Write it exactly as your bank does.</string>
+    <string name="payout_bank">Bank</string>
+    <string name="payout_iban">IBAN</string>
+    <string name="payout_iban_hint">28 characters starting with AZ. You can find it in your banking app or card agreement.</string>
+    <string name="payout_section_agreement">Walker agreement</string>
+    <string name="payout_agreement_summary">Terms about walking on time and safely, never leaving the pet unattended, keeping the owner\'s details private and being paid to this account.</string>
+    <string name="payout_agreement_read">Read the agreement</string>
+    <string name="payout_agreement_accept">I have read the agreement and accept its terms</string>
+    <string name="payout_agreement_accept_short">I accept</string>
+    <string name="payout_agreement_accepted_at">Agreement accepted: %1$s</string>
+    <string name="payout_agreement_outdated">The agreement was updated (previously accepted: %1$s). Please accept it again.</string>
+    <string name="payout_saved">Bank details saved.</string>
+    <string name="payout_error_holder">Enter the account holder\'s name (3–100 characters).</string>
+    <string name="payout_error_bank">Enter the bank name.</string>
+    <string name="payout_error_iban">This IBAN is not valid. Enter the 28-character IBAN that starts with AZ.</string>
+    <string name="payout_error_agreement">Accept the walker agreement to continue.</string>
+    <string name="payout_agreement_text">MIYAV walker agreement (version 2026-11-10)\n\n1. Parties. This agreement is between the MIYAV platform and the member who walks pets through it (the Walker).\n\n2. Service. The Walker does each accepted walk at the agreed time and length and follows the owner\'s instructions.\n\n3. Safety. The Walker never leaves the pet unattended, does not unleash it without the owner\'s permission, and immediately tells the owner and MIYAV support about any incident.\n\n4. Payment. The fee is calculated from the hourly price agreed in the app and paid to the bank account (IBAN) the Walker provides. The Walker is responsible for the bank details being correct.\n\n5. Privacy. The Walker does not share the owner\'s address, phone number or other personal data with anyone.\n\n6. Rating. After every completed walk the owner can rate the Walker with 1–5 stars. Accounts that repeatedly break the rules can be suspended.\n\n7. Cancelling. The Walker may cancel an accepted walk only for a good reason and with timely notice to the owner.\n\n8. Changes. MIYAV may update this agreement; a new version has to be accepted again in the app.\n\nQuestions: support, WhatsApp +994 50 347 73 06.</string>
+    <string-array name="payout_banks" translatable="false">
+        <item>Kapital Bank</item>
+        <item>ABB</item>
+        <item>PAŞA Bank</item>
+        <item>Bank Respublika</item>
+        <item>Xalq Bank</item>
+        <item>Unibank</item>
+        <item>AccessBank</item>
+        <item>Yelo Bank</item>
+        <item>Rabitəbank</item>
+        <item>Bank of Baku</item>
+        <item>Expressbank</item>
+        <item>Yapı Kredi Bank Azərbaycan</item>
+        <item>Ziraat Bank Azərbaycan</item>
+        <item>VTB (Azərbaycan)</item>
+        <item>Premium Bank</item>
+        <item>Turan Bank</item>
+        <item>AzərTürk Bank</item>
+        <item>Naxçıvanbank</item>
+        <item>BTB</item>
+    </string-array>
+    <string name="walk_stage_waiting">Waiting for offers</string>
+    <plurals name="walk_stage_review">
+        <item quantity="one">%1$d new offer</item>
+        <item quantity="other">%1$d new offers</item>
+    </plurals>
+    <string name="walk_stage_sent">Waiting for answer</string>
+    <string name="walk_stage_agreed">✓ Agreed</string>
+    <string name="walk_stage_declined">Not accepted</string>
+    <string name="walk_stage_withdrawn">Withdrawn</string>
+    <string name="walk_stage_completed">Completed</string>
+    <string name="walk_stage_cancelled">Cancelled</string>
+    <string name="walk_stage_expired">Expired</string>
+
+    <string name="wl_banner_waiting_title">Waiting for offers</string>
+    <string name="wl_banner_waiting_body">Walkers see your request on Discover. You get a notification when an offer arrives.</string>
+    <plurals name="wl_banner_review_title">
+        <item quantity="one">%1$d offer waits for your answer</item>
+        <item quantity="other">%1$d offers wait for your answer</item>
+    </plurals>
+    <string name="wl_banner_review_body">Choose one below; the other offers are declined automatically.</string>
+    <string name="wl_banner_sent_title">Your offer was sent</string>
+    <string name="wl_banner_sent_body">You get a notification when the owner answers. You can change your price or withdraw.</string>
+    <string name="wl_banner_agreed_title">Walk agreed</string>
+    <string name="wl_banner_agreed_owner">%1$s walks %2$s · %3$s ₼/h · %4$s</string>
+    <string name="wl_banner_agreed_walker">You walk %1$s · %2$s ₼/h · %3$s</string>
+    <string name="wl_banner_agreed_hint">Share the exact address in the chat. When the walk is over, tap \"Mark as done\".</string>
+    <string name="wl_banner_declined_title">Offer not accepted</string>
+    <string name="wl_banner_declined_body">The owner chose another walker or declined this offer.</string>
+    <string name="wl_banner_completed_title">Walk completed</string>
+    <string name="wl_banner_completed_body">Thank you for walking with MIYAV.</string>
+    <string name="wl_banner_cancelled_title">Walk cancelled</string>
+    <string name="wl_banner_cancelled_body">This walk request is no longer active.</string>
+    <string name="wl_banner_expired_title">Expired</string>
+    <string name="wl_banner_expired_body">The start time has passed without an agreement.</string>
+    <string name="wl_banner_withdrawn_title">Offer withdrawn</string>
+    <string name="wl_banner_withdrawn_body">While the request is open you can send a new offer.</string>
+
+    <string name="chat_event_accepted">✅ Walk agreed · %1$s ₼/h</string>
+    <string name="chat_event_accepted_plain">✅ Walk agreed</string>
+    <string name="chat_event_declined">Offer not accepted</string>
+    <string name="chat_event_cancelled">✖ Walk cancelled</string>
+    <string name="chat_event_completed">🏁 Walk completed</string>
+    <string name="chat_offer_accepted_badge">✓ Accepted</string>
+</resources>

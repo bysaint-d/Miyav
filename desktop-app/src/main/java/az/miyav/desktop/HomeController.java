@@ -12,10 +12,12 @@ import az.miyav.desktop.admin.NotificationsSection;
 import az.miyav.desktop.admin.OverviewSection;
 import az.miyav.desktop.admin.PetsSection;
 import az.miyav.desktop.admin.PlacesSection;
+import az.miyav.desktop.admin.PremiumSection;
 import az.miyav.desktop.admin.ReportsSection;
 import az.miyav.desktop.admin.SettingsSection;
 import az.miyav.desktop.admin.UsersSection;
 import az.miyav.desktop.admin.WalkingSection;
+import az.miyav.desktop.admin.WithdrawalsSection;
 import az.miyav.domain.auth.ProtectedAction;
 import az.miyav.security.AccessPolicy;
 import javafx.fxml.FXML;
@@ -68,7 +70,7 @@ public final class HomeController {
                 this::sessionLost, () -> content.getScene().getWindow());
         register(new OverviewSection(context), new WalkingSection(context), new NearMeSection(context),
                 new AdoptionSection(context), new PetsSection(context), new UsersSection(context),
-                new PlacesSection(context),
+                new PlacesSection(context), new PremiumSection(context), new WithdrawalsSection(context),
                 new MessagesSection(context), new ReportsSection(context), new NotificationsSection(context),
                 new SettingsSection(context, this::selectLocale, this::signOut, app::showDiscover));
         buildSidebar();
@@ -89,7 +91,7 @@ public final class HomeController {
         brand.setStyle("-fx-padding: 0 8 18 12;");
         sidebar.getChildren().add(brand);
         group("console.group_community", List.of("overview", "walking", "nearme"));
-        group("console.group_content", List.of("adoption", "pets", "users", "places"));
+        group("console.group_content", List.of("adoption", "premium", "pets", "users", "places"));
         group("console.group_safety", List.of("messages", "reports", "notifications"));
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);

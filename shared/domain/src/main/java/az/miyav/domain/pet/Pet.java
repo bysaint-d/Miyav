@@ -122,6 +122,11 @@ public abstract class Pet {
         return extras;
     }
 
+    /** Paid placement at the top of Discover is still running. */
+    public boolean premium(java.time.Instant now) {
+        return extras.premium(now);
+    }
+
     final void attachExtras(ListingExtras extras) {
         this.extras = extras == null ? ListingExtras.NONE : extras;
     }

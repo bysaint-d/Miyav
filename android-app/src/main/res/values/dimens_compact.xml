@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Narrow phones (under 380 dp): the Discover header keeps its title on one line next to four buttons. -->
+    <dimen name="discover_title_size">24sp</dimen>
+    <dimen name="discover_action_size">40dp</dimen>
+    <dimen name="discover_action_gap">6dp</dimen>
+</resources>

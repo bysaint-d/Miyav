@@ -20,6 +20,8 @@ public final class WalkListing {
     private final BigDecimal agreedPricePerHour;
     private final Instant createdAt;
     private String petPhotoPath;
+    private Integer walkerRating;
+    private String walkerReview = "";
 
     public WalkListing(UUID id, UUID ownerId, WalkListingDetails details, WalkListingStatus status, UUID walkerId,
                        Instant createdAt) {
@@ -84,8 +86,37 @@ public final class WalkListing {
     }
 
     public WalkListing withPetPhoto(String path) {
-        WalkListing copy = new WalkListing(id, ownerId, details, status, walkerId, agreedPricePerHour, createdAt);
+        WalkListing copy = copy();
         copy.petPhotoPath = path == null || path.isBlank() ? null : path;
+        return copy;
+    }
+
+    /** Stars (1–5) the owner gave the walker after the walk; empty until rated. */
+    public Optional<Integer> walkerRating() {
+        return Optional.ofNullable(walkerRating);
+    }
+
+    public String walkerReview() {
+        return walkerReview;
+    }
+
+    public WalkListing withWalkerRating(Integer stars, String review) {
+        WalkListing copy = copy();
+        copy.walkerRating = stars;
+        copy.walkerReview = review == null ? "" : review;
+        return copy;
+    }
+
+    /** The owner can rate the walker once the walk is done. */
+    public boolean rateableBy(UUID userId) {
+        return status == WalkListingStatus.COMPLETED && walkerId != null && ownedBy(userId) && walkerRating == null;
+    }
+
+    private WalkListing copy() {
+        WalkListing copy = new WalkListing(id, ownerId, details, status, walkerId, agreedPricePerHour, createdAt);
+        copy.petPhotoPath = petPhotoPath;
+        copy.walkerRating = walkerRating;
+        copy.walkerReview = walkerReview;
         return copy;
     }
 

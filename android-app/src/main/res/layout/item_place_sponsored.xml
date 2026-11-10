@@ -78,14 +78,14 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <TextView
+            <ImageView
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:background="@drawable/bg_map_card"
-                android:gravity="center"
                 android:importantForAccessibility="no"
-                android:text="🏥"
-                android:textSize="32sp" />
+                android:padding="16dp"
+                android:src="@drawable/ic_vet"
+                app:tint="@color/brand_coral" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -98,9 +98,12 @@
                     android:id="@+id/nameView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:breakStrategy="balanced"
+                    android:ellipsize="end"
+                    android:hyphenationFrequency="none"
                     android:maxLines="3"
                     android:textColor="@color/text_on_brand"
-                    android:textSize="19sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -137,11 +140,11 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/directionsButton"
+                style="@style/Widget.Miyav.Button.PlaceAction"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="@color/surface"
-                android:minHeight="46dp"
                 android:text="@string/places_directions"
                 android:textColor="@color/text_primary"
                 app:icon="@drawable/ic_map"
@@ -149,12 +152,12 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/callButton"
+                style="@style/Widget.Miyav.Button.PlaceAction"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/space_sm"
                 android:layout_weight="1"
                 android:backgroundTint="@color/brand_sun"
-                android:minHeight="46dp"
                 android:text="@string/contact_call"
                 android:textColor="@color/text_primary"
                 app:icon="@drawable/ic_phone"

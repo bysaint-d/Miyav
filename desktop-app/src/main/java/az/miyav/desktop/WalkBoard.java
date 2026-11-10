@@ -63,6 +63,7 @@ final class WalkBoard {
     private final ListView<WalkListing> list = new ListView<>();
     private final Label placeholder = Components.wrapped("", "muted");
     private final ImageView photo = new ImageView();
+    private final Label photoGlyph = Components.label("", "photo-glyph");
     private final Label title = Components.label("", "detail-title");
     private final Label price = Components.label("", "card-title");
     private final Label when = Components.wrapped("", "muted");
@@ -91,7 +92,12 @@ final class WalkBoard {
         chat.getStyleClass().add("ghost");
         chat.setOnAction(event -> chat());
         HBox actions = new HBox(8, offer, chat);
-        details = new VBox(12, photo, title, price, when, place, notes, owner, actions, offerState);
+        StackPane photoFrame = new StackPane(photoGlyph, photo);
+        photoFrame.getStyleClass().add("photo-placeholder");
+        photoFrame.setStyle("-fx-background-radius: 18;");
+        photoFrame.setMinSize(PHOTO_WIDTH, PHOTO_HEIGHT);
+        photoFrame.setMaxSize(PHOTO_WIDTH, PHOTO_HEIGHT);
+        details = new VBox(12, photoFrame, title, price, when, place, notes, owner, actions, offerState);
         details.getStyleClass().add("detail");
         details.setPadding(new Insets(20, 24, 24, 24));
         StackPane detailPane = new StackPane(details, placeholder);
@@ -150,6 +156,7 @@ final class WalkBoard {
         WalkListingDetails info = listing.details();
         Locale locale = Locale.forLanguageTag(graph.catalog().locale().tag());
         title.setText(Components.speciesGlyph(info.species().databaseValue()) + "  " + info.petName());
+        photoGlyph.setText(Components.speciesGlyph(info.species().databaseValue()));
         price.setText(graph.text("walk.per_hour", money(listing.effectivePricePerHour()))
                 + "  ·  " + graph.text("walk.total", money(listing.effectiveTotal())));
         when.setText("🗓  " + Components.dateTime(info.startsAt(), locale) + "  ·  " + duration(info.durationMinutes()));

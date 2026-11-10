@@ -167,6 +167,17 @@
                         app:icon="@drawable/ic_walk"
                         app:iconGravity="textStart"
                         app:iconTint="@color/text_on_brand" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/myWalksButton"
+                        style="@style/Widget.Miyav.Button.Tonal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:maxLines="1"
+                        android:text="@string/my_walks_title"
+                        app:icon="@drawable/ic_document"
+                        app:iconGravity="textStart" />
                 </LinearLayout>
 
                 <LinearLayout

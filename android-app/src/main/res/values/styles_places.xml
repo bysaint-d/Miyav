@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Action buttons on place cards: one line that shrinks to fit narrow phones instead of wrapping. -->
+    <style name="Widget.Miyav.Button.Tonal.PlaceAction" parent="Widget.Miyav.Button.Tonal">
+        <item name="android:minHeight">44dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="iconSize">18dp</item>
+        <item name="iconPadding">6dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeMinTextSize">11sp</item>
+        <item name="autoSizeMaxTextSize">14sp</item>
+        <item name="autoSizeStepGranularity">1sp</item>
+    </style>
+
+    <style name="Widget.Miyav.Button.Outlined.PlaceAction" parent="Widget.Miyav.Button.Outlined">
+        <item name="android:minHeight">44dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="iconSize">18dp</item>
+        <item name="iconPadding">6dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeMinTextSize">11sp</item>
+        <item name="autoSizeMaxTextSize">14sp</item>
+        <item name="autoSizeStepGranularity">1sp</item>
+    </style>
+
+    <style name="Widget.Miyav.Button.PlaceAction" parent="Widget.Miyav.Button">
+        <item name="android:minHeight">46dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="iconSize">18dp</item>
+        <item name="iconPadding">6dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeMinTextSize">11sp</item>
+        <item name="autoSizeMaxTextSize">14sp</item>
+        <item name="autoSizeStepGranularity">1sp</item>
+    </style>
+
+    <!-- Vets / Pet shops switch: fits both names on one line on 360 dp phones. -->
+    <style name="Widget.Miyav.Button.Segment.Compact" parent="Widget.Miyav.Button.Segment">
+        <item name="android:maxLines">1</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="iconSize">16dp</item>
+        <item name="iconPadding">6dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeMinTextSize">11sp</item>
+        <item name="autoSizeMaxTextSize">14sp</item>
+        <item name="autoSizeStepGranularity">1sp</item>
+    </style>
+</resources>

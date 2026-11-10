@@ -60,7 +60,7 @@ def generateClientConfig = tasks.register("generateClientConfig") {
 sourceSets.main.resources.srcDir(clientConfigDir)
 tasks.named("processResources") { dependsOn generateClientConfig }
 
-def appVersion = "1.5.0"
+def appVersion = "1.8.0"
 
 // Self-contained Windows app (own Java runtime) in build/jpackage/MIYAV; packaging/miyav.iss turns it into Setup.exe.
 tasks.register("packageAppImage", Exec) {

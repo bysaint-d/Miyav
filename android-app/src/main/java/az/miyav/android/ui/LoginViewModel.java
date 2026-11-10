@@ -44,11 +44,11 @@ public final class LoginViewModel extends ViewModel {
         });
     }
 
-    public void register(String email, String password, String fullName) {
+    public void register(String email, String password, String fullName, boolean acceptedTerms) {
         submit(() -> {
             pendingEmail.remember(email);
             try {
-                auth.register(email, password, fullName, redirect);
+                auth.register(email, password, fullName, redirect, acceptedTerms);
                 return LoginState.success();
             } catch (AppException exception) {
                 if ("auth.confirmation_required".equals(exception.code())) {

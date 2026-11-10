@@ -156,7 +156,7 @@
             android:gravity="start|center_vertical"
             android:text="@string/legal_help"
             app:icon="@drawable/ic_info"
-            app:iconTint="@color/brand_sky" />
+            app:iconTint="@color/brand_coral" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/termsButton"
@@ -167,7 +167,7 @@
             android:gravity="start|center_vertical"
             android:text="@string/legal_terms"
             app:icon="@drawable/ic_document"
-            app:iconTint="@color/brand_lavender" />
+            app:iconTint="@color/brand_coral" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/privacyButton"
@@ -178,7 +178,7 @@
             android:gravity="start|center_vertical"
             android:text="@string/legal_privacy"
             app:icon="@drawable/ic_shield"
-            app:iconTint="@color/brand_mint" />
+            app:iconTint="@color/brand_coral" />
 
         <TextView
             android:id="@+id/versionView"

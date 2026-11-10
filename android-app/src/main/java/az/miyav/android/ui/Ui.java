@@ -82,7 +82,34 @@ final class Ui {
     private static final java.util.Set<Integer> ACCOUNT_SCREENS = java.util.Set.of(
             R.id.petEditorFragment, R.id.notificationsFragment, R.id.passwordFragment, R.id.walkEditorFragment,
             R.id.inboxFragment, R.id.chatFragment, R.id.myPetsListFragment, R.id.settingsFragment, R.id.profileEditFragment,
-            R.id.walkHistoryFragment, R.id.walkRouteFragment);
+            R.id.walkHistoryFragment, R.id.walkRouteFragment, R.id.myWalksFragment, R.id.walletFragment,
+            R.id.payoutFragment, R.id.applicationsFragment);
+
+    private static final java.util.concurrent.ExecutorService FAN_OUT = java.util.concurrent.Executors.newCachedThreadPool(task -> {
+        Thread thread = new Thread(task, "miyav-fan-out");
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    /**
+     * Starts an independent request so a screen can wait for several at once instead of one after another.
+     * Call {@link #join} from inside a {@link #run} worker.
+     */
+    static <T> java.util.concurrent.CompletableFuture<T> async(Supplier<T> work) {
+        return java.util.concurrent.CompletableFuture.supplyAsync(work, FAN_OUT);
+    }
+
+    /** Waits for {@link #async} work and rethrows its error as it was thrown, so error codes survive. */
+    static <T> T join(java.util.concurrent.CompletableFuture<T> future) {
+        try {
+            return future.join();
+        } catch (java.util.concurrent.CompletionException exception) {
+            if (exception.getCause() instanceof RuntimeException cause) {
+                throw cause;
+            }
+            throw exception;
+        }
+    }
 
     /** Opens a chat; any of the ids may be empty (the chat screen resolves the rest). */
     static void openChat(Fragment fragment, String conversationId, String listingId, String withUserId, String title) {

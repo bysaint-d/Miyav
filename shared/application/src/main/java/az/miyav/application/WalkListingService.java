@@ -6,14 +6,22 @@ import az.miyav.common.time.TimeSource;
 import az.miyav.domain.auth.AuthSession;
 import az.miyav.domain.pet.PetSpecies;
 import az.miyav.domain.repository.WalkListingRepository;
+import az.miyav.domain.walk.MyWalks;
 import az.miyav.domain.walk.WalkListing;
 import az.miyav.domain.walk.WalkListingDetails;
 import az.miyav.domain.walk.WalkListingStatus;
 import az.miyav.domain.walk.WalkOffer;
+import az.miyav.domain.walk.WalkerRating;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -23,6 +31,8 @@ import java.util.UUID;
  */
 public final class WalkListingService {
     private static final int MAX_MESSAGE = 500;
+    private static final int MAX_REVIEW = 300;
+    private static final int MAX_RATED_WALKERS = 100;
     private final WalkListingRepository listings;
     private final TimeSource time;
 
@@ -51,6 +61,30 @@ public final class WalkListingService {
     public List<WalkListing> mine(AuthSession session) {
         requireSession(session);
         return listings.findMine(session);
+    }
+
+    /** "Gəzintilərim": my requests with waiting offers, the offers I sent with their answer, and agreed walks. */
+    public MyWalks myWalks(AuthSession session) {
+        requireSession(session);
+        List<WalkOffer> offers = listings.myOffers(session);
+        List<WalkListing> all = listings.findMine(session, offers);
+        Map<UUID, WalkOffer> byListing = new HashMap<>();
+        for (WalkOffer offer : offers) {
+            byListing.putIfAbsent(offer.listingId(), offer);
+        }
+        List<UUID> openOwned = new ArrayList<>();
+        for (WalkListing listing : all) {
+            if (listing.ownedBy(session.userId()) && listing.status() == WalkListingStatus.OPEN) {
+                openOwned.add(listing.id());
+            }
+        }
+        Map<UUID, Integer> pending = new HashMap<>();
+        for (WalkOffer offer : listings.offersForListings(session, openOwned)) {
+            if (offer.pending()) {
+                pending.merge(offer.listingId(), 1, Integer::sum);
+            }
+        }
+        return new MyWalks(session.userId(), all, byListing, pending);
     }
 
     public WalkListing publish(AuthSession session, WalkListingDetails details) {
@@ -151,6 +185,42 @@ public final class WalkListingService {
             throw new ValidationException("walk.offer_closed");
         }
         listings.respond(session, offer.id(), accept);
+    }
+
+    /** The owner rates the walker of a completed walk once: 1–5 stars and an optional comment. */
+    public void rate(AuthSession session, WalkListing listing, int stars, String review) {
+        requireOwner(session, listing);
+        if (stars < 1 || stars > 5) {
+            throw new ValidationException("validation.walk_rating");
+        }
+        String text = review == null ? "" : review.trim();
+        if (text.length() > MAX_REVIEW) {
+            throw new ValidationException("validation.walk_review");
+        }
+        if (listing.walkerRating().isPresent()) {
+            throw new ValidationException("walk.already_rated");
+        }
+        if (!listing.rateableBy(session.userId())) {
+            throw new ValidationException("walk.listing_closed");
+        }
+        listings.rate(session, listing.id(), stars, text);
+    }
+
+    /** Ratings keyed by walker; walkers without any rating are absent. */
+    public Map<UUID, WalkerRating> walkerRatings(AuthSession session, Collection<UUID> walkerIds) {
+        requireSession(session);
+        Set<UUID> unique = new LinkedHashSet<>(walkerIds);
+        if (unique.isEmpty()) {
+            return Map.of();
+        }
+        if (unique.size() > MAX_RATED_WALKERS) {
+            throw new ValidationException("validation.pet");
+        }
+        Map<UUID, WalkerRating> result = new HashMap<>();
+        for (WalkerRating rating : listings.walkerRatings(session, unique)) {
+            result.put(rating.walkerId(), rating);
+        }
+        return result;
     }
 
     private static void requireOwner(AuthSession session, WalkListing listing) {

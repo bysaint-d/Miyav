@@ -41,6 +41,28 @@
                 android:textSize="13sp" />
 
             <TextView
+                android:id="@+id/premiumBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="6dp"
+                android:background="@drawable/bg_map_card"
+                android:backgroundTint="@color/brand_sun"
+                android:drawablePadding="3dp"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:paddingStart="7dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="2dp"
+                android:text="@string/premium_badge"
+                android:textAppearance="@style/TextAppearance.Miyav.Badge"
+                android:textColor="@color/text_primary"
+                android:textSize="11sp"
+                android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_star_small" />
+
+            <TextView
                 android:id="@+id/distanceBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

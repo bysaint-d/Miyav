@@ -33,6 +33,8 @@
     <action
         android:id="@+id/action_global_home"
         app:destination="@id/homeFragment"
+        app:enterAnim="@anim/fade_in_fast"
+        app:exitAnim="@anim/fade_out_fast"
         app:popUpTo="@id/nav_graph"
         app:popUpToInclusive="true" />
 
@@ -118,6 +120,63 @@
         app:exitAnim="@anim/slide_out"
         app:popEnterAnim="@anim/pop_in"
         app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_my_walks"
+        app:destination="@id/myWalksFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_applications"
+        app:destination="@id/applicationsFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <action
+        android:id="@+id/action_global_wallet"
+        app:destination="@id/walletFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <fragment
+        android:id="@+id/walletFragment"
+        android:name="az.miyav.android.ui.WalletFragment"
+        android:label="@string/wallet_title" />
+
+    <action
+        android:id="@+id/action_global_payout"
+        app:destination="@id/payoutFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/slide_out"
+        app:popEnterAnim="@anim/pop_in"
+        app:popExitAnim="@anim/pop_out" />
+
+    <fragment
+        android:id="@+id/payoutFragment"
+        android:name="az.miyav.android.ui.PayoutFragment"
+        android:label="@string/profile_contract_bank" />
+
+    <fragment
+        android:id="@+id/applicationsFragment"
+        android:name="az.miyav.android.ui.ApplicationsFragment"
+        android:label="@string/nav_applications" />
+
+    <fragment
+        android:id="@+id/myWalksFragment"
+        android:name="az.miyav.android.ui.MyWalksFragment"
+        android:label="@string/my_walks_title">
+        <argument
+            android:name="tab"
+            android:defaultValue="agreed"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/walkHistoryFragment"

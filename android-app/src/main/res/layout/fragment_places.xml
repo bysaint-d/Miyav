@@ -86,25 +86,21 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/kindVets"
-            style="@style/Widget.Miyav.Button.Segment"
+            style="@style/Widget.Miyav.Button.Segment.Compact"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/places_vets"
-            app:icon="@drawable/ic_vet"
-            app:iconGravity="textStart"
-            app:iconSize="18dp" />
+            app:icon="@drawable/ic_vet" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/kindShops"
-            style="@style/Widget.Miyav.Button.Segment"
+            style="@style/Widget.Miyav.Button.Segment.Compact"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/places_shops"
-            app:icon="@drawable/ic_paw"
-            app:iconGravity="textStart"
-            app:iconSize="18dp" />
+            app:icon="@drawable/ic_paw" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <HorizontalScrollView
@@ -233,15 +229,20 @@
                 android:layout_marginEnd="@dimen/space_lg"
                 android:layout_marginBottom="76dp"
                 android:visibility="gone" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|start"
+                android:layout_margin="6dp"
+                android:background="@drawable/bg_map_card"
+                android:paddingStart="6dp"
+                android:paddingTop="1dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="1dp"
+                android:text="@string/places_attribution_short"
+                android:textColor="@color/text_secondary"
+                android:textSize="10sp" />
         </FrameLayout>
     </FrameLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingBottom="2dp"
-        android:text="@string/places_attribution"
-        android:textColor="@color/text_secondary"
-        android:textSize="10sp" />
 </LinearLayout>

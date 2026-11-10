@@ -133,10 +133,10 @@ public final class PhotoLoader {
 
     public void avatar(ImageView view, String avatarPath) {
         if (avatarPath == null) {
-            placeholder(view, R.drawable.ic_person, R.color.brand_lavender);
+            placeholder(view, R.drawable.ic_person, R.color.brand_coral);
             return;
         }
-        load(view, "avatar:" + avatarPath, R.drawable.ic_person, R.color.brand_lavender, 256, ImageView.ScaleType.CENTER_CROP,
+        load(view, "avatar:" + avatarPath, R.drawable.ic_person, R.color.brand_coral, 256, ImageView.ScaleType.CENTER_CROP,
                 () -> app.userService().avatar(avatarPath));
     }
 

@@ -11,6 +11,7 @@ import az.miyav.domain.walk.WalkListing;
 import az.miyav.domain.walk.WalkListingDetails;
 import az.miyav.domain.walk.WalkListingStatus;
 import az.miyav.domain.walk.WalkOffer;
+import az.miyav.domain.walk.WalkerRating;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -30,13 +31,16 @@ import java.util.UUID;
 /** {@code walk_listings} and {@code walk_offers} through PostgREST; assignment goes through RPCs. */
 public final class SupabaseWalkListingRepository implements WalkListingRepository {
     static final String SELECT = "id,owner_id,pet_name,pet_species,starts_at,duration_minutes,price_per_hour,city,"
-            + "latitude,longitude,location_name,notes,status,walker_id,agreed_price_per_hour,created_at,pet_id,pet_photo_path";
+            + "latitude,longitude,location_name,notes,status,walker_id,agreed_price_per_hour,created_at,pet_id,pet_photo_path,"
+            + "walker_rating,walker_review";
     private static final java.util.regex.Pattern PHOTO_PATH = java.util.regex.Pattern.compile(
             "[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\\.jpg");
     private static final String OFFER_SELECT = "id,listing_id,walker_id,message,status,price_per_hour,created_at";
     private static final Type ROWS = new TypeToken<List<ListingRow>>() {
     }.getType();
     private static final Type OFFER_ROWS = new TypeToken<List<OfferRow>>() {
+    }.getType();
+    private static final Type RATING_ROWS = new TypeToken<List<RatingRow>>() {
     }.getType();
     private final SupabaseClient client;
 
@@ -66,10 +70,14 @@ public final class SupabaseWalkListingRepository implements WalkListingRepositor
 
     @Override
     public List<WalkListing> findMine(AuthSession session) {
+        return findMine(session, myOffers(session));
+    }
+
+    @Override
+    public List<WalkListing> findMine(AuthSession session, List<WalkOffer> offered) {
         requireSession(session);
         UUID me = session.userId();
         StringBuilder filter = new StringBuilder("owner_id.eq.").append(me).append(",walker_id.eq.").append(me);
-        List<WalkOffer> offered = myOffers(session);
         if (!offered.isEmpty()) {
             filter.append(",id.in.(");
             for (int i = 0; i < offered.size(); i++) {
@@ -115,6 +123,20 @@ public final class SupabaseWalkListingRepository implements WalkListingRepositor
     }
 
     @Override
+    public List<WalkOffer> offersForListings(AuthSession session, java.util.Collection<UUID> listingIds) {
+        requireSession(session);
+        if (listingIds.isEmpty()) {
+            return List.of();
+        }
+        StringBuilder ids = new StringBuilder();
+        for (UUID id : listingIds) {
+            ids.append(ids.length() == 0 ? "" : ",").append(id);
+        }
+        return offers(client.send("GET", "/rest/v1/walk_offers?select=" + OFFER_SELECT + "&listing_id=in.(" + ids
+                + ")&order=created_at.asc&limit=500", session, null));
+    }
+
+    @Override
     public List<WalkOffer> myOffers(AuthSession session) {
         requireSession(session);
         return offers(client.send("GET", "/rest/v1/walk_offers?select=" + OFFER_SELECT + "&walker_id=eq." + session.userId()
@@ -153,6 +175,42 @@ public final class SupabaseWalkListingRepository implements WalkListingRepositor
         body.addProperty("p_offer", offerId.toString());
         body.addProperty("p_accept", accept);
         rpc(session, "respond_walk_offer", body);
+    }
+
+    @Override
+    public void rate(AuthSession session, UUID listingId, int stars, String review) {
+        requireSession(session);
+        JsonObject body = new JsonObject();
+        body.addProperty("p_listing", listingId.toString());
+        body.addProperty("p_rating", stars);
+        body.addProperty("p_review", review == null ? "" : review);
+        rpc(session, "rate_walker", body);
+    }
+
+    @Override
+    public List<WalkerRating> walkerRatings(AuthSession session, java.util.Collection<UUID> walkerIds) {
+        requireSession(session);
+        if (walkerIds.isEmpty()) {
+            return List.of();
+        }
+        com.google.gson.JsonArray users = new com.google.gson.JsonArray();
+        for (UUID id : walkerIds) {
+            users.add(id.toString());
+        }
+        JsonObject body = new JsonObject();
+        body.add("p_users", users);
+        HttpExchange response = client.send("POST", "/rest/v1/rpc/walker_ratings", session, body.toString());
+        if (response.status() / 100 != 2) {
+            throw PostgrestErrors.from(response);
+        }
+        List<RatingRow> rows = client.gson().fromJson(response.body(), RATING_ROWS);
+        List<WalkerRating> result = new ArrayList<>();
+        for (RatingRow row : rows == null ? List.<RatingRow>of() : rows) {
+            if (row.user_id != null && row.average != null) {
+                result.add(new WalkerRating(UUID.fromString(row.user_id), row.average, row.ratings));
+            }
+        }
+        return result;
     }
 
     private void finish(AuthSession session, UUID listingId, WalkListingStatus status) {
@@ -234,7 +292,8 @@ public final class SupabaseWalkListingRepository implements WalkListingRepositor
             result.add(new WalkListing(UUID.fromString(row.id), UUID.fromString(row.owner_id), details,
                     WalkListingStatus.fromDatabase(row.status), row.walker_id == null ? null : UUID.fromString(row.walker_id),
                     row.agreed_price_per_hour, row.created_at == null ? null : Timestamps.parse(row.created_at))
-                    .withPetPhoto(row.pet_photo_path));
+                    .withPetPhoto(row.pet_photo_path)
+                    .withWalkerRating(row.walker_rating, row.walker_review));
         }
         return result;
     }
@@ -290,6 +349,14 @@ public final class SupabaseWalkListingRepository implements WalkListingRepositor
         String created_at;
         String pet_id;
         String pet_photo_path;
+        Integer walker_rating;
+        String walker_review;
+    }
+
+    private static final class RatingRow {
+        String user_id;
+        BigDecimal average;
+        int ratings;
     }
 
     private static final class OfferRow {

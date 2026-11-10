@@ -78,17 +78,22 @@ public class ApplicationsFragment extends Fragment implements ApplicationAdapter
             AuthSession session = app.auth().requireSession();
             Map<UUID, String> titles = new HashMap<>();
             List<AdoptionApplication> incoming = new ArrayList<>();
-            for (Pet pet : app.petService().mine(session)) {
+            var minePending = Ui.async(() -> app.adoptionService().mine(session));
+            List<Pet> pets = app.petService().mine(session);
+            List<java.util.concurrent.CompletableFuture<List<AdoptionApplication>>> perPet = new ArrayList<>();
+            for (Pet pet : pets) {
                 titles.put(pet.id(), pet.name());
-                incoming.addAll(app.adoptionService().forPet(session, pet));
+                perPet.add(Ui.async(() -> app.adoptionService().forPet(session, pet)));
             }
-            List<AdoptionApplication> mine = app.adoptionService().mine(session);
+            perPet.forEach(future -> incoming.addAll(Ui.join(future)));
+            List<AdoptionApplication> mine = Ui.join(minePending);
+            Map<UUID, java.util.concurrent.CompletableFuture<Optional<Pet>>> missing = new HashMap<>();
             for (AdoptionApplication application : mine) {
-                if (!titles.containsKey(application.petId())) {
-                    Optional<Pet> pet = app.petService().find(application.petId(), session);
-                    pet.ifPresent(found -> titles.put(found.id(), found.name()));
+                if (!titles.containsKey(application.petId()) && !missing.containsKey(application.petId())) {
+                    missing.put(application.petId(), Ui.async(() -> app.petService().find(application.petId(), session)));
                 }
             }
+            missing.values().forEach(future -> Ui.join(future).ifPresent(found -> titles.put(found.id(), found.name())));
             incoming.sort((left, right) -> right.createdAt().compareTo(left.createdAt()));
             return new Snapshot(mine, incoming, titles);
         }, result -> {

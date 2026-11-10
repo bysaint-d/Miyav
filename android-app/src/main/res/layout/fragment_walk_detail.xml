@@ -33,6 +33,60 @@
                 android:paddingEnd="@dimen/space_xl"
                 android:paddingBottom="@dimen/space_xxxl">
 
+                <LinearLayout
+                    android:id="@+id/stageCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:background="@drawable/bg_pastel_note"
+                    android:gravity="top"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/space_md"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/stageIcon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_round_surface"
+                        android:gravity="center"
+                        android:importantForAccessibility="no"
+                        android:textSize="20sp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_md"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/stageTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/stageBody"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:lineSpacingMultiplier="1.1"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/stageHint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textAppearance="@style/TextAppearance.Miyav.Caption"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </LinearLayout>
+
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -205,6 +259,24 @@
                                 android:textAppearance="@style/TextAppearance.Miyav.Body"
                                 app:drawableStartCompat="@drawable/ic_walk"
                                 app:drawableTint="@color/brand_coral" />
+
+                            <TextView
+                                android:id="@+id/walkerRatingView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Miyav.Caption"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/reviewView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_sm"
+                                android:background="@drawable/bg_map_card"
+                                android:backgroundTint="@color/surface_muted"
+                                android:padding="@dimen/space_md"
+                                android:textAppearance="@style/TextAppearance.Miyav.Body"
+                                android:visibility="gone" />
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -340,6 +412,15 @@
                     android:layout_marginTop="@dimen/space_xl"
                     android:text="@string/wl_complete"
                     android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/rateButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xl"
+                    android:text="@string/wl_rate_walker"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_star" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/editButton"

@@ -11,6 +11,11 @@ public interface AuthRepository {
         return signUp(email, password, fullName);
     }
 
+    /** Sign-up that records the Terms version the member accepted on the form. */
+    default AuthSession signUp(String email, String password, String fullName, String redirectTo, String termsVersion) {
+        return signUp(email, password, fullName, redirectTo);
+    }
+
     AuthSession signIn(String email, String password);
 
     AuthSession refresh(String refreshToken);

@@ -9,6 +9,9 @@ import android.view.animation.OvershootInterpolator;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Lifecycle;
 
 import az.miyav.android.MiyavApplication;
 import az.miyav.android.R;
@@ -26,6 +29,7 @@ import java.util.UUID;
  */
 public class HomeFragment extends Fragment {
     private static final String STATE_TAB = "selected_tab";
+    private static final String TAB_TAG = "tab:";
     private FragmentHomeBinding binding;
     private Boolean renderedSignedIn;
     private int selectedTab = R.id.tab_listings;
@@ -61,8 +65,8 @@ public class HomeFragment extends Fragment {
             binding.bottomNav.setSelectedItemId(R.id.tab_walk);
         });
         boolean signedIn = Ui.app(this).auth().signedIn();
-        Fragment current = getChildFragmentManager().findFragmentById(R.id.tabHost);
-        if (fits(current, binding.bottomNav.getSelectedItemId(), signedIn)) {
+        Fragment current = tab(binding.bottomNav.getSelectedItemId());
+        if (fits(current, binding.bottomNav.getSelectedItemId(), signedIn) && !current.isHidden()) {
             renderedSignedIn = signedIn;
         } else {
             show(binding.bottomNav.getSelectedItemId());
@@ -126,8 +130,9 @@ public class HomeFragment extends Fragment {
     private void onAuthState(AuthState state) {
         boolean signedIn = Ui.app(this).auth().signedIn();
         if (renderedSignedIn == null || renderedSignedIn != signedIn) {
-            Fragment current = getChildFragmentManager().findFragmentById(R.id.tabHost);
-            if (fits(current, binding.bottomNav.getSelectedItemId(), signedIn)) {
+            dropOtherAccountTabs(signedIn);
+            Fragment current = tab(binding.bottomNav.getSelectedItemId());
+            if (fits(current, binding.bottomNav.getSelectedItemId(), signedIn) && !current.isHidden()) {
                 renderedSignedIn = signedIn;
             } else {
                 show(binding.bottomNav.getSelectedItemId());
@@ -162,8 +167,8 @@ public class HomeFragment extends Fragment {
         app.auth().takePending();
         switch (action.action()) {
             case CREATE_LISTING -> Ui.nav(this).navigate(R.id.action_home_to_editor);
-            case MANAGE_LISTINGS -> binding.bottomNav.setSelectedItemId(R.id.tab_profile);
-            case APPLICATIONS -> binding.bottomNav.setSelectedItemId(R.id.tab_applications);
+            case MANAGE_LISTINGS -> binding.bottomNav.setSelectedItemId(R.id.tab_my_jobs);
+            case APPLICATIONS -> Ui.nav(this).navigate(R.id.action_global_applications);
             case WALK -> binding.bottomNav.setSelectedItemId(R.id.tab_walk);
             case EDIT_PROFILE -> binding.bottomNav.setSelectedItemId(R.id.tab_profile);
             case CHANGE_PASSWORD -> Ui.nav(this).navigate(R.id.action_home_to_password);
@@ -199,25 +204,79 @@ public class HomeFragment extends Fragment {
         return signedIn != (current instanceof GuestTab);
     }
 
+    /**
+     * Tabs are created once and then shown or hidden, so switching back is instant and keeps the scroll
+     * position and filters. A hidden tab is capped at STARTED: it pauses (maps, polling) until shown again.
+     */
     private void show(int itemId) {
         boolean signedIn = Ui.app(this).auth().signedIn();
         renderedSignedIn = signedIn;
-        Fragment tab;
-        if (itemId == R.id.tab_vets) {
-            tab = new PlacesFragment();
-        } else if (itemId == R.id.tab_walk) {
-            tab = signedIn ? new WalkFragment() : GuestGateFragment.of(ProtectedAction.WALK);
-        } else if (itemId == R.id.tab_applications) {
-            tab = signedIn ? new ApplicationsFragment() : GuestGateFragment.of(ProtectedAction.APPLICATIONS);
-        } else if (itemId == R.id.tab_profile) {
-            tab = signedIn ? new ProfileFragment() : new GuestProfileFragment();
-        } else {
-            tab = new DiscoverFragment();
+        FragmentManager tabs = getChildFragmentManager();
+        Fragment target = tab(itemId);
+        FragmentTransaction transaction = tabs.beginTransaction()
+                .setReorderingAllowed(true)
+                .setCustomAnimations(R.anim.fade_in_fast, 0);
+        if (target != null && !fits(target, itemId, signedIn)) {
+            transaction.remove(target);
+            target = null;
         }
-        getChildFragmentManager().beginTransaction()
-                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                .replace(R.id.tabHost, tab)
-                .commit();
+        for (Fragment other : tabs.getFragments()) {
+            if (other != target && isTab(other) && !other.isHidden()) {
+                transaction.hide(other);
+                transaction.setMaxLifecycle(other, Lifecycle.State.STARTED);
+            } else if (!isTab(other) && other.getId() == R.id.tabHost) {
+                transaction.remove(other);
+            }
+        }
+        if (target == null) {
+            target = create(itemId, signedIn);
+            transaction.add(R.id.tabHost, target, TAB_TAG + itemId);
+        } else {
+            transaction.show(target);
+        }
+        transaction.setMaxLifecycle(target, Lifecycle.State.RESUMED);
+        transaction.commit();
+    }
+
+    private static Fragment create(int itemId, boolean signedIn) {
+        if (itemId == R.id.tab_vets) {
+            return new PlacesFragment();
+        } else if (itemId == R.id.tab_walk) {
+            return signedIn ? new WalkFragment() : GuestGateFragment.of(ProtectedAction.WALK);
+        } else if (itemId == R.id.tab_my_jobs) {
+            return signedIn ? MyWalksFragment.asTab() : GuestGateFragment.of(ProtectedAction.MANAGE_LISTINGS);
+        } else if (itemId == R.id.tab_profile) {
+            return signedIn ? new ProfileFragment() : new GuestProfileFragment();
+        }
+        return new DiscoverFragment();
+    }
+
+    private Fragment tab(int itemId) {
+        return getChildFragmentManager().findFragmentByTag(TAB_TAG + itemId);
+    }
+
+    private static boolean isTab(Fragment fragment) {
+        return fragment.getTag() != null && fragment.getTag().startsWith(TAB_TAG);
+    }
+
+    /** After sign-in or sign-out the account tabs of the other mode are rebuilt the next time they are opened. */
+    private void dropOtherAccountTabs(boolean signedIn) {
+        FragmentManager tabs = getChildFragmentManager();
+        if (tabs.isStateSaved()) {
+            return;
+        }
+        FragmentTransaction transaction = tabs.beginTransaction();
+        boolean changed = false;
+        for (Fragment fragment : tabs.getFragments()) {
+            if (isTab(fragment) && fragment.isHidden() && !(fragment instanceof DiscoverFragment)
+                    && !(fragment instanceof PlacesFragment) && signedIn == (fragment instanceof GuestTab)) {
+                transaction.remove(fragment);
+                changed = true;
+            }
+        }
+        if (changed) {
+            transaction.commitNow();
+        }
     }
 
     /** Marker for tabs that render the guest variant, so a sign-in swaps them for the real screen. */

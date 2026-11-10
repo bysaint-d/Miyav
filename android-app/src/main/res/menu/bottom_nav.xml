@@ -13,9 +13,9 @@
         android:icon="@drawable/ic_nav_placeholder"
         android:title="@string/nav_walk" />
     <item
-        android:id="@+id/tab_applications"
-        android:icon="@drawable/ic_document"
-        android:title="@string/nav_applications" />
+        android:id="@+id/tab_my_jobs"
+        android:icon="@drawable/ic_list"
+        android:title="@string/nav_my_jobs" />
     <item
         android:id="@+id/tab_profile"
         android:icon="@drawable/ic_person"

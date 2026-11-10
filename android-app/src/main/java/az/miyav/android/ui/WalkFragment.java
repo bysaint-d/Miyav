@@ -67,6 +67,7 @@ public class WalkFragment extends Fragment {
     private List<UUID> pendingPets = List.of();
     private UUID pendingListing;
     private String pendingMessage = "";
+    private String attentionTab = MyWalksFragment.TAB_AGREED;
     private final Runnable poll = this::pollNearby;
     private final Runnable tick = new Runnable() {
         @Override
@@ -114,6 +115,11 @@ public class WalkFragment extends Fragment {
                 Ui.nav(this).navigate(R.id.action_global_walk_history);
             }
         });
+        binding.myWalksButton.setOnClickListener(view -> {
+            if (Gate.require(this, az.miyav.domain.auth.ProtectedAction.WALK)) {
+                MyWalksFragment.open(this, attentionTab);
+            }
+        });
         tracker().state().observe(getViewLifecycleOwner(), this::render);
         tracker().sync(this::onError);
         if (DeviceLocation.hasAny(requireContext())) {
@@ -128,6 +134,27 @@ public class WalkFragment extends Fragment {
         binding.map.onResume();
         handler.post(tick);
         handler.post(poll);
+        loadAttention();
+    }
+
+    /** "My walks · 2": offers to answer and upcoming agreed walks, so nothing waits unseen. */
+    private void loadAttention() {
+        if (!Ui.app(this).auth().signedIn()) {
+            return;
+        }
+        Ui.run(this, () -> {
+            MiyavApplication app = Ui.app(this);
+            return app.walkListings().myWalks(app.auth().requireSession());
+        }, walks -> {
+            Instant now = Instant.now();
+            int count = walks.attention(now);
+            boolean review = walks.requests(now).stream()
+                    .anyMatch(listing -> walks.stage(listing, now) == az.miyav.domain.walk.MyWalks.Stage.OFFERS_TO_REVIEW);
+            attentionTab = review ? MyWalksFragment.TAB_REQUESTS : MyWalksFragment.TAB_AGREED;
+            binding.myWalksButton.setText(count == 0 ? getString(R.string.my_walks_title)
+                    : getString(R.string.my_walks_title) + "  ·  " + count);
+        }, code -> {
+        });
     }
 
     @Override

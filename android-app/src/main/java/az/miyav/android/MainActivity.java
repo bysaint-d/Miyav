@@ -29,6 +29,8 @@ import az.miyav.domain.auth.AuthState;
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private AuthState lastAuthState;
+    private java.util.UUID termsConfirmedFor;
+    private boolean termsAsking;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.Theme_MIYAV);
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -59,6 +62,85 @@ public class MainActivity extends AppCompatActivity {
             Push.register(app);
         }
         app.authState().observe(this, this::onAuthState);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkTerms();
+    }
+
+    /**
+     * Accounts created before the current Terms (or through Google, which has no checkbox) agree once on
+     * their next sign-in. Declining signs out; browsing as a guest stays possible.
+     */
+    private void checkTerms() {
+        MiyavApplication app = (MiyavApplication) getApplication();
+        az.miyav.domain.auth.AuthSession viewer = app.auth().viewer();
+        if (viewer == null || termsAsking || viewer.userId().equals(termsConfirmedFor)) {
+            return;
+        }
+        java.util.UUID user = viewer.userId();
+        termsAsking = true;
+        app.io().execute(() -> {
+            boolean needed;
+            try {
+                needed = app.userService().needsTerms(app.auth().requireSession());
+            } catch (RuntimeException exception) {
+                runOnUiThread(() -> termsAsking = false);
+                return;
+            }
+            runOnUiThread(() -> {
+                if (!needed) {
+                    termsConfirmedFor = user;
+                    termsAsking = false;
+                } else if (isFinishing()) {
+                    termsAsking = false;
+                } else {
+                    askForTerms(app, user);
+                }
+            });
+        });
+    }
+
+    private void askForTerms(MiyavApplication app, java.util.UUID user) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.terms_update_title)
+                .setMessage(R.string.terms_update_body)
+                .setCancelable(false)
+                .setPositiveButton(R.string.terms_update_accept, (dialog, which) -> app.io().execute(() -> {
+                    try {
+                        app.userService().acceptTerms(app.auth().requireSession());
+                        runOnUiThread(() -> {
+                            termsConfirmedFor = user;
+                            termsAsking = false;
+                        });
+                    } catch (RuntimeException exception) {
+                        runOnUiThread(() -> {
+                            termsAsking = false;
+                            show(Codes.text(exception instanceof AppException known ? known.code() : "error.generic"));
+                        });
+                    }
+                }))
+                .setNeutralButton(R.string.terms_update_read, (dialog, which) -> {
+                    termsAsking = false;
+                    Bundle args = new Bundle();
+                    args.putString("kind", "terms");
+                    navController().navigate(R.id.action_global_info, args);
+                })
+                .setNegativeButton(R.string.terms_update_decline, (dialog, which) -> app.io().execute(() -> {
+                    app.onSignedOut();
+                    try {
+                        app.auth().signOut();
+                    } catch (AppException ignored) {
+                        // The local session is cleared even when the server cannot be reached.
+                    }
+                    runOnUiThread(() -> {
+                        termsAsking = false;
+                        navController().navigate(R.id.action_global_home);
+                    });
+                }))
+                .show();
     }
 
     @Override
@@ -155,6 +237,9 @@ public class MainActivity extends AppCompatActivity {
         MiyavApplication app = (MiyavApplication) getApplication();
         if (state == AuthState.SESSION_EXPIRED && lastAuthState != AuthState.SESSION_EXPIRED) {
             Snackbar.make(binding.getRoot(), R.string.guest_session_expired, Snackbar.LENGTH_LONG).show();
+        }
+        if (state == AuthState.AUTHENTICATED) {
+            checkTerms();
         }
         if (state == AuthState.AUTHENTICATED && lastAuthState != AuthState.AUTHENTICATED) {
             NotificationPollWorker.schedule(this);

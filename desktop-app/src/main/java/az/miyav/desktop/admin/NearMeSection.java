@@ -81,9 +81,9 @@ public final class NearMeSection extends AdminSection {
         });
         engine.loadContent(page());
         HBox legend = Components.row(18,
-                layer(MapPointKind.LIVE_WALK, "console.layer_walks", "#315B49"),
+                layer(MapPointKind.LIVE_WALK, "console.layer_walks", "#D2601A"),
                 layer(MapPointKind.WALK_HELPER, "console.layer_helpers", "#7FB8A4"),
-                layer(MapPointKind.ADOPTION, "console.layer_adoption", "#E89A6B"),
+                layer(MapPointKind.ADOPTION, "console.layer_adoption", "#7B8FD6"),
                 Components.spacer(),
                 Components.label(text("console.privacy_note"), "caption"));
         StackPane frame = new StackPane(web);

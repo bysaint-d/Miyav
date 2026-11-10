@@ -26,6 +26,10 @@ import java.util.List;
 
 /** The member's own profile: name, city, phone and who may see it, bio, photo and password. */
 public final class ProfilePage extends UserPage {
+    private static final String SUPPORT_WHATSAPP = "994503477306";
+    private final Label earnings = Components.label("—", "stat-value");
+    private final Label completed = Components.label("—", "stat-value");
+    private final Label rating = Components.label("—", "stat-value");
     private final StackPane avatar = new StackPane();
     private final Label email = Components.label("", "muted");
     private final TextField fullName = new TextField();
@@ -109,7 +113,17 @@ public final class ProfilePage extends UserPage {
         currentPassword.setMaxWidth(360);
         newPassword.setMaxWidth(360);
 
-        VBox column = new VBox(16, Components.card(identity), details, passwordCard);
+        Button support = new Button("💬  " + text("user.profile.support"));
+        support.getStyleClass().add("ghost");
+        support.setOnAction(event -> context.openUrl("https://wa.me/" + SUPPORT_WHATSAPP + "?text="
+                + java.net.URLEncoder.encode(text("user.profile.support_message"), java.nio.charset.StandardCharsets.UTF_8)
+                .replace("+", "%20")));
+        Button wallet = new Button("₼  " + text("user.nav.wallet"));
+        wallet.getStyleClass().add("ghost");
+        wallet.setOnAction(event -> context.open("wallet", null));
+        VBox stats = Components.card(text("user.profile.stats"), Components.row(24, earnings, completed, rating),
+                Components.row(12, wallet, support));
+        VBox column = new VBox(16, Components.card(identity), stats, details, passwordCard);
         column.setMaxWidth(640);
         ScrollPane scroll = new ScrollPane(column);
         scroll.setFitToWidth(true);
@@ -128,6 +142,20 @@ public final class ProfilePage extends UserPage {
         passwordCard.setVisible(context.graph().session().usesPassword());
         passwordCard.setManaged(context.graph().session().usesPassword());
         context.load(() -> context.graph().users().current(context.session()), this::fill);
+        context.load(() -> {
+            var session = context.session();
+            var wallet = context.graph().wallets().wallet(session);
+            var stars = context.graph().walkListings().walkerRatings(session, List.of(session.userId())).get(session.userId());
+            return new Object[]{wallet, stars};
+        }, loaded -> {
+            var wallet = (az.miyav.domain.wallet.Wallet) loaded[0];
+            var stars = (az.miyav.domain.walk.WalkerRating) loaded[1];
+            earnings.setText(text("user.profile.stat_earnings", wallet.earned().stripTrailingZeros().toPlainString()));
+            completed.setText(text("user.profile.stat_completed", wallet.completedWalks()));
+            rating.setText(stars == null ? text("user.profile.stat_rating_none")
+                    : text("user.profile.stat_rating", stars.average().toPlainString(), stars.count()));
+        }, code -> {
+        });
     }
 
     private void fill(User loaded) {

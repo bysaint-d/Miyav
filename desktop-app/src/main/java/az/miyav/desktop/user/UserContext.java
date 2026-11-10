@@ -21,15 +21,22 @@ public final class UserContext {
     private final Runnable sessionLost;
     private final Runnable badgesChanged;
     private final Supplier<Window> window;
+    private final Consumer<String> browser;
 
     public UserContext(DesktopGraph graph, Consumer<String> status, BiConsumer<String, UUID> navigator,
-                       Runnable sessionLost, Runnable badgesChanged, Supplier<Window> window) {
+                       Runnable sessionLost, Runnable badgesChanged, Supplier<Window> window, Consumer<String> browser) {
         this.graph = graph;
         this.status = status;
         this.navigator = navigator;
         this.sessionLost = sessionLost;
         this.badgesChanged = badgesChanged;
         this.window = window;
+        this.browser = browser;
+    }
+
+    /** Opens a web link (WhatsApp support, for example) in the system browser. */
+    public void openUrl(String url) {
+        browser.accept(url);
     }
 
     public DesktopGraph graph() {

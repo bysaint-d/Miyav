@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shown by the system before the first frame, so the app never opens on a blank screen. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/bg_app" />
+    <item
+        android:width="112dp"
+        android:height="112dp"
+        android:drawable="@drawable/ic_mark"
+        android:gravity="center" />
+</layer-list>

@@ -93,7 +93,7 @@ public final class MemberPreview {
                     return null;
                 });
                 Thread.sleep(1800);
-                if (index == 0 || index == 1 || index == 3) {
+                if (index == 0 || index == 1 || index == 2 || index == 4) {
                     onFx(() -> {
                         for (Node node : scene().getRoot().lookupAll(".list-view")) {
                             if (node instanceof ListView<?> list && !list.getItems().isEmpty() && list.isVisible()
@@ -123,7 +123,28 @@ public final class MemberPreview {
                 return null;
             });
             Thread.sleep(1500);
-            save(out.resolve("07-Gezdirme.png"));
+            save(out.resolve("10-Gezdirme.png"));
+
+            ToggleButton profile = tabs.get(tabs.size() - 1);
+            Platform.runLater(() -> {
+                graph.session().signOut();
+                profile.fire();
+            });
+            Thread.sleep(2000);
+            saveTop(out.resolve("11-Giris.png"));
+            onFx(() -> {
+                Window dialog = Window.getWindows().get(Window.getWindows().size() - 1);
+                for (Node node : dialog.getScene().getRoot().lookupAll(".primary")) {
+                    if (node instanceof javafx.scene.control.Button button) {
+                        button.fire();
+                        break;
+                    }
+                }
+                return null;
+            });
+            Thread.sleep(1200);
+            saveTop(out.resolve("12-Giris-forma.png"));
+            Platform.runLater(() -> ((javafx.stage.Stage) Window.getWindows().get(Window.getWindows().size() - 1)).close());
         } catch (Exception exception) {
             exception.printStackTrace();
         } finally {
@@ -135,8 +156,15 @@ public final class MemberPreview {
         return Window.getWindows().get(0).getScene();
     }
 
+    private static void saveTop(Path file) throws Exception {
+        write(onFx(() -> Window.getWindows().get(Window.getWindows().size() - 1).getScene().snapshot(null)), file);
+    }
+
     private static void save(Path file) throws Exception {
-        WritableImage image = onFx(() -> scene().snapshot(null));
+        write(onFx(() -> scene().snapshot(null)), file);
+    }
+
+    private static void write(WritableImage image, Path file) throws Exception {
         PixelReader pixels = image.getPixelReader();
         BufferedImage buffered = new BufferedImage((int) image.getWidth(), (int) image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         for (int y = 0; y < buffered.getHeight(); y++) {
@@ -160,7 +188,14 @@ public final class MemberPreview {
         return result.get();
     }
 
+    private static DesktopGraph graph;
+
     private static DesktopGraph graph() {
+        graph = build();
+        return graph;
+    }
+
+    private static DesktopGraph build() {
         UUID me = UUID.randomUUID();
         UUID leyla = UUID.randomUUID();
         UUID murad = UUID.randomUUID();
@@ -229,7 +264,36 @@ public final class MemberPreview {
                         new az.miyav.domain.walk.WalkListingDetails("Zeytun", az.miyav.domain.pet.PetSpecies.DOG,
                                 NOW.plus(2, ChronoUnit.DAYS), 90, new BigDecimal("15"), "Bakı", null, ""),
                         az.miyav.domain.walk.WalkListingStatus.OPEN, null, NOW)));
+        az.miyav.domain.walk.WalkListing myRequest = new az.miyav.domain.walk.WalkListing(UUID.randomUUID(), me,
+                new az.miyav.domain.walk.WalkListingDetails("Boncuk", az.miyav.domain.pet.PetSpecies.DOG,
+                        NOW.plus(1, ChronoUnit.DAYS), 60, new BigDecimal("10"), "Bakı", null, "Qayışa öyrəşib."),
+                az.miyav.domain.walk.WalkListingStatus.OPEN, null, NOW);
+        az.miyav.domain.walk.WalkListing walked = new az.miyav.domain.walk.WalkListing(UUID.randomUUID(), leyla,
+                new az.miyav.domain.walk.WalkListingDetails("Zeytun", az.miyav.domain.pet.PetSpecies.DOG,
+                        NOW.minus(2, ChronoUnit.DAYS), 120, new BigDecimal("15"), "Bakı", null, ""),
+                az.miyav.domain.walk.WalkListingStatus.COMPLETED, me, new BigDecimal("15"), NOW).withWalkerRating(5, "Çox diqqətli idi");
+        when(walkListings.findMine(any(), any())).thenReturn(List.of(myRequest, walked));
+        when(walkListings.offersForListings(any(), any())).thenReturn(List.of(new az.miyav.domain.walk.WalkOffer(UUID.randomUUID(),
+                myRequest.id(), murad, "Hər gün parkda gəzirəm.", az.miyav.domain.walk.WalkOffer.Status.PENDING, new BigDecimal("12"), NOW)));
+        when(walkListings.offersFor(any(), eq(myRequest.id()))).thenReturn(List.of(new az.miyav.domain.walk.WalkOffer(UUID.randomUUID(),
+                myRequest.id(), murad, "Hər gün parkda gəzirəm.", az.miyav.domain.walk.WalkOffer.Status.PENDING, new BigDecimal("12"), NOW)));
+        when(walkListings.walkerRatings(any(), any())).thenAnswer(call -> List.of(
+                new az.miyav.domain.walk.WalkerRating(murad, new BigDecimal("4.8"), 12),
+                new az.miyav.domain.walk.WalkerRating(me, new BigDecimal("5.0"), 1)));
         backend.withWalkListings(walkListings);
+
+        az.miyav.domain.repository.WalletRepository wallets = mock(az.miyav.domain.repository.WalletRepository.class);
+        when(wallets.wallet(any())).thenReturn(new az.miyav.domain.wallet.Wallet(new BigDecimal("80"), BigDecimal.ZERO,
+                BigDecimal.ZERO, new BigDecimal("40.56"), new BigDecimal("39.44"), 3, BigDecimal.TEN, new BigDecimal("5")));
+        when(wallets.mine(any())).thenReturn(List.of(new az.miyav.domain.wallet.Withdrawal(UUID.randomUUID(), 42, me,
+                new BigDecimal("40.56"), BigDecimal.TEN, new BigDecimal("4.06"), new BigDecimal("36.50"), "Elmir Həsənov",
+                "Kapital Bank", "AZ21NABZ00000000137010001944", az.miyav.domain.wallet.Withdrawal.Status.PAID, "KB-TRX-778812", "",
+                NOW.minus(1, ChronoUnit.DAYS), NOW.minus(2, ChronoUnit.DAYS))));
+        backend.withWallets(wallets);
+        az.miyav.domain.repository.PayoutRepository payouts = mock(az.miyav.domain.repository.PayoutRepository.class);
+        when(payouts.mine(any())).thenReturn(Optional.of(new az.miyav.domain.payout.PayoutDetails("Elmir Həsənov", "Kapital Bank",
+                "AZ21NABZ00000000137010001944", az.miyav.domain.payout.PayoutDetails.AGREEMENT_VERSION, NOW.minus(3, ChronoUnit.DAYS))));
+        backend.withPayouts(payouts);
         return DesktopGraph.create(backend, sessions, Path.of(System.getProperty("java.io.tmpdir"), "miyav-member-preview"));
     }
 }

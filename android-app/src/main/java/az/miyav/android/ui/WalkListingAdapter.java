@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import az.miyav.android.MiyavApplication;
 import az.miyav.android.R;
 import az.miyav.android.databinding.ItemWalkListingBinding;
+import az.miyav.domain.walk.MyWalks;
 import az.miyav.domain.walk.WalkListing;
 import az.miyav.domain.walk.WalkListingDetails;
 
@@ -24,6 +25,7 @@ final class WalkListingAdapter extends RecyclerView.Adapter<WalkListingAdapter.H
     private final MiyavApplication app;
     private final Consumer<WalkListing> onClick;
     private boolean showStatus;
+    private MyWalks walks;
 
     WalkListingAdapter(MiyavApplication app, Consumer<WalkListing> onClick) {
         this.app = app;
@@ -32,6 +34,11 @@ final class WalkListingAdapter extends RecyclerView.Adapter<WalkListingAdapter.H
 
     void showStatus(boolean showStatus) {
         this.showStatus = showStatus;
+    }
+
+    /** Badges from the member's side ("2 new offers", "Waiting for answer", "Agreed") instead of the raw status. */
+    void stages(MyWalks walks) {
+        this.walks = walks;
     }
 
     void replace(List<WalkListing> items) {
@@ -77,8 +84,18 @@ final class WalkListingAdapter extends RecyclerView.Adapter<WalkListingAdapter.H
         holder.binding.priceView.setText(context.getString(R.string.wl_per_hour, Labels.money(listing.effectivePricePerHour())));
         holder.binding.totalView.setText(context.getString(R.string.wl_total, Labels.money(listing.effectiveTotal()),
                 Labels.duration(context, details.durationMinutes())));
-        holder.binding.statusView.setVisibility(showStatus ? View.VISIBLE : View.GONE);
-        holder.binding.statusView.setText(Labels.status(context, listing.status()));
+        if (walks != null) {
+            MyWalks.Stage stage = walks.stage(listing, java.time.Instant.now());
+            holder.binding.statusView.setVisibility(View.VISIBLE);
+            holder.binding.statusView.setText(WalkStages.badge(context, stage, walks.pendingOffers(listing.id())));
+            holder.binding.statusView.setBackgroundTintList(android.content.res.ColorStateList.valueOf(WalkStages.fill(context, stage)));
+            holder.binding.statusView.setTextColor(WalkStages.ink(context, stage));
+        } else {
+            holder.binding.statusView.setVisibility(showStatus ? View.VISIBLE : View.GONE);
+            holder.binding.statusView.setText(Labels.status(context, listing.status()));
+            holder.binding.statusView.setBackgroundTintList(null);
+            holder.binding.statusView.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.text_primary));
+        }
         holder.itemView.setOnClickListener(view -> onClick.accept(listing));
     }
 

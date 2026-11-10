@@ -29,7 +29,7 @@ public final class SupabaseNotificationRepository implements NotificationReposit
     public List<Notification> list(AuthSession session) {
         HttpExchange response = client.send(
                 "GET",
-                "/rest/v1/notifications?select=id,user_id,title,body,conversation_id,created_at,read_at&order=created_at.desc&limit=100",
+                "/rest/v1/notifications?select=id,user_id,title,body,conversation_id,created_at,read_at,kind,params&order=created_at.desc&limit=100",
                 session,
                 null
         );
@@ -51,9 +51,20 @@ public final class SupabaseNotificationRepository implements NotificationReposit
                     Timestamps.parse(row.created_at),
                     row.read_at == null ? null : Timestamps.parse(row.read_at),
                     row.conversation_id == null ? null : UUID.fromString(row.conversation_id)
-            ));
+            ).withTarget(row.kind, listing(row.params)));
         }
         return notifications;
+    }
+
+    private static UUID listing(JsonObject params) {
+        if (params == null || !params.has("listing") || !params.get("listing").isJsonPrimitive()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(params.get("listing").getAsString());
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 
     @Override
@@ -98,5 +109,7 @@ public final class SupabaseNotificationRepository implements NotificationReposit
         String conversation_id;
         String created_at;
         String read_at;
+        String kind;
+        JsonObject params;
     }
 }

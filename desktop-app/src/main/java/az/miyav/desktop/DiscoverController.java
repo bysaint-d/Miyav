@@ -18,11 +18,13 @@ import az.miyav.domain.repository.LiveUpdates;
 import az.miyav.domain.user.PublicProfile;
 import az.miyav.desktop.user.ApplicationsPage;
 import az.miyav.desktop.user.MessagesPage;
+import az.miyav.desktop.user.MyJobsPage;
 import az.miyav.desktop.user.MyListingsPage;
 import az.miyav.desktop.user.NotificationsPage;
 import az.miyav.desktop.user.ProfilePage;
 import az.miyav.desktop.user.UserContext;
 import az.miyav.desktop.user.UserPage;
+import az.miyav.desktop.user.WalletPage;
 import az.miyav.security.AccessPolicy;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -128,6 +130,8 @@ public final class DiscoverController {
     @FXML private ListView<Pet> listings;
     @FXML private Label placeholder;
     @FXML private ImageView photo;
+    @FXML private StackPane photoFrame;
+    @FXML private Label photoGlyph;
     @FXML private Label name;
     @FXML private Label facts;
     @FXML private Label description;
@@ -232,10 +236,10 @@ public final class DiscoverController {
     /** Discover plus the member pages; member pages ask guests to sign in first. */
     private void buildNavigation() {
         UserContext context = new UserContext(graph, status::setText, this::openPage, this::sessionLost,
-                this::refreshBadges, this::window);
+                this::refreshBadges, this::window, url -> app.getHostServices().showDocument(url));
         messagesPage = new MessagesPage(context);
-        for (UserPage page : List.of(new MyListingsPage(context), new ApplicationsPage(context), messagesPage,
-                new NotificationsPage(context), new ProfilePage(context))) {
+        for (UserPage page : List.of(new MyJobsPage(context), new MyListingsPage(context), new ApplicationsPage(context),
+                messagesPage, new NotificationsPage(context), new WalletPage(context), new ProfilePage(context))) {
             pages.put(page.id(), page);
         }
         ToggleGroup group = new ToggleGroup();
@@ -646,13 +650,14 @@ public final class DiscoverController {
         boolean visible = pet != null;
         placeholder.setVisible(!visible);
         placeholder.setManaged(!visible);
-        for (javafx.scene.Node node : List.of(photo, name, facts, description, place, publisher, contact, actions)) {
+        for (javafx.scene.Node node : List.of(photoFrame, name, facts, description, place, publisher, contact, actions)) {
             node.setVisible(visible);
             node.setManaged(visible);
         }
         if (pet == null) {
             return;
         }
+        photoGlyph.setText(Components.speciesGlyph(pet.species().databaseValue()));
         name.setText(pet.name());
         String breed = pet.breed().isEmpty() ? "" : " · " + pet.breed();
         facts.setText(graph.text("species." + pet.species().databaseValue()) + breed
@@ -783,7 +788,7 @@ public final class DiscoverController {
     }
 
     private Window window() {
-        return listings.getScene().getWindow();
+        return root.getScene().getWindow();
     }
 
     private <T> void work(Supplier<T> task, Consumer<T> ok) {

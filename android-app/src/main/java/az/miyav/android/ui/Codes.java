@@ -88,6 +88,27 @@ public final class Codes {
             case "chat.blocked" -> R.string.chat_blocked;
             case "walk.pet_not_own" -> R.string.walk_pet_not_own;
             case "walk.still_open" -> R.string.walk_still_open;
+            case "auth.terms_required" -> R.string.auth_terms_required;
+            case "premium.listing" -> R.string.premium_error_listing;
+            case "premium.method" -> R.string.premium_error_method;
+            case "premium.receipt" -> R.string.premium_error_receipt;
+            case "premium.pending" -> R.string.premium_error_pending;
+            case "premium.limit" -> R.string.premium_error_limit;
+            case "premium.closed" -> R.string.premium_error_closed;
+            case "validation.walk_rating" -> R.string.validation_walk_rating;
+            case "validation.walk_review" -> R.string.validation_walk_review;
+            case "walk.already_rated" -> R.string.walk_already_rated;
+            case "payout.holder" -> R.string.payout_error_holder;
+            case "payout.bank" -> R.string.payout_error_bank;
+            case "payout.iban" -> R.string.payout_error_iban;
+            case "payout.agreement" -> R.string.payout_error_agreement;
+            case "withdrawal.payout" -> R.string.wallet_hint_payout;
+            case "withdrawal.agreement" -> R.string.withdrawal_error_agreement;
+            case "withdrawal.pending" -> R.string.wallet_hint_pending;
+            case "withdrawal.minimum" -> R.string.withdrawal_error_minimum_plain;
+            case "withdrawal.balance" -> R.string.withdrawal_error_balance;
+            case "withdrawal.limit" -> R.string.premium_error_limit;
+            case "withdrawal.closed" -> R.string.withdrawal_error_closed;
             default -> R.string.error_generic;
         };
     }

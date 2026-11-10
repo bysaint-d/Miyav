@@ -7,6 +7,7 @@ import az.miyav.common.error.ValidationException;
 import az.miyav.common.time.SystemTimeSource;
 import az.miyav.common.time.TimeSource;
 import az.miyav.domain.auth.AuthSession;
+import az.miyav.domain.legal.Terms;
 import az.miyav.domain.repository.AuthRepository;
 import az.miyav.domain.repository.UserRepository;
 import az.miyav.domain.user.User;
@@ -54,15 +55,15 @@ public final class AuthService {
         this.time = time;
     }
 
-    public AuthSession register(String email, String password, String fullName) {
-        return register(email, password, fullName, null);
-    }
-
-    public AuthSession register(String email, String password, String fullName, String redirectTo) {
+    /** Creating an account needs the member's agreement to the current Terms and Privacy Policy. */
+    public AuthSession register(String email, String password, String fullName, String redirectTo, boolean acceptedTerms) {
         emails.validate(email);
         passwords.validate(password);
         TextRules.required(fullName, 2, 100, "validation.name");
-        return establish(auth.signUp(email.trim(), password, fullName.trim(), redirectTo));
+        if (!acceptedTerms) {
+            throw new ValidationException("auth.terms_required");
+        }
+        return establish(auth.signUp(email.trim(), password, fullName.trim(), redirectTo, Terms.VERSION));
     }
 
     public AuthSession login(String email, String password) {

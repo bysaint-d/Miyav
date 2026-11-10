@@ -1,6 +1,7 @@
 package az.miyav.data.http;
 
 import az.miyav.common.error.PersistenceException;
+import okhttp3.ConnectionPool;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -11,14 +12,23 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public final class OkHttpTransport implements HttpTransport {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private final OkHttpClient client;
 
+    /**
+     * One client for the whole app so every request reuses the same pooled HTTP/2 connection to Supabase
+     * instead of paying for a new TLS handshake.
+     */
     public OkHttpTransport() {
         this.client = new OkHttpClient.Builder()
+                .connectionPool(new ConnectionPool(8, 5, TimeUnit.MINUTES))
+                .connectTimeout(Duration.ofSeconds(10))
+                .readTimeout(Duration.ofSeconds(15))
                 .callTimeout(Duration.ofSeconds(20))
+                .retryOnConnectionFailure(true)
                 .build();
     }
 

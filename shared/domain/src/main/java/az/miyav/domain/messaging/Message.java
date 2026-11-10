@@ -13,6 +13,32 @@ import java.util.UUID;
 public final class Message {
     public static final int MAX_LENGTH = 2000;
 
+    /** A step of a walk agreement posted by the server; the body then holds an Azerbaijani fallback. */
+    public enum Event {
+        WALK_ACCEPTED("walk_accepted"), WALK_DECLINED("walk_declined"), WALK_CANCELLED("walk_cancelled"),
+        WALK_COMPLETED("walk_completed");
+
+        private final String databaseValue;
+
+        Event(String databaseValue) {
+            this.databaseValue = databaseValue;
+        }
+
+        public String databaseValue() {
+            return databaseValue;
+        }
+
+        /** Null for plain messages and for kinds this version does not know. */
+        public static Event fromDatabase(String value) {
+            for (Event event : values()) {
+                if (event.databaseValue.equals(value)) {
+                    return event;
+                }
+            }
+            return null;
+        }
+    }
+
     private final UUID id;
     private final UUID conversationId;
     private final UUID senderId;
@@ -21,9 +47,15 @@ public final class Message {
     private final BigDecimal pricePerHour;
     private final String imagePath;
     private final Instant createdAt;
+    private final Event event;
 
     public Message(UUID id, UUID conversationId, UUID senderId, String body, UUID walkListingId,
                    BigDecimal pricePerHour, String imagePath, Instant createdAt) {
+        this(id, conversationId, senderId, body, walkListingId, pricePerHour, imagePath, createdAt, null);
+    }
+
+    public Message(UUID id, UUID conversationId, UUID senderId, String body, UUID walkListingId,
+                   BigDecimal pricePerHour, String imagePath, Instant createdAt, Event event) {
         this.id = Objects.requireNonNull(id, "id");
         this.conversationId = Objects.requireNonNull(conversationId, "conversationId");
         this.senderId = Objects.requireNonNull(senderId, "senderId");
@@ -32,6 +64,11 @@ public final class Message {
         this.pricePerHour = pricePerHour;
         this.imagePath = imagePath == null || imagePath.isBlank() ? null : imagePath;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
+        this.event = event;
+    }
+
+    public Optional<Event> event() {
+        return Optional.ofNullable(event);
     }
 
     public UUID id() {

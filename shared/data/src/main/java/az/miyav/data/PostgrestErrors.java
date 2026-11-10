@@ -94,6 +94,27 @@ public final class PostgrestErrors {
         if ("too many reports".equals(message)) {
             return new ValidationException("report.rate_limited");
         }
+        if ("WALK_RATING".equals(message)) {
+            return new ValidationException("validation.walk_rating");
+        }
+        if ("WALK_REVIEW".equals(message)) {
+            return new ValidationException("validation.walk_review");
+        }
+        if ("WALK_RATED".equals(message)) {
+            return new ValidationException("walk.already_rated");
+        }
+        if (message.startsWith("WITHDRAWAL_")) {
+            return new ValidationException("withdrawal." + message.substring("WITHDRAWAL_".length()).toLowerCase(java.util.Locale.ROOT));
+        }
+        if (message.startsWith("PAYOUT_")) {
+            return new ValidationException("payout." + message.substring("PAYOUT_".length()).toLowerCase(java.util.Locale.ROOT));
+        }
+        if (message.startsWith("PREMIUM_")) {
+            return new ValidationException("premium." + message.substring("PREMIUM_".length()).toLowerCase(java.util.Locale.ROOT));
+        }
+        if ("TERMS_VERSION".equals(message)) {
+            return new ValidationException("auth.terms_required");
+        }
         if ("23514".equals(code) || "22001".equals(code)) {
             return new ValidationException("validation.pet");
         }

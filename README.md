@@ -1,88 +1,162 @@
-# MIYAV
+<div align="center">
 
-MIYAV is a pet adoption and community platform. This repository is the native Java foundation: an Android application, a JavaFX desktop application, and a shared Java core. Both Java clients are built to use the existing Supabase project. The Expo application that already talks to that project stays at `<expo-app-path>` and is not part of this Gradle build.
+# 🐾 MIYAV
 
-The default language is Azerbaijani, with English and Russian catalogs. Android is the user client. Desktop is the admin client. Both share one Supabase Auth project.
+**Pet walking, adoption and pet care for Azerbaijan: one Android app, one Windows desktop app, one shared Java core.**
 
-## Requirements
+*Heyvan gəzdirmə, sahibləndirmə və baytar xidmətləri: Android və Windows üçün.*
 
-- JDK 21 installed is sufficient. The build emits Java 17 bytecode.
-- Android SDK with platform 35. `local.properties` must contain `sdk.dir`. That file is gitignored.
-- No service-role key.
+[![CI](https://github.com/bysaint-d/Miyav/actions/workflows/foundation.yml/badge.svg)](https://github.com/bysaint-d/Miyav/actions/workflows/foundation.yml)
+[![Release](https://img.shields.io/github/v/release/bysaint-d/Miyav?label=download)](https://github.com/bysaint-d/Miyav/releases/latest)
+![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-10%2B-0078D4?logo=windows&logoColor=white)
+![Java](https://img.shields.io/badge/Java-17%20%7C%2021-ED8B00?logo=openjdk&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3FCF8E?logo=supabase&logoColor=white)
 
-## Configuration
+Azərbaycanca · English · Русский
 
-Environment variables:
+</div>
 
-```text
-MIYAV_SUPABASE_URL
-MIYAV_SUPABASE_PUBLISHABLE_KEY
+<p align="center">
+  <img src="docs/screenshots/v1.8-android-discover.png" alt="Android: walk requests" height="420">
+  &nbsp;
+  <img src="docs/screenshots/v1.8-desktop-jobs.png" alt="Desktop: My jobs" height="420">
+</p>
+
+## Download
+
+Get the latest build from **[Releases](https://github.com/bysaint-d/Miyav/releases/latest)**:
+
+| Platform | File | Notes |
+| --- | --- | --- |
+| Android 8.0+ | `MIYAV-1.8.0.apk` | Allow "Install unknown apps" for your browser or file manager. Updates 1.7.0 in place. |
+| Windows 10/11 (64-bit) | `MIYAV-Setup-1.8.0.exe` | Self-contained installer with its own Java runtime; nothing else to install. |
+
+What changed in each version: [CHANGELOG.md](CHANGELOG.md).
+
+## Features
+
+**Pet walking**
+- Owners post a walk request (pet, time, length, hourly price, area); walkers send offers or counter-offers.
+- *İşlərim / My jobs*: requests with offers to answer, offers sent, agreed walks. Choose a walker, chat, cancel,
+  mark the walk done.
+- 1–5 star walker ratings with a short review; walkers' averages appear next to every offer.
+- Live walk tracking with route history on Android.
+
+**MIYAV wallet (walkers)**
+- Earnings from completed walks build up a balance.
+- Bank details (IBAN checked with mod-97) and acceptance of the walker agreement.
+- Withdrawal requests. An administrator pays the net amount (10% service fee) and records the bank
+  reference, and the walker gets a receipt. All amounts are computed on the server.
+
+**Adoption and community**
+- Adoption listings with photos, filters, favourites, applications and premium placement.
+- Vets and pet shops on a map, chat with photos, push notifications in the reader's language.
+- Guest mode: browse everything without an account; sign in only to act.
+
+**Admin console (desktop)**
+- Overview, users, listings, walks, places, reports, chat review with audit trail, broadcasts.
+- Premium receipts and walker withdrawals queues.
+
+<p align="center">
+  <img src="docs/screenshots/v1.8-desktop-wallet.png" alt="Desktop: MIYAV wallet" width="49%">
+  <img src="docs/screenshots/v1.8-desktop-profile.png" alt="Desktop: profile" width="49%">
+</p>
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A[android-app<br/>Android · Material 3] --> S
+    D[desktop-app<br/>JavaFX · admin console] --> S
+    subgraph S[shared]
+        direction TB
+        app[application<br/>services & rules] --> dom[domain<br/>model & ports]
+        data[data<br/>Supabase adapters] --> dom
+        sec[security<br/>roles & encrypted sessions]
+        com[common<br/>errors · i18n · time]
+    end
+    S -->|HTTPS · publishable key| B[(Supabase<br/>Postgres + RLS · Auth · Storage · Realtime · Edge Functions)]
 ```
 
-or a gitignored `config/supabase.properties` copied from `config/supabase.properties.example`.
+- Both clients share every business rule through `shared/application`, and the database enforces the same
+  rules again with row level security and `security definer` functions in a private schema.
+- Clients only ever hold the publishable key; the build refuses a secret key.
+- Requests go through one pooled HTTP/2 client that is warmed up at start, and screens load independent
+  data in parallel.
 
-Android reads `supabase.url` and `supabase.publishableKey` from `local.properties`. Leave them empty to open the shell; sign-in then reports that configuration is missing. Do not put a secret or service-role key in either file.
+More detail: [docs/MIYAV_ARCHITECTURE.md](docs/MIYAV_ARCHITECTURE.md) · [docs/SECURITY.md](docs/SECURITY.md) ·
+[docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md)
 
-## Build
+## Build from source
+
+**Requirements:** JDK 21, Android SDK (platform 35), Windows for the installer
+([Inno Setup 6](https://jrsoftware.org/isinfo.php) for `Setup.exe`).
+
+1. Copy `local.properties.example` to `local.properties` and fill in `sdk.dir`, `supabase.url` and
+   `supabase.publishableKey`. Never put a secret or `service_role` key there.
+2. Build and test:
 
 ```bat
-gradlew.bat test :desktop-app:compileJava :android-app:assembleDebug
-```
+rem Tests and lint
+gradlew.bat test :desktop-app:test :android-app:testDebugUnitTest :android-app:lintDebug
 
-That command completed successfully on this machine: 24 JVM tests passed, the desktop sources compiled, and the Android debug APK was assembled. See `TEST_RESULTS.md`.
+rem Debug APK in android-app\build\outputs\apk\debug\
+gradlew.bat :android-app:assembleDebug
 
-Desktop:
-
-```bat
+rem Run the desktop app
 gradlew.bat :desktop-app:run
 ```
 
-Android: open the repository root in Android Studio or install the debug APK from `android-app/build/outputs/apk/debug/`. The application id is `az.miyav.native`, so it does not replace the Expo package `az.miyav.app`. Configuration, signing, test accounts, and Google Play publishing are described in Azerbaijani in [`ANDROID_PRODUCTION_GUIDE.md`](ANDROID_PRODUCTION_GUIDE.md). Templates: `local.properties.example`, `keystore.properties.example`, `.env.example`.
+**Release builds**
 
-## Guest mode
+```bat
+rem Android: signing from keystore.properties (see keystore.properties.example) or MIYAV_UPLOAD_* variables
+gradlew.bat :android-app:assembleRelease
 
-Both clients open on Discover without an account. Guests browse, search, filter, open listing details and photos, view publisher cards (never with a phone number), keep favourites on the device, switch language and read the help, terms and privacy pages. Account-only actions (posting, applying, contacting owners, messages, reports, notifications, walks, admin) go through `AuthStateManager.request(...)`, which opens the MIYAV sign-in sheet and returns the user to the same action afterwards. States are `GUEST`, `AUTHENTICATING`, `AUTHENTICATED` and `SESSION_EXPIRED`; an expired session falls back to guest browsing.
-
-- Public reads: `DiscoveryService` + `PublicCatalogRepository` (publishable key only, `anon` role).
-- Authenticated operations: the existing services, which require a session.
-- Policy: `AccessPolicy` decides what the UI offers; RLS enforces it (migration `20261108094852_guest_mode_public_access`).
-- Favourites: `FavoritesService`; device favourites move to the account only after the user agrees, through `merge_adoption_favorites` (deduplicated, inactive listings skipped).
-
-## What works
-
-- Register, login, logout, password-reset request, session restore, and access-token refresh.
-- Encrypted on-disk sessions (AES-256-GCM).
-- Profile edit and locale sync.
-- Listing create, JPEG photos, publish, archive, discover, filter, detail.
-- Adoption apply / accept / reject / cancel through SQL RPCs.
-- Android coarse location mapped to Bakı, Sumqayıt, or Abşeron.
-- Desktop admin dashboard (users, listings, applications, reports) gated by `private.is_admin()`.
-- Desktop member area next to Discover: My listings (create, photos, publish, archive), Applications
-  (incoming and sent), Messages (live chat with photos), Notifications, Profile (details, photo, password).
-- Detailed listing filter on Android and desktop: gender, age band, vaccinated only, sort order.
-- In-app chat with photos and "Message the owner" on adoption listings; Realtime updates with poll fallback.
-- Phone push through FCM (`dispatch-push` Edge Function) once Firebase is configured.
-- Server notifications in the recipient's language (az, en, ru).
-- Adoption outbox retry when apply fails with a network error.
-
-Telegram is deferred. See `KNOWN_LIMITATIONS.md` and `PRODUCTION_READINESS_REPORT.md`. Preview the desktop
-member pages offline with `gradlew.bat :desktop-app:memberPreview` (screenshots in `desktop-app/build/member-preview`).
-
-## Layout
-
-```text
-android-app/          native Android shell
-desktop-app/          JavaFX shell
-shared/common         errors, locale, clock
-shared/domain         model, validators, repository ports
-shared/application    services
-shared/security       role gate and encrypted session store
-shared/data           Supabase adapters
-existing-expo-app/    pointer to the preserved Expo project
-supabase/             note on the live migration history
-docs/                 architecture, schema, security, OOP, contracts
+rem Windows: self-contained app image, then the installer in desktop-app\build\installer\
+gradlew.bat :desktop-app:packageAppImage
+"%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" desktop-app\packaging\miyav.iss
 ```
 
-## Security note
+**Offline previews:** `gradlew.bat :desktop-app:memberPreview` and `:desktop-app:consolePreview` render every
+desktop page from in-memory data and save PNGs under `desktop-app/build/`.
 
-Clients use the publishable key only. Telegram is not deployed. Adoption acceptance is locked in SQL by `20261107212305`. Admin listing visibility is `20261107214742`. The Java apps compile and the core flows are implemented; live Auth/Storage was not walked in the last implementation session.
+## Database
+
+The live schema lives in [`supabase/migrations`](supabase/migrations), one additive migration per change, and
+Edge Functions in [`supabase/functions`](supabase/functions) (`dispatch-push`, `delete-account`). Every table in
+the exposed schema has RLS; privileged logic runs in `private.*` functions behind thin public wrappers.
+
+## Project layout
+
+```text
+android-app/        Android client (Java, Material 3, view binding)
+desktop-app/        JavaFX client and admin console; packaging/ holds the installer script and icon
+shared/
+  common/           errors, locale catalogs (az, en, ru), clock
+  domain/           model, validation, repository interfaces
+  application/      services shared by both clients
+  security/         role guard, encrypted session store
+  data/             Supabase REST, Auth, Storage and Realtime adapters
+supabase/           migrations and Edge Functions
+docs/               architecture, security, design system, guides, screenshots
+config/             configuration templates
+```
+
+## Documentation
+
+| Topic | Document |
+| --- | --- |
+| Architecture and OOP design | [MIYAV_ARCHITECTURE.md](docs/MIYAV_ARCHITECTURE.md), [OOP_DESIGN.md](docs/OOP_DESIGN.md) |
+| Database and API contracts | [DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md), [API_CONTRACTS.md](docs/API_CONTRACTS.md) |
+| Security model | [SECURITY.md](docs/SECURITY.md) |
+| Design system | [DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) |
+| Android release and Google Play (az) | [ANDROID_PRODUCTION_GUIDE.md](docs/ANDROID_PRODUCTION_GUIDE.md) |
+| Deployment | [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) |
+| Known limitations | [KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md) |
+| Tests and readiness | [TEST_REPORT.md](docs/TEST_REPORT.md), [PRODUCTION_READINESS_REPORT.md](docs/PRODUCTION_READINESS_REPORT.md) |
+
+## Support
+
+WhatsApp: [+994 50 347 73 06](https://wa.me/994503477306)

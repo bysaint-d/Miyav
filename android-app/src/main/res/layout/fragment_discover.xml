@@ -22,45 +22,21 @@
             android:contentDescription="@string/app_name"
             android:src="@drawable/ic_mark" />
 
-        <LinearLayout
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="@string/nav_listings"
-                android:textAppearance="@style/TextAppearance.Miyav.Title" />
-
-            <TextView
-                android:id="@+id/greetingView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textAppearance="@style/TextAppearance.Miyav.Caption" />
-        </LinearLayout>
-
-        <ImageButton
-            android:id="@+id/createButton"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginEnd="@dimen/space_sm"
-            android:background="@drawable/bg_map_card"
-            android:contentDescription="@string/pet_create"
-            android:elevation="2dp"
-            android:src="@drawable/ic_add"
-            app:tint="@color/brand_coral" />
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/nav_listings"
+            android:textAppearance="@style/TextAppearance.Miyav.Title"
+            android:textSize="@dimen/discover_title_size" />
 
         <ImageButton
             android:id="@+id/favoritesButton"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginEnd="@dimen/space_sm"
+            android:layout_width="@dimen/discover_action_size"
+            android:layout_height="@dimen/discover_action_size"
+            android:layout_marginEnd="@dimen/discover_action_gap"
             android:background="@drawable/bg_map_card"
             android:contentDescription="@string/favorites_title"
             android:elevation="2dp"
@@ -68,9 +44,9 @@
             app:tint="@color/brand_coral" />
 
         <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginEnd="@dimen/space_sm">
+            android:layout_width="@dimen/discover_action_size"
+            android:layout_height="@dimen/discover_action_size"
+            android:layout_marginEnd="@dimen/discover_action_gap">
 
             <ImageButton
                 android:id="@+id/messagesButton"
@@ -95,14 +71,23 @@
 
         <ImageButton
             android:id="@+id/notificationsButton"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="@dimen/discover_action_size"
+            android:layout_height="@dimen/discover_action_size"
             android:background="@drawable/bg_map_card"
             android:contentDescription="@string/action_notifications"
             android:elevation="2dp"
             android:src="@drawable/ic_bell"
             app:tint="@color/brand_coral" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/greetingView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_xl"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="@dimen/space_xl"
+        android:textAppearance="@style/TextAppearance.Miyav.Caption" />
 
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/modeGroup"
@@ -116,7 +101,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/modeWalks"
-            style="@style/Widget.Miyav.Button.Segment"
+            style="@style/Widget.Miyav.Button.Segment.Compact"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -127,7 +112,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/modeAdoption"
-            style="@style/Widget.Miyav.Button.Segment"
+            style="@style/Widget.Miyav.Button.Segment.Compact"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -234,50 +219,67 @@
             app:chipStrokeWidth="0dp" />
     </com.google.android.material.chip.ChipGroup>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/refresh"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <FrameLayout
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/petList"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingStart="15dp"
-                android:paddingTop="@dimen/space_xs"
-                android:paddingEnd="15dp"
-                android:paddingBottom="72dp" />
+                android:layout_height="match_parent">
 
-            <az.miyav.android.ui.widget.ShimmerLayout
-                android:id="@+id/skeleton"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingStart="@dimen/space_lg"
-                android:paddingEnd="@dimen/space_lg"
-                android:visibility="gone">
-
-                <LinearLayout
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/petList"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingStart="15dp"
+                    android:paddingTop="@dimen/space_xs"
+                    android:paddingEnd="15dp"
+                    android:paddingBottom="96dp" />
 
-                    <include layout="@layout/skeleton_pet_card" />
+                <az.miyav.android.ui.widget.ShimmerLayout
+                    android:id="@+id/skeleton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingStart="@dimen/space_lg"
+                    android:paddingEnd="@dimen/space_lg"
+                    android:visibility="gone">
 
-                    <include layout="@layout/skeleton_pet_card" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
 
-                    <include layout="@layout/skeleton_pet_card" />
-                </LinearLayout>
-            </az.miyav.android.ui.widget.ShimmerLayout>
+                        <include layout="@layout/skeleton_pet_card" />
 
-            <include
-                android:id="@+id/state"
-                layout="@layout/view_state" />
-        </FrameLayout>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                        <include layout="@layout/skeleton_pet_card" />
+
+                        <include layout="@layout/skeleton_pet_card" />
+                    </LinearLayout>
+                </az.miyav.android.ui.widget.ShimmerLayout>
+
+                <include
+                    android:id="@+id/state"
+                    layout="@layout/view_state" />
+            </FrameLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/createButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="@dimen/space_xl"
+            android:layout_marginBottom="@dimen/space_lg"
+            android:contentDescription="@string/pet_create"
+            android:src="@drawable/ic_add"
+            app:backgroundTint="@color/brand_coral"
+            app:tint="@color/text_on_brand" />
+    </FrameLayout>
 </LinearLayout>

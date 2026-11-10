@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Start-up only: MainActivity switches to Theme.MIYAV before drawing anything. -->
+    <style name="Theme.MIYAV.Launch" parent="Theme.MIYAV">
+        <item name="android:windowBackground">@drawable/splash_window</item>
+    </style>
+</resources>

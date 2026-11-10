@@ -451,6 +451,7 @@ public class ChatFragment extends Fragment {
     private static final class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.Holder> {
         private final List<Message> items = new ArrayList<>();
         private final List<Boolean> acceptable = new ArrayList<>();
+        private final List<Boolean> accepted = new ArrayList<>();
         private final MiyavApplication app;
         private final java.util.function.Consumer<Message> onAccept;
         private final java.util.function.Consumer<String> onPhoto;
@@ -478,8 +479,17 @@ public class ChatFragment extends Fragment {
                 }
             }
             acceptable.clear();
+            accepted.clear();
             for (int i = 0; i < next.size(); i++) {
                 Message message = next.get(i);
+                boolean agreed = false;
+                if (message.priceOffer() && message.walkListingId().isPresent()) {
+                    WalkListing listing = listings.get(message.walkListingId().get());
+                    agreed = listing != null && listing.walkedBy(message.senderId())
+                            && Integer.valueOf(i).equals(latest.get(key(listing.id(), message.senderId())))
+                            && listing.agreedPricePerHour().map(price -> price.compareTo(message.pricePerHour().get()) == 0).orElse(false);
+                }
+                accepted.add(agreed);
                 boolean ok = false;
                 if (message.priceOffer() && message.walkListingId().isPresent() && !message.sentBy(me)) {
                     String offerKey = key(message.walkListingId().get(), message.senderId());
@@ -505,12 +515,24 @@ public class ChatFragment extends Fragment {
         public void onBindViewHolder(@NonNull Holder holder, int position) {
             Message message = items.get(position);
             Context context = holder.itemView.getContext();
+            if (message.event().isPresent()) {
+                bindEvent(holder, message, context);
+                return;
+            }
+            holder.binding.bodyView.setGravity(Gravity.START);
+            holder.binding.bodyView.setTextIsSelectable(true);
+            holder.binding.timeView.setVisibility(View.VISIBLE);
             boolean mine = message.sentBy(me);
             holder.binding.row.setGravity(mine ? Gravity.END : Gravity.START);
             int fill = message.priceOffer() ? R.color.pastel_butter : mine ? R.color.pastel_mint : R.color.surface;
             holder.binding.bubble.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context, fill)));
             boolean price = message.priceOffer();
             holder.binding.priceLabel.setVisibility(price ? View.VISIBLE : View.GONE);
+            holder.binding.priceLabel.setText(accepted.get(position)
+                    ? context.getString(R.string.chat_price_offer) + "  ·  " + context.getString(R.string.chat_offer_accepted_badge)
+                    : context.getString(R.string.chat_price_offer));
+            holder.binding.priceLabel.setTextColor(ContextCompat.getColor(context,
+                    accepted.get(position) ? R.color.success : R.color.text_secondary));
             holder.binding.priceView.setVisibility(price ? View.VISIBLE : View.GONE);
             holder.binding.priceTotal.setVisibility(View.GONE);
             if (price) {
@@ -541,6 +563,39 @@ public class ChatFragment extends Fragment {
             long millis = message.createdAt().toEpochMilli();
             int flags = DateUtils.FORMAT_SHOW_TIME | (DateUtils.isToday(millis) ? 0 : DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH);
             holder.binding.timeView.setText(DateUtils.formatDateTime(context, millis, flags));
+        }
+
+        /** A step of the walk agreement, centred between the two sides and written in the reader's language. */
+        private void bindEvent(Holder holder, Message message, Context context) {
+            Message.Event event = message.event().get();
+            WalkListing listing = message.walkListingId().map(listings::get).orElse(null);
+            String text = switch (event) {
+                case WALK_ACCEPTED -> listing != null && listing.agreedPricePerHour().isPresent()
+                        ? context.getString(R.string.chat_event_accepted, Labels.money(listing.agreedPricePerHour().get()))
+                        : context.getString(R.string.chat_event_accepted_plain);
+                case WALK_DECLINED -> context.getString(R.string.chat_event_declined);
+                case WALK_CANCELLED -> context.getString(R.string.chat_event_cancelled);
+                case WALK_COMPLETED -> context.getString(R.string.chat_event_completed);
+            };
+            int fill = switch (event) {
+                case WALK_ACCEPTED -> R.color.pastel_success;
+                case WALK_COMPLETED -> R.color.pastel_mint;
+                default -> R.color.surface_muted;
+            };
+            holder.binding.row.setGravity(Gravity.CENTER_HORIZONTAL);
+            holder.binding.bubble.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context, fill)));
+            holder.binding.priceLabel.setVisibility(View.GONE);
+            holder.binding.priceView.setVisibility(View.GONE);
+            holder.binding.priceTotal.setVisibility(View.GONE);
+            holder.binding.acceptButton.setVisibility(View.GONE);
+            app.photos().forget(holder.binding.photoView);
+            holder.binding.photoView.setVisibility(View.GONE);
+            holder.binding.photoView.setOnClickListener(null);
+            holder.binding.bodyView.setVisibility(View.VISIBLE);
+            holder.binding.bodyView.setTextIsSelectable(false);
+            holder.binding.bodyView.setGravity(Gravity.CENTER);
+            holder.binding.bodyView.setText(text);
+            holder.binding.timeView.setVisibility(View.GONE);
         }
 
         @Override

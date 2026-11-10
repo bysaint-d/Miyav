@@ -16,45 +16,112 @@
         android:paddingEnd="24dp"
         android:paddingBottom="24dp">
 
-        <ImageButton
-            android:id="@+id/closeButton"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_gravity="start"
-            android:layout_marginStart="-8dp"
-            android:background="@drawable/bg_round_surface"
-            android:contentDescription="@string/guest_later"
-            android:elevation="2dp"
-            android:src="@drawable/ic_close"
-            app:tint="@color/text_primary" />
-
-        <ImageView
-            android:layout_marginTop="16dp"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:contentDescription="@string/app_name"
-            android:src="@drawable/ic_mark" />
-
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:letterSpacing="0.12"
-            android:text="@string/app_name"
-            android:textAppearance="@style/TextAppearance.Miyav.Display" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
+            <ImageButton
+                android:id="@+id/closeButton"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_round_surface"
+                android:contentDescription="@string/guest_later"
+                android:elevation="2dp"
+                android:src="@drawable/ic_close"
+                app:tint="@color/text_primary" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/languageGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/languageAz"
+                    style="@style/Widget.Miyav.Button.Segment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="52dp"
+                    android:minHeight="40dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/language_az"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/languageEn"
+                    style="@style/Widget.Miyav.Button.Segment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="52dp"
+                    android:minHeight="40dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/language_en"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/languageRu"
+                    style="@style/Widget.Miyav.Button.Segment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="52dp"
+                    android:minHeight="40dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/language_ru"
+                    android:textSize="13sp" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="@string/auth_subtitle"
-            android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+            android:layout_marginTop="28dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_mark" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/titleView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/auth_welcome"
+                    android:textAppearance="@style/TextAppearance.Miyav.Title" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/auth_subtitle"
+                    android:textAppearance="@style/TextAppearance.Miyav.Caption" />
+            </LinearLayout>
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/modeGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="28dp"
             app:checkedButton="@id/modeLogin"
             app:selectionRequired="true"
             app:singleSelection="true">
@@ -147,6 +214,36 @@
                 android:maxLength="72" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <LinearLayout
+            android:id="@+id/termsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:baselineAligned="false"
+            android:gravity="top"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/termsCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-6dp"
+                android:minWidth="40dp"
+                android:minHeight="40dp"
+                app:buttonTint="@color/brand_coral" />
+
+            <TextView
+                android:id="@+id/termsText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="9dp"
+                android:layout_weight="1"
+                android:lineSpacingMultiplier="1.15"
+                android:textAppearance="@style/TextAppearance.Miyav.Caption"
+                android:textColor="@color/text_primary" />
+        </LinearLayout>
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/submitButton"
             android:layout_width="match_parent"
@@ -180,42 +277,5 @@
             android:gravity="center"
             android:textAppearance="@style/TextAppearance.Miyav.Caption" />
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:minHeight="24dp" />
-
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/languageGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            app:singleSelection="true">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/languageAz"
-                style="@style/Widget.Miyav.Button.Segment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="64dp"
-                android:text="@string/language_az" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/languageEn"
-                style="@style/Widget.Miyav.Button.Segment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="64dp"
-                android:text="@string/language_en" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/languageRu"
-                style="@style/Widget.Miyav.Button.Segment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="64dp"
-                android:text="@string/language_ru" />
-        </com.google.android.material.button.MaterialButtonToggleGroup>
     </LinearLayout>
 </ScrollView>

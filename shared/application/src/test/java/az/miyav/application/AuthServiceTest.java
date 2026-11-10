@@ -63,6 +63,24 @@ class AuthServiceTest {
     }
 
     @Test
+    void registrationNeedsTheTermsAndRecordsTheirVersion() {
+        AuthRepository auth = mock(AuthRepository.class);
+        UserRepository users = mock(UserRepository.class);
+        UUID userId = UUID.randomUUID();
+        AuthSession signedUp = session(userId, "secret-token");
+        when(auth.signUp(anyString(), anyString(), anyString(), any(), anyString())).thenReturn(signedUp);
+        when(users.findById(signedUp)).thenReturn(Optional.of(profile(userId, UserRole.OWNER, false)));
+        AuthService service = service(auth, users, new MemorySessionStore());
+
+        assertEquals("auth.terms_required", assertThrows(ValidationException.class,
+                () -> service.register("a@example.com", "şifrə12345", "Aysel", null, false)).code());
+        verify(auth, never()).signUp(anyString(), anyString(), anyString(), any(), anyString());
+
+        service.register("a@example.com", "şifrə12345", "Aysel", null, true);
+        verify(auth).signUp("a@example.com", "şifrə12345", "Aysel", null, az.miyav.domain.legal.Terms.VERSION);
+    }
+
+    @Test
     void invalidEmailDoesNotReachTheRepository() {
         AuthRepository auth = mock(AuthRepository.class);
         AuthService service = service(auth, mock(UserRepository.class), new MemorySessionStore());

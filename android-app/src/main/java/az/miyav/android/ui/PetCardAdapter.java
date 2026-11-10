@@ -73,6 +73,7 @@ final class PetCardAdapter extends RecyclerView.Adapter<PetCardAdapter.Holder> {
         holder.binding.speciesBadge.setBackgroundTintList(ColorStateList.valueOf(Labels.speciesColor(context, pet.species())));
         holder.binding.statusChip.setVisibility(showStatus ? View.VISIBLE : View.GONE);
         holder.binding.statusChip.setText(Labels.status(context, pet.status()));
+        holder.binding.premiumBadge.setVisibility(pet.premium(java.time.Instant.now()) ? View.VISIBLE : View.GONE);
         ListingLocation location = pet.location();
         if (originLatitude != null && location != null) {
             double meters = ListingLocation.distanceMeters(originLatitude, originLongitude, location.latitude(), location.longitude());
@@ -83,7 +84,10 @@ final class PetCardAdapter extends RecyclerView.Adapter<PetCardAdapter.Holder> {
         }
         String first = pet.photoPaths().isEmpty() ? null : pet.photoPaths().get(0);
         app.photos().listing(holder.binding.photoView, first, R.drawable.ic_paw);
-        holder.itemView.setOnClickListener(view -> onClick.accept(pet));
+        holder.itemView.setOnClickListener(view -> {
+            app.cache().remember(pet);
+            onClick.accept(pet);
+        });
     }
 
     @Override

@@ -14,6 +14,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml"
@@ -66,7 +67,11 @@
                         <Insets top="20" right="24" bottom="24" left="24"/>
                     </padding>
                     <Label fx:id="placeholder" wrapText="true" styleClass="muted"/>
-                    <ImageView fx:id="photo" fitWidth="520" fitHeight="340" preserveRatio="false"/>
+                    <StackPane fx:id="photoFrame" styleClass="photo-placeholder" alignment="CENTER" style="-fx-background-radius: 18;"
+                               minWidth="520" minHeight="340" maxWidth="520" maxHeight="340">
+                        <Label fx:id="photoGlyph" styleClass="photo-glyph"/>
+                        <ImageView fx:id="photo" fitWidth="520" fitHeight="340" preserveRatio="false"/>
+                    </StackPane>
                     <Label fx:id="name" styleClass="detail-title"/>
                     <Label fx:id="facts" wrapText="true" styleClass="muted"/>
                     <Label fx:id="description" wrapText="true"/>

@@ -25,6 +25,8 @@ public final class SupabaseUserRepository implements UserRepository {
     }.getType();
     private static final Type PUBLIC_ROWS = new TypeToken<List<PublicRow>>() {
     }.getType();
+    private static final Type TERMS_ROWS = new TypeToken<List<TermsRow>>() {
+    }.getType();
     private final SupabaseClient client;
 
     public SupabaseUserRepository(SupabaseClient client) {
@@ -128,6 +130,30 @@ public final class SupabaseUserRepository implements UserRepository {
         ));
     }
 
+    @Override
+    public Optional<String> acceptedTerms(AuthSession session) {
+        HttpExchange response = client.send("GET", "/rest/v1/profiles?id=eq." + session.userId() + "&select=terms_version",
+                session, null);
+        if (response.status() / 100 != 2) {
+            throw PostgrestErrors.from(response);
+        }
+        List<TermsRow> rows = client.gson().fromJson(response.body(), TERMS_ROWS);
+        if (rows == null || rows.isEmpty() || rows.get(0).terms_version == null) {
+            return Optional.empty();
+        }
+        return Optional.of(rows.get(0).terms_version);
+    }
+
+    @Override
+    public void acceptTerms(AuthSession session, String version) {
+        JsonObject body = new JsonObject();
+        body.addProperty("p_version", version);
+        HttpExchange response = client.send("POST", "/rest/v1/rpc/accept_terms", session, body.toString());
+        if (response.status() / 100 != 2) {
+            throw PostgrestErrors.from(response);
+        }
+    }
+
     private static User toUser(ProfileRow row, String email) {
         return new User(
                 UUID.fromString(row.id),
@@ -157,6 +183,10 @@ public final class SupabaseUserRepository implements UserRepository {
         String avatar_path;
         String bio;
         boolean phone_public;
+    }
+
+    private static final class TermsRow {
+        String terms_version;
     }
 
     private static final class PublicRow {

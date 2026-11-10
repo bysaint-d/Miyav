@@ -104,6 +104,35 @@ class WalkListingServiceTest {
         verify(repository, never()).respond(any(), any(), anyBoolean());
     }
 
+    @Test
+    void onlyTheOwnerRatesACompletedWalkOnce() {
+        WalkListing done = new WalkListing(UUID.randomUUID(), owner.userId(), details(NOW.minusSeconds(7200)),
+                WalkListingStatus.COMPLETED, walker.userId(), NOW);
+        assertThrows(AccessDeniedException.class, () -> service.rate(walker, done, 5, ""));
+        assertEquals("validation.walk_rating", assertThrows(ValidationException.class, () -> service.rate(owner, done, 0, "")).code());
+        assertEquals("validation.walk_rating", assertThrows(ValidationException.class, () -> service.rate(owner, done, 6, "")).code());
+        assertEquals("validation.walk_review",
+                assertThrows(ValidationException.class, () -> service.rate(owner, done, 4, "x".repeat(301))).code());
+
+        service.rate(owner, done, 4, "  Çox diqqətli idi  ");
+        verify(repository).rate(owner, done.id(), 4, "Çox diqqətli idi");
+
+        WalkListing rated = done.withWalkerRating(4, "");
+        assertEquals("walk.already_rated", assertThrows(ValidationException.class, () -> service.rate(owner, rated, 5, "")).code());
+        WalkListing assigned = listing(WalkListingStatus.ASSIGNED, walker.userId());
+        assertEquals("walk.listing_closed", assertThrows(ValidationException.class, () -> service.rate(owner, assigned, 5, "")).code());
+    }
+
+    @Test
+    void ratingsSurviveAPetPhotoCopy() {
+        WalkListing done = new WalkListing(UUID.randomUUID(), owner.userId(), details(NOW.minusSeconds(7200)),
+                WalkListingStatus.COMPLETED, walker.userId(), NOW).withWalkerRating(5, "Əla");
+        WalkListing copy = done.withPetPhoto("a/b/c.jpg");
+        assertEquals(5, copy.walkerRating().orElseThrow());
+        assertEquals("Əla", copy.walkerReview());
+        assertEquals(false, copy.rateableBy(owner.userId()));
+    }
+
     private WalkListing listing(WalkListingStatus status, UUID walkerId) {
         return new WalkListing(UUID.randomUUID(), owner.userId(), details(NOW.plusSeconds(3600)), status, walkerId, NOW);
     }

@@ -3,6 +3,7 @@ package az.miyav.application;
 import az.miyav.common.error.PersistenceException;
 import az.miyav.common.locale.LocaleCode;
 import az.miyav.domain.auth.AuthSession;
+import az.miyav.domain.legal.Terms;
 import az.miyav.domain.repository.MediaRepository;
 import az.miyav.domain.repository.UserRepository;
 import az.miyav.domain.user.PublicProfile;
@@ -56,6 +57,15 @@ public final class UserService {
         );
         profiles.validate(updated);
         return users.updateProfile(session, updated);
+    }
+
+    /** True when the member has not accepted the current Terms yet (older and Google accounts). */
+    public boolean needsTerms(AuthSession session) {
+        return !Terms.current(users.acceptedTerms(session).orElse(null));
+    }
+
+    public void acceptTerms(AuthSession session) {
+        users.acceptTerms(session, Terms.VERSION);
     }
 
     /** Public card of a publisher or walker; empty when the profile is not visible to the caller. */

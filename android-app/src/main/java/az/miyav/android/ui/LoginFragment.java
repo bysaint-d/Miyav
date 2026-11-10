@@ -86,8 +86,47 @@ public class LoginFragment extends Fragment {
                 AppLocale.select(requireActivity(), tag);
             }
         });
+        bindTerms();
         model.state().observe(getViewLifecycleOwner(), this::render);
         return binding.getRoot();
+    }
+
+    /** "I agree to the Terms of Service and the Privacy Policy", with both names opening the text. */
+    private void bindTerms() {
+        String terms = getString(R.string.legal_terms);
+        String privacy = getString(R.string.legal_privacy);
+        String sentence = getString(R.string.auth_terms_agree, terms, privacy);
+        android.text.SpannableString text = new android.text.SpannableString(sentence);
+        link(text, sentence, terms, InfoFragment.TERMS);
+        link(text, sentence, privacy, InfoFragment.PRIVACY);
+        binding.termsText.setText(text);
+        binding.termsText.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+        binding.termsCheck.setOnCheckedChangeListener((button, checked) -> {
+            if (checked) {
+                binding.messageView.setText("");
+            }
+        });
+    }
+
+    private void link(android.text.SpannableString text, String sentence, String part, String kind) {
+        int start = sentence.indexOf(part);
+        if (start < 0) {
+            return;
+        }
+        int color = requireContext().getColor(R.color.brand_coral_dark);
+        text.setSpan(new android.text.style.ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                InfoFragment.open(LoginFragment.this, kind);
+            }
+
+            @Override
+            public void updateDrawState(@NonNull android.text.TextPaint paint) {
+                paint.setColor(color);
+                paint.setUnderlineText(true);
+                paint.setFakeBoldText(true);
+            }
+        }, start, start + part.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     @Override
@@ -103,8 +142,10 @@ public class LoginFragment extends Fragment {
     private void applyMode(boolean register) {
         binding.nameLayout.setVisibility(register ? View.VISIBLE : View.GONE);
         binding.confirmLayout.setVisibility(register ? View.VISIBLE : View.GONE);
+        binding.termsRow.setVisibility(register ? View.VISIBLE : View.GONE);
         binding.forgotButton.setVisibility(register ? View.GONE : View.VISIBLE);
         binding.submitButton.setText(register ? R.string.auth_register : R.string.auth_login);
+        binding.titleView.setText(register ? R.string.auth_create_title : R.string.auth_welcome);
         binding.passwordInput.setImeOptions(register ? EditorInfo.IME_ACTION_NEXT : EditorInfo.IME_ACTION_DONE);
         binding.messageView.setText("");
         clearErrors();
@@ -124,7 +165,11 @@ public class LoginFragment extends Fragment {
                 binding.confirmLayout.setError(getString(R.string.auth_password_mismatch));
                 return;
             }
-            model.register(email, password, name);
+            if (!binding.termsCheck.isChecked()) {
+                showTermsRequired();
+                return;
+            }
+            model.register(email, password, name, true);
         } else {
             model.login(email, password);
         }
@@ -168,8 +213,19 @@ public class LoginFragment extends Fragment {
             case "validation.email" -> binding.emailLayout.setError(getString(R.string.validation_email));
             case "validation.password" -> binding.passwordLayout.setError(getString(R.string.validation_password));
             case "validation.name" -> binding.nameLayout.setError(getString(R.string.validation_name));
+            case "auth.terms_required" -> showTermsRequired();
             default -> binding.messageView.setText(Codes.text(code));
         }
+    }
+
+    private void showTermsRequired() {
+        binding.messageView.setTextColor(requireContext().getColor(R.color.error));
+        binding.messageView.setText(R.string.auth_terms_required);
+        binding.termsRow.animate().translationX(12f).setDuration(60).withEndAction(() -> {
+            if (binding != null) {
+                binding.termsRow.animate().translationX(0f).setDuration(120).start();
+            }
+        }).start();
     }
 
     private void clearErrors() {

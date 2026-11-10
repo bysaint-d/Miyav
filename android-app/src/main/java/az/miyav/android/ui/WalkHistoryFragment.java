@@ -135,7 +135,7 @@ public class WalkHistoryFragment extends Fragment {
             boolean route = walk.hasRoute();
             view.routeView.setText(route ? R.string.walk_history_route : R.string.walk_history_no_route);
             view.routeView.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context,
-                    route ? R.color.pastel_mint : R.color.surface_muted)));
+                    route ? R.color.pastel_success : R.color.surface_muted)));
             view.routeView.setTextColor(ContextCompat.getColor(context, route ? R.color.success : R.color.text_secondary));
             holder.itemView.setOnClickListener(card -> open(walk));
         }

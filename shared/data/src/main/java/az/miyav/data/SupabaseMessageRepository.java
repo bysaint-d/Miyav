@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 /** Chats through PostgREST: RLS limits every read and write to the two participants. */
 public final class SupabaseMessageRepository implements MessageRepository {
-    private static final String SELECT = "id,conversation_id,sender_id,body,image_path,walk_listing_id,price_per_hour,created_at";
+    private static final String SELECT = "id,conversation_id,sender_id,body,image_path,walk_listing_id,price_per_hour,created_at,kind";
     private static final int PHOTO_LIMIT = 5 * 1024 * 1024;
     private static final Pattern PHOTO_PATH = Pattern.compile("^[a-f0-9-]{36}/[a-f0-9-]{36}/[A-Za-z0-9._-]{1,120}$");
     private static final Type INBOX = new TypeToken<List<InboxRow>>() {
@@ -178,13 +178,19 @@ public final class SupabaseMessageRepository implements MessageRepository {
 
     private List<Message> rows(HttpExchange response) {
         ensureOk(response);
-        List<MessageRow> rows = client.gson().fromJson(response.body(), MESSAGES);
+        return parse(client, response.body());
+    }
+
+    /** Also reads the moderation RPC, which returns the same columns. */
+    static List<Message> parse(SupabaseClient client, String json) {
+        List<MessageRow> rows = client.gson().fromJson(json, MESSAGES);
         List<Message> result = new ArrayList<>();
         for (MessageRow row : rows == null ? List.<MessageRow>of() : rows) {
             result.add(new Message(UUID.fromString(row.id), UUID.fromString(row.conversation_id),
                     UUID.fromString(row.sender_id), row.body,
                     row.walk_listing_id == null ? null : UUID.fromString(row.walk_listing_id),
-                    row.price_per_hour, row.image_path, Timestamps.parse(row.created_at)));
+                    row.price_per_hour, row.image_path, Timestamps.parse(row.created_at),
+                    Message.Event.fromDatabase(row.kind)));
         }
         return result;
     }
@@ -221,5 +227,6 @@ public final class SupabaseMessageRepository implements MessageRepository {
         String walk_listing_id;
         BigDecimal price_per_hour;
         String created_at;
+        String kind;
     }
 }

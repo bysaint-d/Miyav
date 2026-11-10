@@ -30,7 +30,7 @@ public class NotificationsFragment extends Fragment {
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
         binding.toolbar.setNavigationOnClickListener(view -> Ui.nav(this).popBackStack());
         adapter = new NotificationAdapter(notification -> {
-            notification.conversationId().ifPresent(room -> Ui.openChat(this, room.toString(), null, null, null));
+            open(notification);
             markRead(notification);
         }, this::delete);
         binding.itemList.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -121,6 +121,22 @@ public class NotificationsFragment extends Fragment {
     private void showEmptyIfNeeded() {
         if (adapter.isEmpty()) {
             States.message(binding.state, R.string.notifications_empty, null);
+        }
+    }
+
+    /** Walk news open the walk, listing news the listing, messages the chat. */
+    private void open(Notification notification) {
+        Bundle args = new Bundle();
+        if (notification.aboutWalk()) {
+            args.putString("listingId", notification.listingId().get().toString());
+            Ui.nav(this).navigate(R.id.action_global_walk_detail, args);
+        } else if (notification.aboutListing()) {
+            args.putString("petId", notification.listingId().get().toString());
+            Ui.nav(this).navigate(R.id.action_global_detail, args);
+        } else if (notification.aboutWallet()) {
+            Ui.nav(this).navigate(R.id.action_global_wallet);
+        } else {
+            notification.conversationId().ifPresent(room -> Ui.openChat(this, room.toString(), null, null, null));
         }
     }
 

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="discover_title_size">28sp</dimen>
+    <dimen name="discover_action_size">44dp</dimen>
+    <dimen name="discover_action_gap">8dp</dimen>
+</resources>

@@ -2,6 +2,8 @@ package az.miyav.data;
 
 import az.miyav.data.http.OkHttpTransport;
 import az.miyav.domain.repository.AdminInsightsRepository;
+import az.miyav.domain.repository.AdminMessageRepository;
+import az.miyav.domain.repository.PremiumRepository;
 import az.miyav.domain.repository.AdminRepository;
 import az.miyav.domain.repository.AdoptionRepository;
 import az.miyav.domain.repository.AuthRepository;
@@ -11,6 +13,7 @@ import az.miyav.domain.repository.MediaRepository;
 import az.miyav.domain.repository.PushDeviceRepository;
 import az.miyav.domain.repository.MessageRepository;
 import az.miyav.domain.repository.NotificationRepository;
+import az.miyav.domain.repository.PayoutRepository;
 import az.miyav.domain.repository.PetRepository;
 import az.miyav.domain.repository.PublicCatalogRepository;
 import az.miyav.domain.repository.BroadcastRepository;
@@ -18,6 +21,7 @@ import az.miyav.domain.repository.OwnPetRepository;
 import az.miyav.domain.repository.PlaceRepository;
 import az.miyav.domain.repository.SafetyRepository;
 import az.miyav.domain.repository.UserRepository;
+import az.miyav.domain.repository.WalletRepository;
 import az.miyav.domain.repository.WalkListingRepository;
 import az.miyav.domain.repository.WalkRepository;
 
@@ -40,7 +44,12 @@ public final class MiyavBackend {
     private SafetyRepository safety;
     private PlaceRepository places;
     private PushDeviceRepository pushDevices;
+    private PremiumRepository premium;
+    private AdminMessageRepository adminMessages;
+    private PayoutRepository payouts;
+    private WalletRepository wallets;
     private LiveUpdates live = LiveUpdates.OFF;
+    private SupabaseClient client;
 
     public MiyavBackend(
             AuthRepository auth,
@@ -81,7 +90,12 @@ public final class MiyavBackend {
         backend.safety = new SupabaseSafetyRepository(client);
         backend.places = new SupabasePlaceRepository(client);
         backend.pushDevices = new SupabasePushDeviceRepository(client);
+        backend.premium = new SupabasePremiumRepository(client);
+        backend.adminMessages = new SupabaseAdminMessageRepository(client);
+        backend.payouts = new SupabasePayoutRepository(client);
+        backend.wallets = new SupabaseWalletRepository(client);
         backend.live = new SupabaseRealtime(config);
+        backend.client = client;
         return backend.withFeatures(
                 new SupabaseWalkRepository(client),
                 new SupabasePublicCatalogRepository(client),
@@ -107,6 +121,57 @@ public final class MiyavBackend {
     /** Phone push tokens. */
     public PushDeviceRepository pushDevices() {
         return pushDevices;
+    }
+
+    /** Paid premium placement requests and their review. */
+    public PremiumRepository premium() {
+        return premium;
+    }
+
+    /** Walkers' own payout details and accepted walker agreement. */
+    public PayoutRepository payouts() {
+        return payouts;
+    }
+
+    /** Opens the server connection in the background before the first screen needs it; call off the UI thread. */
+    public void warmUp() {
+        if (client != null) {
+            client.warmUp();
+        }
+    }
+
+    /** Walkers' MIYAV balance and withdrawal requests. */
+    public WalletRepository wallets() {
+        return wallets;
+    }
+
+    /** Replaces the payout details source, for offline previews. */
+    public MiyavBackend withPayouts(PayoutRepository payouts) {
+        this.payouts = payouts;
+        return this;
+    }
+
+    /** Replaces the wallet source, for offline previews. */
+    public MiyavBackend withWallets(WalletRepository wallets) {
+        this.wallets = wallets;
+        return this;
+    }
+
+    /** Administrators reading members' chats for moderation. */
+    public AdminMessageRepository adminMessages() {
+        return adminMessages;
+    }
+
+    /** Replaces the premium source, for offline previews. */
+    public MiyavBackend withPremium(PremiumRepository premium) {
+        this.premium = premium;
+        return this;
+    }
+
+    /** Replaces the moderation chat source, for offline previews. */
+    public MiyavBackend withAdminMessages(AdminMessageRepository adminMessages) {
+        this.adminMessages = adminMessages;
+        return this;
     }
 
     /** Realtime notices for chats and notifications; a no-op until connected. */

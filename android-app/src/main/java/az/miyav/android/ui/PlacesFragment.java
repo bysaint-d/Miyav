@@ -95,7 +95,7 @@ public class PlacesFragment extends Fragment {
         binding.openNowChip.setOnClickListener(view -> pickFilter(binding.openNowChip.isChecked() ? PlacesService.Filter.OPEN_NOW : PlacesService.Filter.ALL));
         binding.allDayChip.setOnClickListener(view -> pickFilter(binding.allDayChip.isChecked() ? PlacesService.Filter.ALWAYS_OPEN : PlacesService.Filter.ALL));
         binding.placeList.setLayoutManager(new LinearLayoutManager(requireContext()));
-        binding.placeList.setAdapter(adapter);
+        binding.placeList.setAdapter(new androidx.recyclerview.widget.ConcatAdapter(adapter, new Attribution()));
         binding.refresh.setColorSchemeResources(R.color.text_on_brand);
         binding.refresh.setProgressBackgroundColorSchemeResource(R.color.brand_coral);
         binding.refresh.setOnChildScrollUpCallback((parent, child) -> binding.placeList.canScrollVertically(-1));
@@ -389,21 +389,21 @@ public class PlacesFragment extends Fragment {
         binding.locationChip.setText(located ? R.string.places_location_mine : R.string.places_location_default);
     }
 
-    private static String glyph(Place place) {
-        if (place.sponsored()) {
-            return "🏥";
-        }
-        return place.kind() == Place.Kind.VET ? "🩺" : "🦴";
+    /** Vector symbols render the same on every Android version; newer emoji show as empty boxes on older phones. */
+    private static int symbol(Place place) {
+        return place.kind() == Place.Kind.VET ? R.drawable.ic_vet : R.drawable.ic_paw;
     }
 
     /** Partners get a large marker with a sun-yellow ring, drawn above the others. */
     private static android.graphics.drawable.Drawable icon(Context context, Place place, boolean picked) {
+        int ink = ContextCompat.getColor(context, R.color.brand_coral);
         if (place.sponsored()) {
             int ring = ContextCompat.getColor(context, picked ? R.color.brand_coral : R.color.brand_sun);
-            return MapSupport.emojiMarker(context, glyph(place), ContextCompat.getColor(context, R.color.surface), ring, 68);
+            return MapSupport.iconMarker(context, symbol(place), ink, ContextCompat.getColor(context, R.color.surface), ring, 68);
         }
         int fill = ContextCompat.getColor(context, place.kind() == Place.Kind.VET ? R.color.pastel_mint : R.color.pastel_peach);
-        return MapSupport.emojiMarker(context, glyph(place), fill, picked);
+        int ring = ContextCompat.getColor(context, picked ? R.color.brand_coral : R.color.surface);
+        return MapSupport.iconMarker(context, symbol(place), ink, fill, ring, 48);
     }
 
     /** The large partner card at the top of the list. */
@@ -422,7 +422,7 @@ public class PlacesFragment extends Fragment {
             view.statusBadge.setVisibility(View.VISIBLE);
             view.statusBadge.setText(open ? R.string.places_open_now : R.string.places_closed_now);
             view.statusBadge.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context,
-                    open ? R.color.pastel_mint : R.color.surface_muted)));
+                    open ? R.color.pastel_success : R.color.surface_muted)));
             view.statusBadge.setTextColor(ContextCompat.getColor(context, open ? R.color.success : R.color.text_secondary));
         } else {
             view.statusBadge.setVisibility(View.GONE);
@@ -443,7 +443,7 @@ public class PlacesFragment extends Fragment {
     private void bind(ItemPlaceBinding view, PlacesService.Nearby nearby) {
         Context context = view.getRoot().getContext();
         Place place = nearby.place();
-        view.iconView.setText(glyph(place));
+        view.iconView.setImageResource(symbol(place));
         view.iconView.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context,
                 place.kind() == Place.Kind.VET ? R.color.pastel_mint : R.color.pastel_peach)));
         view.nameView.setText(place.sponsored() ? "★ " + place.name() : place.name());
@@ -452,7 +452,7 @@ public class PlacesFragment extends Fragment {
         } else if (nearby.openNow().isPresent()) {
             boolean open = nearby.openNow().get();
             badge(view, open ? R.string.places_open_now : R.string.places_closed_now,
-                    open ? R.color.pastel_mint : R.color.surface_muted, open ? R.color.success : R.color.text_secondary);
+                    open ? R.color.pastel_success : R.color.surface_muted, open ? R.color.success : R.color.text_secondary);
         } else {
             view.statusBadge.setVisibility(View.GONE);
         }
@@ -486,6 +486,33 @@ public class PlacesFragment extends Fragment {
         view.statusBadge.setText(text);
         view.statusBadge.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context, fill)));
         view.statusBadge.setTextColor(ContextCompat.getColor(context, ink));
+    }
+
+    /** The OpenStreetMap credit as the last row, clear of the walk button over the tab bar. */
+    private static final class Attribution extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            android.widget.TextView text = new android.widget.TextView(parent.getContext());
+            text.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            int padding = parent.getResources().getDimensionPixelSize(R.dimen.space_md);
+            text.setPadding(padding, padding, padding, 0);
+            text.setGravity(android.view.Gravity.CENTER);
+            text.setText(R.string.places_attribution);
+            text.setTextColor(ContextCompat.getColor(parent.getContext(), R.color.text_secondary));
+            text.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 11);
+            return new RecyclerView.ViewHolder(text) {
+            };
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        }
+
+        @Override
+        public int getItemCount() {
+            return 1;
+        }
     }
 
     private final class Places extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

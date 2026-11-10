@@ -155,8 +155,8 @@ public final class AuthStateManager {
         return authenticate(() -> auth.login(email, password));
     }
 
-    public AuthSession register(String email, String password, String fullName, String redirectTo) {
-        return authenticate(() -> auth.register(email, password, fullName, redirectTo));
+    public AuthSession register(String email, String password, String fullName, String redirectTo, boolean acceptedTerms) {
+        return authenticate(() -> auth.register(email, password, fullName, redirectTo, acceptedTerms));
     }
 
     public AuthSession completeGoogle(String authCode, String verifier) {

@@ -19,12 +19,12 @@
             android:id="@+id/avatarView"
             android:layout_width="@dimen/avatar_lg"
             android:layout_height="@dimen/avatar_lg"
-            android:background="@color/pastel_lavender"
+            android:background="@color/pastel_peach"
             android:contentDescription="@null"
             android:scaleType="center"
             android:src="@drawable/ic_person"
             app:shapeAppearanceOverlay="@style/Shape.Miyav.Circle"
-            app:tint="@color/brand_lavender" />
+            app:tint="@color/brand_coral" />
 
         <LinearLayout
             android:layout_width="0dp"

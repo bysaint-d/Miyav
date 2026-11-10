@@ -27,6 +27,21 @@ public final class SupabaseClient {
         return config;
     }
 
+    /**
+     * Opens the pooled connection (DNS, TCP and TLS) ahead of the first real request, so the first screen does
+     * not wait for the handshake. Failures are ignored; the next real request simply connects itself.
+     */
+    public void warmUp() {
+        if (!config.configured()) {
+            return;
+        }
+        try {
+            send("GET", "/auth/v1/health", null, null);
+        } catch (RuntimeException ignored) {
+            // Offline or blocked: nothing to warm.
+        }
+    }
+
     public HttpExchange send(String method, String pathAndQuery, AuthSession session, String json) {
         return send(method, pathAndQuery, session, json, Map.of());
     }

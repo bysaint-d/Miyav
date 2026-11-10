@@ -30,7 +30,7 @@ import java.util.UUID;
 
 public final class SupabasePetRepository implements PetRepository {
     static final String SELECT = "id,owner_id,name,species,breed,age_months,gender,city,description,status,photos,"
-            + "vaccination,latitude,longitude,location_name";
+            + "vaccination,latitude,longitude,location_name,premium_until";
     private static final Type ROWS = new TypeToken<List<ListingRow>>() {
     }.getType();
     private final SupabaseClient client;
@@ -106,8 +106,9 @@ public final class SupabasePetRepository implements PetRepository {
         return mapAll(client.send("POST", "/rest/v1/rpc/listings_near", session, body.toString()));
     }
 
+    /** Current premium listings come first in every sort order ({@code is_premium} is a computed field). */
     private static String order(PetSort sort) {
-        return switch (sort) {
+        return "is_premium.desc," + switch (sort) {
             case OLDEST -> "created_at.asc";
             case YOUNGEST -> "age_months.asc,created_at.desc";
             case ELDEST -> "age_months.desc,created_at.desc";
@@ -280,7 +281,8 @@ public final class SupabasePetRepository implements PetRepository {
                 row.description,
                 ListingStatusMapper.toDomain(row.status),
                 photos,
-                new ListingExtras(Vaccination.fromDatabase(row.vaccination), location)
+                new ListingExtras(Vaccination.fromDatabase(row.vaccination), location,
+                        row.premium_until == null ? null : Timestamps.parse(row.premium_until))
         );
     }
 
@@ -318,5 +320,6 @@ public final class SupabasePetRepository implements PetRepository {
         Double latitude;
         Double longitude;
         String location_name;
+        String premium_until;
     }
 }

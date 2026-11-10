@@ -30,8 +30,16 @@ public final class SupabaseAuthRepository implements AuthRepository {
 
     @Override
     public AuthSession signUp(String email, String password, String fullName, String redirectTo) {
+        return signUp(email, password, fullName, redirectTo, null);
+    }
+
+    @Override
+    public AuthSession signUp(String email, String password, String fullName, String redirectTo, String termsVersion) {
         JsonObject data = new JsonObject();
         data.addProperty("full_name", fullName);
+        if (termsVersion != null) {
+            data.addProperty("terms_version", termsVersion);
+        }
         JsonObject body = new JsonObject();
         body.addProperty("email", email);
         body.addProperty("password", password);

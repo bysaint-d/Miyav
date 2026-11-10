@@ -44,6 +44,11 @@ public class PublicProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         UUID userId = UUID.fromString(requireArguments().getString("userId"));
+        ScreenCache.Publisher cached = Ui.app(this).cache().publisher(userId);
+        if (cached != null) {
+            AuthSession viewer = Ui.app(this).auth().viewer();
+            show(userId, new Loaded(cached.profile, cached.listings, viewer != null && userId.equals(viewer.userId()), viewer == null));
+        }
         Ui.app(this).authState().observe(getViewLifecycleOwner(), state -> load(userId));
     }
 
@@ -53,35 +58,57 @@ public class PublicProfileFragment extends Fragment {
         super.onDestroyView();
     }
 
+    /** The card and the listings load side by side; a profile seen before is drawn at once and refreshed. */
     private void load(UUID userId) {
-        binding.skeleton.setVisibility(View.VISIBLE);
+        boolean shown = binding.content.getVisibility() == View.VISIBLE;
+        if (!shown) {
+            binding.skeleton.setVisibility(View.VISIBLE);
+        }
+        MiyavApplication app = Ui.app(this);
+        java.util.concurrent.CompletableFuture<List<Pet>> listings = java.util.concurrent.CompletableFuture.supplyAsync(() ->
+                app.discovery().byPublisher(app.auth().viewer(), userId));
         Ui.run(this, () -> {
-            MiyavApplication app = Ui.app(this);
             AuthSession viewer = app.auth().viewer();
             PublicProfile profile = app.discovery().publisher(viewer, userId).orElse(null);
-            List<Pet> listings = profile == null ? List.of() : app.discovery().byPublisher(viewer, userId);
+            List<Pet> found = List.of();
+            if (profile != null) {
+                try {
+                    found = listings.get(15, java.util.concurrent.TimeUnit.SECONDS);
+                } catch (Exception exception) {
+                    found = List.of();
+                }
+            } else {
+                listings.cancel(true);
+            }
             boolean self = viewer != null && userId.equals(viewer.userId());
             if (viewer != null) {
                 app.auth().takePending(ProtectedAction.CONTACT_OWNER, "userId", userId.toString());
             }
-            return new Loaded(profile, listings, self, viewer == null);
-        }, loaded -> {
+            app.cache().remember(userId, profile, found);
+            return new Loaded(profile, found, self, viewer == null);
+        }, loaded -> show(userId, loaded), code -> {
             binding.skeleton.setVisibility(View.GONE);
-            if (loaded.profile == null) {
-                States.message(binding.state, R.string.publisher_hidden, null);
-                return;
+            if (binding.content.getVisibility() != View.VISIBLE) {
+                States.message(binding.state, Codes.text(code), () -> load(userId));
             }
-            binding.content.setVisibility(View.VISIBLE);
-            binding.toolbar.setTitle(loaded.profile.fullName());
-            PublisherCards.bind(this, binding.publisher, loaded.profile, loaded.self,
-                    getString(R.string.contact_walk_message), false,
-                    loaded.guest ? PendingAction.of(ProtectedAction.CONTACT_OWNER, "userId", userId.toString()) : null);
-            adapter.replace(loaded.listings);
-            binding.listingsEmpty.setVisibility(loaded.listings.isEmpty() ? View.VISIBLE : View.GONE);
-        }, code -> {
-            binding.skeleton.setVisibility(View.GONE);
-            States.message(binding.state, Codes.text(code), () -> load(userId));
         });
+    }
+
+    private void show(UUID userId, Loaded loaded) {
+        binding.skeleton.setVisibility(View.GONE);
+        if (loaded.profile == null) {
+            binding.content.setVisibility(View.GONE);
+            States.message(binding.state, R.string.publisher_hidden, null);
+            return;
+        }
+        States.hide(binding.state);
+        binding.content.setVisibility(View.VISIBLE);
+        binding.toolbar.setTitle(loaded.profile.fullName());
+        PublisherCards.bind(this, binding.publisher, loaded.profile, loaded.self,
+                getString(R.string.contact_walk_message), false,
+                loaded.guest ? PendingAction.of(ProtectedAction.CONTACT_OWNER, "userId", userId.toString()) : null);
+        adapter.replace(loaded.listings);
+        binding.listingsEmpty.setVisibility(loaded.listings.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private static final class Loaded {

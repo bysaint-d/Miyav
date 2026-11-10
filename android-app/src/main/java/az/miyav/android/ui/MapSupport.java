@@ -82,6 +82,30 @@ public final class MapSupport {
         return new BitmapDrawable(context.getResources(), bitmap);
     }
 
+    /** Round marker with a tinted vector symbol, for places. */
+    public static Drawable iconMarker(Context context, int symbol, int inkColor, int fillColor, int ringColor, int sizeDp) {
+        float density = context.getResources().getDisplayMetrics().density;
+        int size = Math.round(sizeDp * density);
+        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setColor(ringColor);
+        canvas.drawOval(new RectF(0, 0, size, size), paint);
+        paint.setColor(fillColor);
+        float inset = Math.max(4, sizeDp / 12f) * density;
+        canvas.drawOval(new RectF(inset, inset, size - inset, size - inset), paint);
+        Drawable icon = ContextCompat.getDrawable(context, symbol);
+        if (icon != null) {
+            icon = icon.mutate();
+            icon.setTint(inkColor);
+            int edge = Math.round(size * 0.5f);
+            int left = (size - edge) / 2;
+            icon.setBounds(left, left, left + edge, left + edge);
+            icon.draw(canvas);
+        }
+        return new BitmapDrawable(context.getResources(), bitmap);
+    }
+
     /** Circular avatar marker with a white ring. */
     public static Drawable avatarMarker(Context context, Bitmap avatar) {
         float density = context.getResources().getDisplayMetrics().density;

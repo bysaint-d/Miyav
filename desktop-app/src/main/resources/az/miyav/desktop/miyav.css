@@ -1,21 +1,21 @@
 /*
- * MIYAV design tokens (Pawhome direction). The same palette is used by the Android and Expo apps:
+ * MIYAV design tokens (warm orange). The same palette is used by the Android and Expo apps:
  * see docs/DESIGN_SYSTEM.md. Components below only reference these tokens.
  */
 .root {
-    -miyav-background: #F7F5EF;
+    -miyav-background: #F8F5F0;
     -miyav-surface: #FFFFFF;
-    -miyav-mint: #DCEEE5;
-    -miyav-sage: #B9DCD0;
+    -miyav-mint: #FDEBDD;
+    -miyav-sage: #F6C9A6;
     -miyav-peach: #F5C6A5;
     -miyav-peach-soft: #FBE7D9;
-    -miyav-primary: #315B49;
-    -miyav-primary-hover: #284B3C;
-    -miyav-text: #263C35;
-    /* #858D85 from the brief is kept for decoration; text uses #67706A to reach 4.5:1 on cream. */
-    -miyav-muted: #67706A;
-    -miyav-decor: #858D85;
-    -miyav-line: #ECE8DE;
+    -miyav-primary: #D2601A;
+    -miyav-primary-hover: #B4500F;
+    -miyav-text: #2A2420;
+    /* #9A8F86 is kept for decoration; text uses #6F6660 to reach 4.5:1 on cream. */
+    -miyav-muted: #6F6660;
+    -miyav-decor: #9A8F86;
+    -miyav-line: #EDE5DB;
     -miyav-danger: #B5533C;
     -miyav-danger-soft: #F8E1D9;
     -miyav-warning-soft: #FBEFD3;
@@ -108,7 +108,7 @@
 }
 
 .hero {
-    -fx-background-color: linear-gradient(to right, #DCEEE5, #EAF4EE);
+    -fx-background-color: linear-gradient(to right, #FDEBDD, #FEF4EC);
     -fx-background-radius: 26;
     -fx-padding: 26 28 26 28;
 }
@@ -420,22 +420,22 @@
     -fx-background-color: transparent;
 }
 
-.default-color0.chart-series-line { -fx-stroke: #315B49; -fx-stroke-width: 3px; }
-.default-color1.chart-series-line { -fx-stroke: #E89A6B; -fx-stroke-width: 3px; }
-.default-color0.chart-line-symbol { -fx-background-color: #315B49, white; }
-.default-color1.chart-line-symbol { -fx-background-color: #E89A6B, white; }
-.default-color0.chart-area-symbol, .default-color0.chart-legend-item-symbol { -fx-background-color: #315B49; }
-.default-color1.chart-area-symbol, .default-color1.chart-legend-item-symbol { -fx-background-color: #E89A6B; }
-.default-color2.chart-legend-item-symbol { -fx-background-color: #B9DCD0; }
-.default-color0.chart-bar { -fx-bar-fill: #315B49; -fx-background-radius: 8 8 0 0; }
-.default-color1.chart-bar { -fx-bar-fill: #F5C6A5; -fx-background-radius: 8 8 0 0; }
-.default-color2.chart-bar { -fx-bar-fill: #B9DCD0; -fx-background-radius: 8 8 0 0; }
-.default-color0.chart-pie { -fx-pie-color: #315B49; }
-.default-color1.chart-pie { -fx-pie-color: #B9DCD0; }
-.default-color2.chart-pie { -fx-pie-color: #F5C6A5; }
-.default-color3.chart-pie { -fx-pie-color: #DCEEE5; }
-.default-color4.chart-pie { -fx-pie-color: #858D85; }
-.default-color5.chart-pie { -fx-pie-color: #E89A6B; }
+.default-color0.chart-series-line { -fx-stroke: #D2601A; -fx-stroke-width: 3px; }
+.default-color1.chart-series-line { -fx-stroke: #4F8FBF; -fx-stroke-width: 3px; }
+.default-color0.chart-line-symbol { -fx-background-color: #D2601A, white; }
+.default-color1.chart-line-symbol { -fx-background-color: #4F8FBF, white; }
+.default-color0.chart-area-symbol, .default-color0.chart-legend-item-symbol { -fx-background-color: #D2601A; }
+.default-color1.chart-area-symbol, .default-color1.chart-legend-item-symbol { -fx-background-color: #4F8FBF; }
+.default-color2.chart-legend-item-symbol { -fx-background-color: #F2B544; }
+.default-color0.chart-bar { -fx-bar-fill: #D2601A; -fx-background-radius: 8 8 0 0; }
+.default-color1.chart-bar { -fx-bar-fill: #4F8FBF; -fx-background-radius: 8 8 0 0; }
+.default-color2.chart-bar { -fx-bar-fill: #F2B544; -fx-background-radius: 8 8 0 0; }
+.default-color0.chart-pie { -fx-pie-color: #D2601A; }
+.default-color1.chart-pie { -fx-pie-color: #4F8FBF; }
+.default-color2.chart-pie { -fx-pie-color: #F2B544; }
+.default-color3.chart-pie { -fx-pie-color: #3E8B6C; }
+.default-color4.chart-pie { -fx-pie-color: #9A8F86; }
+.default-color5.chart-pie { -fx-pie-color: #7B8FD6; }
 .chart-pie-label, .chart-pie-label-line {
     -fx-fill: -miyav-muted;
     -fx-stroke: -miyav-line;

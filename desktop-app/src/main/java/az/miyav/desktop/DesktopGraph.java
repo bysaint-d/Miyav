@@ -1,6 +1,10 @@
 package az.miyav.desktop;
 
 import az.miyav.application.AdminInsightsService;
+import az.miyav.application.AdminMessagesService;
+import az.miyav.application.PayoutService;
+import az.miyav.application.PremiumService;
+import az.miyav.application.WalletService;
 import az.miyav.application.AdminService;
 import az.miyav.application.AdoptionService;
 import az.miyav.application.AuthService;
@@ -60,6 +64,10 @@ public final class DesktopGraph {
     private LiveUpdates live = LiveUpdates.OFF;
     private PlacesService places;
     private WalkListingService walkListings;
+    private AdminMessagesService adminMessages;
+    private PremiumService premium;
+    private WalletService wallets;
+    private PayoutService payouts;
 
     private DesktopGraph(
             AuthService auth,
@@ -98,8 +106,11 @@ public final class DesktopGraph {
 
     public static DesktopGraph load() {
         Path home = Path.of(System.getProperty("user.home"), ".miyav");
-        return create(MiyavBackend.connect(EnvironmentConfig.url(), EnvironmentConfig.publishableKey()),
-                new EncryptedFileSessionStore(home), home);
+        MiyavBackend backend = MiyavBackend.connect(EnvironmentConfig.url(), EnvironmentConfig.publishableKey());
+        Thread warm = new Thread(backend::warmUp, "miyav-warm-up");
+        warm.setDaemon(true);
+        warm.start();
+        return create(backend, new EncryptedFileSessionStore(home), home);
     }
 
     /** Composition root: wires every service from one backend and one session store. */
@@ -130,7 +141,31 @@ public final class DesktopGraph {
         graph.live = backend.live() == null ? LiveUpdates.OFF : backend.live();
         graph.places = new PlacesService(backend.places(), time);
         graph.walkListings = new WalkListingService(backend.walkListings(), time);
+        graph.adminMessages = backend.adminMessages() == null ? null : new AdminMessagesService(backend.adminMessages(), access);
+        graph.premium = backend.premium() == null ? null : new PremiumService(backend.premium(), access);
+        graph.wallets = backend.wallets() == null ? null : new WalletService(backend.wallets(), access);
+        graph.payouts = backend.payouts() == null ? null : new PayoutService(backend.payouts());
         return graph;
+    }
+
+    /** Walkers' balances and withdrawal requests; administrators pay them and record the bank reference. */
+    public WalletService wallets() {
+        return wallets;
+    }
+
+    /** The signed-in walker's bank details and accepted walker agreement. */
+    public PayoutService payouts() {
+        return payouts;
+    }
+
+    /** Moderators reading members' chats; every opened conversation is audited on the server. */
+    public AdminMessagesService adminMessages() {
+        return adminMessages;
+    }
+
+    /** Premium listing requests: receipts to check, approve or reject. */
+    public PremiumService premium() {
+        return premium;
     }
 
     /** Paid walk requests ("Gəzdirmə"): browse, offer a price, chat with the owner. */

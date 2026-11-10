@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="auth_subtitle">Heyvansevərlərin icması: övladlığa götürmə, elanlar və birgə gəzintilər.</string>
+    <string name="auth_subtitle">Sahibləndirmə, gəzinti və heyvansevərlər bir yerdə.</string>
+    <string name="auth_welcome">Xoş gəldin!</string>
+    <string name="auth_create_title">Hesab yarat</string>
     <string name="auth_full_name">Ad və soyad</string>
     <string name="auth_email">E-poçt</string>
     <string name="auth_password">Şifrə</string>
@@ -261,7 +263,7 @@
     <string name="places_subtitle">Ən yaxınlar yuxarıdadır · istiqamət Google Maps-də açılır</string>
     <string name="places_vets">Veterinarlar</string>
     <string name="places_shops">Zoomağazalar</string>
-    <string name="places_location_default">Bakı mərkəzinə görə · yerimi göstər</string>
+    <string name="places_location_default">Yerimi tap</string>
     <string name="places_view_list">Siyahı</string>
     <string name="places_partner">★ MIYAV tərəfdaşı</string>
     <string name="places_website">Sayt</string>
@@ -276,7 +278,7 @@
     <string name="places_no_details">Ünvan və iş saatı hələ əlavə olunmayıb</string>
     <string name="places_empty_filtered">Bu filtrə uyğun yer tapılmadı.</string>
     <string name="places_whatsapp_message">Salam! MIYAV tətbiqindən yazıram.</string>
-    <string name="places_location_mine">Mənim yerimə görə</string>
+    <string name="places_location_mine">Mənə yaxın</string>
     <string name="places_directions">İstiqamət</string>
     <string name="places_hours">İş saatı: %1$s</string>
     <string name="places_empty">Bu bölmədə hələ yer yoxdur.</string>
@@ -415,8 +417,8 @@
     <string name="legal_terms">İstifadə şərtləri</string>
     <string name="legal_privacy">Məxfilik siyasəti</string>
     <string name="legal_help_body">Elan tapmaq üçün axtarış və filtrlərdən istifadə et və ya yaxınlıqdakı heyvanları görmək üçün \"Yaxınlıqda\" seçimini aç.\n\nBəyəndiyin heyvanı ürək işarəsi ilə seçilmişlərə əlavə et. Qonaq kimi onlar bu cihazda qalır; daxil olandan sonra hesabına köçürə bilərsən.\n\nSahiblənmək üçün elanı aç və \"Müraciət et\" düyməsinə toxun. Hesabın yoxdursa, qısa qeydiyyatdan sonra elə həmin müraciətə qayıdacaqsan.</string>
-    <string name="legal_terms_body">MIYAV heyvanlara yuva tapmaq üçün icma platformasıdır.\n\nElanlara hər kəs qeydiyyatsız baxa bilər. Elan yerləşdirmək, sahiblənmə müraciəti göndərmək və elan sahibi ilə əlaqə saxlamaq üçün hesab lazımdır.\n\nElandakı məlumatın doğruluğuna elan sahibi cavabdehdir. Heyvan satışı, saxta və ya təhqiramiz elanlar qadağandır və silinir; qaydaları pozan hesablar dayandırılır.</string>
-    <string name="legal_privacy_body">Qonaq kimi baxarkən hesab məlumatı toplanmır. Seçilmişlər bu cihazda qalır və sənin razılığın olmadan hesaba köçürülmür.\n\nHesab yaradanda e-poçt, ad və profil məlumatın saxlanılır. E-poçt ünvanın və mesajların heç vaxt ictimai göstərilmir.\n\nElan məkanı təxminən 100 metr dəqiqliklə yuvarlaqlaşdırılır. Telefon nömrən yalnız sən icazə versən və yalnız daxil olmuş istifadəçilərə göstərilir.\n\nHesabını istənilən vaxt Profil → Hesabı sil bölməsindən silə bilərsən: profil, elanlar, müraciətlər, mesajlar və şəkillər birdəfəlik silinir.</string>
+    <string name="legal_terms_body">MIYAV heyvanlara yuva tapmaq üçün icma platformasıdır.\n\nElanlara hər kəs qeydiyyatsız baxa bilər. Elan yerləşdirmək, sahiblənmə müraciəti göndərmək və elan sahibi ilə əlaqə saxlamaq üçün hesab lazımdır.\n\nElandakı məlumatın doğruluğuna elan sahibi cavabdehdir. Heyvan satışı, saxta və ya təhqiramiz elanlar qadağandır və silinir; qaydaları pozan hesablar dayandırılır.\n\nİstifadəçilərin təhlükəsizliyi və bu qaydaların icrası üçün MIYAV moderatorları söhbətləri və söhbətdəki şəkilləri oxuya bilər, məsələn şikayətdən sonra. Hər belə yoxlama qeydə alınır.\n\nPremium elan 7 gün üçün 5 ₼-dır, ödəniş M10 və ya bank kartına köçürmə ilə edilir. Premium admin ödəniş çekini təsdiqlədikdən sonra başlayır. Premium elanlar da bütün qaydalara tabedir.</string>
+    <string name="legal_privacy_body">Qonaq kimi baxarkən hesab məlumatı toplanmır. Seçilmişlər bu cihazda qalır və sənin razılığın olmadan hesaba köçürülmür.\n\nHesab yaradanda e-poçt, ad və profil məlumatın saxlanılır. E-poçt ünvanın və mesajların heç vaxt ictimai göstərilmir.\n\nElan məkanı təxminən 100 metr dəqiqliklə yuvarlaqlaşdırılır. Telefon nömrən yalnız sən icazə versən və yalnız daxil olmuş istifadəçilərə göstərilir.\n\nHesabını istənilən vaxt Profil → Hesabı sil bölməsindən silə bilərsən: profil, elanlar, müraciətlər, mesajlar və şəkillər birdəfəlik silinir.\n\nMesajlar iki istifadəçi arasında gizlidir, lakin MIYAV moderatorları təhlükəsizlik və İstifadə şərtlərinin icrası üçün onları yoxlaya bilər; hər yoxlama qeydə alınır. Yüklədiyin ödəniş çeklərini yalnız sən və administratorlar görür.</string>
     <string name="map_attribution">© OpenStreetMap töhfəçiləri</string>
     <string name="guest_action_offer_walk">Gəzinti təklif etmək üçün MIYAV hesabına daxil ol.</string>
     <string name="wl_editor_title">Gəzinti elanı</string>

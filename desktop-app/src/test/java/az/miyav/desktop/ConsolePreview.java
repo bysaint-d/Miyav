@@ -103,6 +103,20 @@ public final class ConsolePreview {
                     return null;
                 });
                 Thread.sleep(button.getText().contains("NearMe") ? 6000 : 1800);
+                if (button.getText().startsWith("Mesaj") || button.getText().startsWith("Messag")) {
+                    onFx(() -> {
+                        for (Node node : scene().getRoot().lookupAll(".card")) {
+                            if (node.getOnMouseClicked() != null) {
+                                node.fireEvent(new javafx.scene.input.MouseEvent(javafx.scene.input.MouseEvent.MOUSE_CLICKED,
+                                        0, 0, 0, 0, javafx.scene.input.MouseButton.PRIMARY, 1, false, false, false, false,
+                                        true, false, false, true, false, true, null));
+                                break;
+                            }
+                        }
+                        return null;
+                    });
+                    Thread.sleep(1500);
+                }
                 save(out.resolve(String.format("%02d-%s.png", ++index, button.getText().replaceAll("[^A-Za-z0-9]+", "-"))));
             }
         } catch (Exception exception) {
@@ -206,6 +220,38 @@ public final class ConsolePreview {
                 new az.miyav.domain.place.Place(UUID.randomUUID(), az.miyav.domain.place.Place.Kind.VET, "Baytarlıq Apteki",
                         "Azadlıq pr.", null, null, 40.434136, 49.843982, false, null, false, false)));
         backend.withPlaces(places);
+
+        az.miyav.domain.repository.PremiumRepository premium = mock(az.miyav.domain.repository.PremiumRepository.class);
+        when(premium.queue(any(), any())).thenReturn(List.of(
+                new az.miyav.domain.premium.PremiumRequest(UUID.randomUUID(), dog.id(), "Çaxır", murad, "Murad Əliyev",
+                        az.miyav.domain.premium.PremiumRequest.Method.M10, new BigDecimal("5"), 7,
+                        murad + "/" + UUID.randomUUID() + ".jpg", az.miyav.domain.premium.PremiumRequest.Status.PENDING, "",
+                        NOW.minus(40, ChronoUnit.MINUTES), null, null),
+                new az.miyav.domain.premium.PremiumRequest(UUID.randomUUID(), cat.id(), "Pambıq", elmir, "Elmir Həsənov",
+                        az.miyav.domain.premium.PremiumRequest.Method.CARD, new BigDecimal("5"), 7,
+                        elmir + "/" + UUID.randomUUID() + ".jpg", az.miyav.domain.premium.PremiumRequest.Status.APPROVED, "",
+                        NOW.minus(2, ChronoUnit.DAYS), NOW.minus(2, ChronoUnit.DAYS), NOW.plus(5, ChronoUnit.DAYS))));
+        when(premium.receipt(any(), any())).thenReturn(new byte[0]);
+        backend.withPremium(premium);
+
+        UUID room = UUID.randomUUID();
+        az.miyav.domain.repository.AdminMessageRepository chats = mock(az.miyav.domain.repository.AdminMessageRepository.class);
+        when(chats.conversations(any(), any())).thenReturn(List.of(
+                new az.miyav.domain.messaging.AdminConversation(room, elmir, "Elmir Həsənov", leyla, "Leyla Quliyeva",
+                        NOW.minus(12, ChronoUnit.MINUTES), "Sabah 10:00-da parkın girişində görüşək.", false, 5),
+                new az.miyav.domain.messaging.AdminConversation(UUID.randomUUID(), murad, "Murad Əliyev", elmir, "Elmir Həsənov",
+                        NOW.minus(3, ChronoUnit.HOURS), "", true, 2)));
+        UUID walk = UUID.randomUUID();
+        when(chats.messages(any(), any())).thenReturn(List.of(
+                new az.miyav.domain.messaging.Message(UUID.randomUUID(), room, elmir, "Salam! Boncuğu sabah gəzdirə bilərsiniz?",
+                        walk, null, null, NOW.minus(50, ChronoUnit.MINUTES)),
+                new az.miyav.domain.messaging.Message(UUID.randomUUID(), room, leyla, "Bəli, 1 saatlıq.", walk,
+                        new BigDecimal("12"), null, NOW.minus(45, ChronoUnit.MINUTES)),
+                new az.miyav.domain.messaging.Message(UUID.randomUUID(), room, elmir, "✅ Razılaşma: 12 ₼/saat", walk, null, null,
+                        NOW.minus(40, ChronoUnit.MINUTES), az.miyav.domain.messaging.Message.Event.WALK_ACCEPTED),
+                new az.miyav.domain.messaging.Message(UUID.randomUUID(), room, leyla, "Sabah 10:00-da parkın girişində görüşək.",
+                        walk, null, null, NOW.minus(12, ChronoUnit.MINUTES))));
+        backend.withAdminMessages(chats);
         return DesktopGraph.create(backend, sessions, Path.of(System.getProperty("java.io.tmpdir"), "miyav-preview"));
     }
 

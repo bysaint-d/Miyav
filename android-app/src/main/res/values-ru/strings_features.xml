@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Согласие с условиями -->
+    <string name="auth_terms_agree">Я прочитал(а) и принимаю %1$s и %2$s.</string>
+    <string name="auth_terms_required">Чтобы создать аккаунт, примите Условия использования и Политику конфиденциальности.</string>
+    <string name="terms_update_title">Условия использования обновлены</string>
+    <string name="terms_update_body">Чтобы продолжить пользоваться аккаунтом, примите Условия использования и Политику конфиденциальности.\n\nЧто изменилось: ради безопасности пользователей модераторы MIYAV могут проверять сообщения; объявления можно сделать премиум за плату.</string>
+    <string name="terms_update_accept">Принимаю</string>
+    <string name="terms_update_read">Читать</string>
+    <string name="terms_update_decline">Выйти</string>
+
+    <!-- Премиум-объявления -->
+    <string name="premium_badge">Премиум</string>
+    <string name="premium_cta">Сделать премиум · %1$s ₼</string>
+    <string name="premium_active">Премиум до %1$s. Показывается первым в разделе «Обзор».</string>
+    <string name="premium_pending">Заявка на премиум проверяется.</string>
+    <string name="premium_rejected">Заявка на премиум не одобрена. %1$s</string>
+    <string name="premium_extend">Продлить премиум · %1$s ₼</string>
+    <string name="premium_sheet_title">Сделать объявление премиум</string>
+    <string name="premium_sheet_subtitle">%1$s ₼ — объявление показывается первым в «Обзоре» %2$d дней.</string>
+    <string name="premium_step_method">1. Выберите способ оплаты</string>
+    <string name="premium_method_m10">M10</string>
+    <string name="premium_method_card">Банковская карта</string>
+    <string name="premium_step_pay">2. Отправьте %1$s ₼</string>
+    <string name="premium_pay_m10">Номер M10</string>
+    <string name="premium_pay_card">Номер карты</string>
+    <string name="premium_copy">Копировать</string>
+    <string name="premium_copied">Скопировано</string>
+    <string name="premium_step_receipt">3. Загрузите фото чека об оплате</string>
+    <string name="premium_pick_receipt">Выбрать фото чека</string>
+    <string name="premium_change_receipt">Выбрать другое фото</string>
+    <string name="premium_send">Отправить на проверку</string>
+    <string name="premium_sent">Заявка отправлена. Объявление станет премиум после проверки чека администратором.</string>
+    <string name="premium_review_note">Оплата проверяется вручную, обычно в течение нескольких часов.</string>
+    <string name="premium_error_listing">Премиум доступен только для опубликованного объявления.</string>
+    <string name="premium_error_method">Выберите способ оплаты.</string>
+    <string name="premium_error_receipt">Загрузите фото чека об оплате.</string>
+    <string name="premium_error_pending">Заявка для этого объявления уже проверяется.</string>
+    <string name="premium_error_limit">Сегодня отправлено слишком много заявок. Попробуйте завтра.</string>
+    <string name="premium_error_closed">Эта заявка уже проверена.</string>
+
+    <!-- Мои прогулки -->
+    <string name="my_walks_title">Мои прогулки</string>
+    <string name="my_walks_tab_agreed">Договорённости</string>
+    <string name="my_walks_tab_offers">Мои предложения</string>
+    <string name="my_walks_tab_requests">Мои запросы</string>
+    <string name="my_walks_empty_agreed">Договорённостей пока нет. Когда владелец примет ваше предложение или вы выберете выгульщика, это появится здесь.</string>
+    <string name="my_walks_empty_offers">Вы ещё не откликались на прогулки. Запросы есть в разделе «Обзор» → «Выгул».</string>
+    <string name="my_walks_empty_requests">У вас пока нет запросов на прогулку.</string>
+    <string name="my_walks_new">Новый запрос на прогулку</string>
+    <string name="nav_my_jobs">Мои работы</string>
+
+    <!-- Профиль: статистика выгульщика и поддержка -->
+    <string name="profile_stat_earnings">Заработок</string>
+    <string name="profile_stat_completed">Выполнено</string>
+    <string name="profile_stat_rating">Рейтинг</string>
+    <string name="profile_stat_none">—</string>
+    <string name="profile_stat_money">%1$s ₼</string>
+    <string name="profile_section_personal">Личные данные</string>
+    <string name="profile_section_support">Поддержка</string>
+    <string name="profile_contract_bank">Договор и банковские данные</string>
+    <string name="profile_adoption_applications">Заявки на пристройство</string>
+    <string name="profile_support">Поддержка · WhatsApp</string>
+    <string name="profile_support_message">Здравствуйте! Пишу в поддержку MIYAV.</string>
+    <string name="profile_stat_stars">%1$s ★</string>
+    <string name="profile_rating_none">Оценок пока нет</string>
+    <plurals name="profile_rating_count">
+        <item quantity="one">%1$d оценка</item>
+        <item quantity="few">%1$d оценки</item>
+        <item quantity="many">%1$d оценок</item>
+        <item quantity="other">%1$d оценки</item>
+    </plurals>
+
+    <!-- Рейтинг выгульщика -->
+    <string name="wl_rate_walker">Оценить выгульщика</string>
+    <string name="wl_rate_review">Отзыв (необязательно)</string>
+    <string name="wl_rate_send">Отправить</string>
+    <string name="wl_rated">Оценка отправлена. Спасибо!</string>
+    <string name="wl_rated_line">Оценка за эту прогулку: %1$s</string>
+    <string name="wl_rating_average">★ %1$s · %2$s</string>
+    <string name="validation_walk_rating">Выберите от 1 до 5 звёзд.</string>
+    <string name="validation_walk_review">Отзыв не должен быть длиннее 300 символов.</string>
+    <string name="walk_already_rated">Вы уже оценили эту прогулку.</string>
+
+    <!-- Кошелёк MIYAV -->
+    <string name="wallet_title">Мой кошелёк MIYAV</string>
+    <string name="wallet_available">Доступно к выводу</string>
+    <string name="wallet_summary">Заработано: %1$s ₼ · В ожидании: %2$s ₼ · Выплачено: %3$s ₼\nЗавершённых прогулок: %4$d</string>
+    <string name="wallet_withdraw">Запросить вывод</string>
+    <string name="wallet_held">На проверке: %1$s ₼ — прогулки, которые вы завершили сами, зачисляются после оценки владельца или через 48 часов.</string>
+    <string name="wallet_hint_payout">Чтобы вывести деньги, сначала укажите банковские данные и примите договор выгульщика.</string>
+    <string name="wallet_hint_pending">Администратор проверяет запрос. После выплаты здесь появится квитанция.</string>
+    <string name="wallet_hint_minimum">Минимальная сумма вывода — %1$s ₼.</string>
+    <string name="wallet_hint_fee">При выплате удерживается сервисный сбор %1$s%%.</string>
+    <string name="wallet_history">Выводы</string>
+    <string name="wallet_history_empty">Запросов на вывод пока нет.</string>
+    <string name="wallet_row_detail">%1$s · к переводу %2$s ₼ · %3$s</string>
+    <string name="wallet_receipt">Квитанция</string>
+    <string name="wallet_cancel">Отменить запрос</string>
+    <string name="wallet_cancel_confirm">Отменить запрос на вывод? Сумма вернётся на баланс.</string>
+    <string name="wallet_cancelled">Запрос отменён.</string>
+    <string name="wallet_status_pending">В ожидании</string>
+    <string name="wallet_status_paid">Выплачено</string>
+    <string name="wallet_status_rejected">Не одобрено</string>
+    <string name="wallet_status_cancelled">Отменено</string>
+    <string name="wallet_amount">Сумма</string>
+    <string name="wallet_amount_hint">От %1$s ₼ до %2$s ₼</string>
+    <string name="wallet_to_account">Счёт: %1$s · %2$s</string>
+    <string name="wallet_breakdown">Сервисный сбор (%1$s%%): %2$s ₼\nБудет переведено: %3$s ₼</string>
+    <string name="wallet_send_request">Отправить запрос</string>
+    <string name="wallet_requested">Запрос отправлен. Вы получите уведомление, когда администратор произведёт выплату.</string>
+    <string name="wallet_receipt_title">Квитанция %1$s</string>
+    <string name="wallet_receipt_text">Квитанция № %1$s\nДата: %2$s\n\nПолучатель: %3$s\nБанк: %4$s\nIBAN: %5$s\n\nСумма: %6$s ₼\nСервисный сбор (%7$s%%): %8$s ₼\nПереведено: %9$s ₼\n\nНомер банковского перевода: %10$s\n\nMIYAV · выгул питомцев</string>
+    <string name="wallet_share">Поделиться</string>
+    <string name="withdrawal_error_minimum">Укажите не меньше %1$s ₼.</string>
+    <string name="withdrawal_error_minimum_plain">Сумма меньше минимальной.</string>
+    <string name="withdrawal_error_balance">Сумма больше вашего баланса.</string>
+    <string name="withdrawal_error_agreement">Договор выгульщика обновлён. Примите его снова в разделе банковских данных.</string>
+    <string name="withdrawal_error_closed">Этот запрос уже закрыт.</string>
+
+    <!-- Договор и банковские данные -->
+    <string name="payout_intro">Заработок за прогулки переводится на этот счёт. Эти данные видите только вы и администраторы MIYAV.</string>
+    <string name="payout_section_bank">Банковские данные</string>
+    <string name="payout_holder">Владелец счёта (имя, фамилия)</string>
+    <string name="payout_holder_hint">Укажите так же, как в банке.</string>
+    <string name="payout_bank">Банк</string>
+    <string name="payout_iban">IBAN</string>
+    <string name="payout_iban_hint">28 символов, начинается с AZ. Его можно найти в банковском приложении или договоре карты.</string>
+    <string name="payout_section_agreement">Договор выгульщика</string>
+    <string name="payout_agreement_summary">Условия о прогулках вовремя и безопасно, о том, что питомца нельзя оставлять без присмотра, о конфиденциальности данных владельца и о выплатах на этот счёт.</string>
+    <string name="payout_agreement_read">Прочитать договор</string>
+    <string name="payout_agreement_accept">Я прочитал(а) договор и принимаю его условия</string>
+    <string name="payout_agreement_accept_short">Принимаю</string>
+    <string name="payout_agreement_accepted_at">Договор принят: %1$s</string>
+    <string name="payout_agreement_outdated">Договор обновлён (ранее принят: %1$s). Примите его снова.</string>
+    <string name="payout_saved">Банковские данные сохранены.</string>
+    <string name="payout_error_holder">Укажите имя владельца счёта (3–100 символов).</string>
+    <string name="payout_error_bank">Укажите название банка.</string>
+    <string name="payout_error_iban">Неверный IBAN. Введите 28-значный IBAN, начинающийся с AZ.</string>
+    <string name="payout_error_agreement">Чтобы продолжить, примите договор выгульщика.</string>
+    <string name="payout_agreement_text">Договор выгульщика MIYAV (версия 2026-11-10)\n\n1. Стороны. Договор заключается между платформой MIYAV и пользователем, который выгуливает питомцев через неё (Выгульщик).\n\n2. Услуга. Выгульщик проводит каждую принятую прогулку в согласованное время и в согласованной продолжительности, следуя указаниям владельца.\n\n3. Безопасность. Выгульщик не оставляет питомца без присмотра, не спускает его с поводка без разрешения владельца и сразу сообщает владельцу и поддержке MIYAV о любом происшествии.\n\n4. Оплата. Стоимость рассчитывается по согласованной в приложении цене за час и переводится на указанный Выгульщиком банковский счёт (IBAN). Выгульщик отвечает за правильность банковских данных.\n\n5. Конфиденциальность. Выгульщик не передаёт третьим лицам адрес, телефон и другие личные данные владельца.\n\n6. Рейтинг. После каждой завершённой прогулки владелец может оценить Выгульщика от 1 до 5 звёзд. Аккаунты, неоднократно нарушающие правила, могут быть заблокированы.\n\n7. Отмена. Выгульщик может отменить принятую прогулку только по уважительной причине и своевременно предупредив владельца.\n\n8. Изменения. MIYAV может обновлять договор; новую версию нужно принять в приложении заново.\n\nВопросы: поддержка, WhatsApp +994 50 347 73 06.</string>
+    <string name="walk_stage_waiting">Ждём предложений</string>
+    <plurals name="walk_stage_review">
+        <item quantity="one">%1$d новое предложение</item>
+        <item quantity="few">%1$d новых предложения</item>
+        <item quantity="many">%1$d новых предложений</item>
+        <item quantity="other">%1$d новых предложения</item>
+    </plurals>
+    <string name="walk_stage_sent">Ждём ответа</string>
+    <string name="walk_stage_agreed">✓ Договорились</string>
+    <string name="walk_stage_declined">Не принято</string>
+    <string name="walk_stage_withdrawn">Отозвано</string>
+    <string name="walk_stage_completed">Завершена</string>
+    <string name="walk_stage_cancelled">Отменена</string>
+    <string name="walk_stage_expired">Истекла</string>
+
+    <string name="wl_banner_waiting_title">Ждём предложений</string>
+    <string name="wl_banner_waiting_body">Выгульщики видят ваш запрос в «Обзоре». Когда придёт предложение, вы получите уведомление.</string>
+    <plurals name="wl_banner_review_title">
+        <item quantity="one">%1$d предложение ждёт ответа</item>
+        <item quantity="few">%1$d предложения ждут ответа</item>
+        <item quantity="many">%1$d предложений ждут ответа</item>
+        <item quantity="other">%1$d предложения ждут ответа</item>
+    </plurals>
+    <string name="wl_banner_review_body">Выберите одно ниже — остальные будут отклонены автоматически.</string>
+    <string name="wl_banner_sent_title">Предложение отправлено</string>
+    <string name="wl_banner_sent_body">Вы получите уведомление, когда владелец ответит. Можно изменить цену или отозвать предложение.</string>
+    <string name="wl_banner_agreed_title">Прогулка согласована</string>
+    <string name="wl_banner_agreed_owner">%1$s гуляет с %2$s · %3$s ₼/час · %4$s</string>
+    <string name="wl_banner_agreed_walker">Вы гуляете с %1$s · %2$s ₼/час · %3$s</string>
+    <string name="wl_banner_agreed_hint">Точный адрес отправьте в чате. Когда прогулка закончится, нажмите «Готово».</string>
+    <string name="wl_banner_declined_title">Предложение не принято</string>
+    <string name="wl_banner_declined_body">Владелец выбрал другого выгульщика или отклонил это предложение.</string>
+    <string name="wl_banner_completed_title">Прогулка завершена</string>
+    <string name="wl_banner_completed_body">Спасибо, что гуляете с MIYAV.</string>
+    <string name="wl_banner_cancelled_title">Прогулка отменена</string>
+    <string name="wl_banner_cancelled_body">Этот запрос больше не активен.</string>
+    <string name="wl_banner_expired_title">Истекла</string>
+    <string name="wl_banner_expired_body">Время начала прошло, договорённости нет.</string>
+    <string name="wl_banner_withdrawn_title">Предложение отозвано</string>
+    <string name="wl_banner_withdrawn_body">Пока запрос открыт, можно отправить новое предложение.</string>
+
+    <string name="chat_event_accepted">✅ Договорились · %1$s ₼/час</string>
+    <string name="chat_event_accepted_plain">✅ Прогулка согласована</string>
+    <string name="chat_event_declined">Предложение не принято</string>
+    <string name="chat_event_cancelled">✖ Прогулка отменена</string>
+    <string name="chat_event_completed">🏁 Прогулка завершена</string>
+    <string name="chat_offer_accepted_badge">✓ Принято</string>
+</resources>

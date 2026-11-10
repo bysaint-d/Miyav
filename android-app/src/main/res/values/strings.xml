@@ -8,7 +8,9 @@
     <string name="format_label_value" translatable="false">%1$s: %2$s</string>
     <string name="format_pair" translatable="false">%1$s  ·  %2$s</string>
     <string name="format_icon_label" translatable="false">%1$s  %2$s</string>
-    <string name="auth_subtitle">A pet lovers\' community: adoption, listings and walks together.</string>
+    <string name="auth_subtitle">Adoption, walks and pet lovers in one place.</string>
+    <string name="auth_welcome">Welcome!</string>
+    <string name="auth_create_title">Create an account</string>
     <string name="auth_full_name">Full name</string>
     <string name="auth_email">Email</string>
     <string name="auth_password">Password</string>
@@ -269,7 +271,7 @@
     <string name="places_subtitle">Nearest first · directions open in Google Maps</string>
     <string name="places_vets">Vets</string>
     <string name="places_shops">Pet shops</string>
-    <string name="places_location_default">Sorted from central Baku · use my location</string>
+    <string name="places_location_default">Use my location</string>
     <string name="places_view_list">List</string>
     <string name="places_partner">★ MIYAV partner</string>
     <string name="places_website">Website</string>
@@ -284,7 +286,7 @@
     <string name="places_no_details">Address and hours not added yet</string>
     <string name="places_empty_filtered">No places match this filter.</string>
     <string name="places_whatsapp_message">Hello! I am writing from the MIYAV app.</string>
-    <string name="places_location_mine">Sorted from my location</string>
+    <string name="places_location_mine">Near me</string>
     <string name="places_directions">Directions</string>
     <string name="places_hours">Hours: %1$s</string>
     <string name="places_empty">No places in this section yet.</string>
@@ -425,7 +427,7 @@
     <string name="legal_terms">Terms of Service</string>
     <string name="legal_privacy">Privacy Policy</string>
     <string name="legal_help_body">Use search and filters to find listings, or turn on \"Nearby\" to see pets close to you.\n\nTap the heart to keep a pet in your favourites. As a guest they stay on this device; after you sign in you can move them to your account.\n\nTo adopt, open a listing and tap \"Apply\". If you have no account yet, you will return to the same application right after a short sign-up.</string>
-    <string name="legal_terms_body">MIYAV is a community platform for finding homes for pets.\n\nAnyone can browse listings without an account. Posting listings, applying for adoption and contacting owners need an account.\n\nListing owners are responsible for the accuracy of their listings. Selling animals and fake or abusive listings are not allowed and are removed; accounts that break these rules are suspended.</string>
+    <string name="legal_terms_body">MIYAV is a community platform for finding homes for pets.\n\nAnyone can browse listings without an account. Posting listings, applying for adoption and contacting owners need an account.\n\nListing owners are responsible for the accuracy of their listings. Selling animals and fake or abusive listings are not allowed and are removed; accounts that break these rules are suspended.\n\nTo keep members safe and enforce these rules, MIYAV moderators may read conversations and chat photos, for example after a report. Every such review is logged.\n\nA premium listing costs 5 ₼ for 7 days, paid by M10 or bank card transfer. It starts after an administrator confirms the payment receipt. Premium listings follow the same rules as every other listing.</string>
     <string name="guest_action_offer_walk">Sign in to your MIYAV account to offer a walk.</string>
     <string name="wl_editor_title">Walk request</string>
     <string name="wl_editor_edit">Edit walk request</string>
@@ -552,5 +554,5 @@
     <string name="walk_with">With %1$s</string>
     <string name="walk_pet_required">Choose at least one pet or a walk job.</string>
     <string name="walk_pet_limit">You can walk up to 5 pets at once.</string>
-    <string name="legal_privacy_body">While you browse as a guest, no account data is collected. Favourites stay on this device and are never moved to an account without your consent.\n\nWhen you create an account, your email, name and profile details are stored. Your email address and messages are never shown publicly.\n\nListing locations are rounded to about 100 metres. Your phone number is shown only if you allow it, and only to signed-in users.\n\nYou can delete your account at any time from Profile → Delete account: your profile, listings, applications, messages and photos are removed permanently.</string>
+    <string name="legal_privacy_body">While you browse as a guest, no account data is collected. Favourites stay on this device and are never moved to an account without your consent.\n\nWhen you create an account, your email, name and profile details are stored. Your email address and messages are never shown publicly.\n\nListing locations are rounded to about 100 metres. Your phone number is shown only if you allow it, and only to signed-in users.\n\nYou can delete your account at any time from Profile → Delete account: your profile, listings, applications, messages and photos are removed permanently.\n\nMessages are private between the two members, but MIYAV moderators may review them for safety and to enforce the Terms of Service; each review is logged. Payment receipts you upload are seen only by you and the administrators.</string>
 </resources>

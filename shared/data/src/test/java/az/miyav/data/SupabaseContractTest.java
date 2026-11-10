@@ -181,7 +181,7 @@ class SupabaseContractTest {
         assertTrue(transport.path.contains("&gender=eq.female"));
         assertTrue(transport.path.contains("&age_months=gte.6&age_months=lt.24"));
         assertTrue(transport.path.contains("&vaccination=eq.yes"));
-        assertTrue(transport.path.contains("order=age_months.asc,created_at.desc"));
+        assertTrue(transport.path.contains("order=is_premium.desc,age_months.asc,created_at.desc"));
         assertEquals(4, filters.activeCount());
 
         pets.findNear(40.4, 49.85, 10, query, null);
@@ -190,7 +190,7 @@ class SupabaseContractTest {
         assertTrue(transport.requestBody.contains("\"p_vaccinated\":true"));
 
         pets.findPublished(az.miyav.domain.pet.PetQuery.firstPage(), null);
-        assertTrue(transport.path.contains("order=created_at.desc"));
+        assertTrue(transport.path.contains("order=is_premium.desc,created_at.desc"));
         assertTrue(!transport.path.contains("gender=") && !transport.path.contains("age_months="));
     }
 

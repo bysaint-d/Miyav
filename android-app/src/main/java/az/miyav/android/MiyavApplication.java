@@ -24,6 +24,10 @@ import az.miyav.android.sync.NotificationPollWorker;
 import az.miyav.android.sync.OutboxSyncWorker;
 import az.miyav.android.ui.MapSupport;
 import az.miyav.android.ui.PhotoLoader;
+import az.miyav.android.ui.ScreenCache;
+import az.miyav.application.PayoutService;
+import az.miyav.application.WalletService;
+import az.miyav.application.PremiumService;
 import az.miyav.android.walk.WalkTracker;
 import az.miyav.application.WalkingService;
 import az.miyav.application.WalkListingService;
@@ -84,13 +88,18 @@ public class MiyavApplication extends Application {
     private WalkTracker walkTracker;
     private PushService push;
     private LiveUpdates live;
-    private final ExecutorService io = Executors.newFixedThreadPool(4);
+    private PremiumService premium;
+    private PayoutService payouts;
+    private WalletService wallets;
+    private final ScreenCache cache = new ScreenCache();
+    private final ExecutorService io = Executors.newFixedThreadPool(6);
 
     @Override
     public void onCreate() {
         super.onCreate();
         AppLocale.apply(this, AppLocale.current(this));
         MiyavBackend backend = MiyavBackend.connect(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_PUBLISHABLE_KEY);
+        io.execute(backend::warmUp);
         sessions = new AndroidSessionStore(this);
         RoleGuard access = new RoleGuard();
         database = Room.databaseBuilder(this, MiyavDatabase.class, "miyav.db")
@@ -117,6 +126,9 @@ public class MiyavApplication extends Application {
         safety = new SafetyService(backend.safety());
         places = new PlacesService(backend.places(), time);
         push = new PushService(backend.pushDevices());
+        premium = new PremiumService(backend.premium(), access);
+        payouts = new PayoutService(backend.payouts());
+        wallets = new WalletService(backend.wallets(), access);
         live = backend.live();
         Push.init(this);
         walkTracker = new WalkTracker(this);
@@ -282,6 +294,26 @@ public class MiyavApplication extends Application {
         return walkTracker;
     }
 
+    /** Paid premium placement of adoption listings. */
+    public PremiumService premium() {
+        return premium;
+    }
+
+    /** The walker's bank details and accepted walker agreement. */
+    public PayoutService payouts() {
+        return payouts;
+    }
+
+    /** The walker's MIYAV balance and withdrawals. */
+    public WalletService wallets() {
+        return wallets;
+    }
+
+    /** Data the previous screen already showed, drawn at once by the next one. */
+    public ScreenCache cache() {
+        return cache;
+    }
+
     public void onSignedOut() {
         az.miyav.domain.auth.AuthSession session = auth.viewer();
         if (session != null) {
@@ -293,6 +325,7 @@ public class MiyavApplication extends Application {
         }
         walkTracker.signOut();
         photos.clear();
+        cache.clear();
         safety.clear();
         favoritesOffered = false;
     }

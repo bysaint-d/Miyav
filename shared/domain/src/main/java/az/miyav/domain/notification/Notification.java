@@ -85,4 +85,39 @@ public final class Notification {
     public Optional<UUID> conversationId() {
         return Optional.ofNullable(conversationId);
     }
+
+    private String kind = "";
+    private UUID listingId;
+
+    /** The server's kind ({@code walk_offer_new}, {@code premium_approved}, ...) and the listing it is about. */
+    public Notification withTarget(String kind, UUID listingId) {
+        Notification copy = new Notification(id, userId, type, title, body, createdAt, readAt, conversationId);
+        copy.kind = kind == null ? "" : kind;
+        copy.listingId = listingId;
+        return copy;
+    }
+
+    public String kind() {
+        return kind;
+    }
+
+    public Optional<UUID> listingId() {
+        return Optional.ofNullable(listingId);
+    }
+
+    /** About a walk request (offers, answers, cancellations). */
+    public boolean aboutWalk() {
+        return kind.startsWith("walk_") && listingId != null;
+    }
+
+    /** About the walker's MIYAV wallet (withdrawal paid or rejected). */
+    public boolean aboutWallet() {
+        return kind.equals("withdrawal_paid") || kind.equals("withdrawal_rejected");
+    }
+
+    /** About an adoption listing (applications, premium). */
+    public boolean aboutListing() {
+        return (kind.startsWith("adoption_") || kind.startsWith("premium_approved") || kind.startsWith("premium_rejected"))
+                && listingId != null;
+    }
 }

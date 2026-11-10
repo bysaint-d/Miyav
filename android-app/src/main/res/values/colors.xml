@@ -1,44 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--
-        Pawhome palette shared with the desktop console and the Expo app (docs/DESIGN_SYSTEM.md).
-        Resource names are kept so layouts stay unchanged: brand_coral is the primary action colour
-        (forest green) and the pastel names are the soft surfaces.
+        MIYAV palette shared with the desktop app (docs/DESIGN_SYSTEM.md). Resource names are kept so
+        layouts stay unchanged: brand_coral is the primary action colour (warm orange), brand_coral_dark
+        is the orange used for text on light surfaces, and the pastel names are the soft surfaces.
+        Green stays only for status meaning (open now, success, active walk).
     -->
     <!-- Brand -->
-    <color name="brand_coral">#315B49</color>
-    <color name="brand_coral_dark">#284B3C</color>
-    <color name="brand_sun">#E0A44A</color>
+    <color name="brand_coral">#D2601A</color>
+    <color name="brand_coral_dark">#A84A12</color>
+    <color name="brand_sun">#F2B544</color>
     <color name="brand_mint">#3E8B6C</color>
     <color name="brand_lavender">#7B8FD6</color>
     <color name="brand_sky">#4F8FBF</color>
     <color name="brand_whatsapp">#25D366</color>
     <color name="brand_telegram">#229ED9</color>
     <color name="gallery_scrim">#33000000</color>
-    <color name="card_stroke">#E6E1D5</color>
-    <color name="brand_peach">#F5C6A5</color>
-    <color name="brand_sage">#B9DCD0</color>
+    <color name="card_stroke">#EDE3D8</color>
+    <color name="brand_peach">#F6C29C</color>
+    <color name="brand_sage">#F6C9A6</color>
 
     <!-- Pastel containers -->
     <color name="pastel_peach">#FBE7D9</color>
     <color name="pastel_butter">#FBEFD3</color>
-    <color name="pastel_mint">#DCEEE5</color>
+    <color name="pastel_mint">#FDEBDD</color>
     <color name="pastel_lavender">#E8ECF8</color>
     <color name="pastel_sky">#E2EEF6</color>
+    <color name="pastel_success">#DFF1E7</color>
 
     <!-- Neutrals -->
-    <color name="bg_app">#F7F5EF</color>
+    <color name="bg_app">#F8F5F0</color>
     <color name="surface">#FFFFFF</color>
-    <color name="surface_muted">#F1EFE7</color>
-    <color name="outline">#ECE8DE</color>
-    <color name="text_primary">#263C35</color>
-    <color name="text_secondary">#67706A</color>
+    <color name="surface_muted">#F3EEE7</color>
+    <color name="outline">#EDE5DB</color>
+    <color name="text_primary">#2A2420</color>
+    <color name="text_secondary">#6F6660</color>
     <color name="text_on_brand">#FFFFFF</color>
     <color name="error">#B5533C</color>
-    <color name="success">#3E8B6C</color>
+    <color name="success">#2F7D5B</color>
 
     <!-- Effects -->
-    <color name="skeleton_base">#EDEAE1</color>
-    <color name="skeleton_highlight">#FBFAF6</color>
-    <color name="scrim">#66263C35</color>
+    <color name="skeleton_base">#EFE9E1</color>
+    <color name="skeleton_highlight">#FBF9F5</color>
+    <color name="scrim">#662A2420</color>
 </resources>
